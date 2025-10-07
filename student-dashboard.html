@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Task Manager</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/student.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="student-dashboard-container">
+        <!-- Sidebar -->
+        <div class="student-sidebar" id="studentSidebar">
+            <div class="student-profile">
+                <div class="student-profile-avatar">A</div>
+                <h2 id="studentNameSidebar">Student Name</h2>
+                <p id="studentRole">Student</p>
+            </div>
+
+            <div class="progress-summary">
+                <h3>Overall Progress</h3>
+                <div class="overall-progress" id="sidebarProgress">0%</div>
+                <p class="progress-label">Completion Rate</p>
+            </div>
+
+            <div class="quick-stats" id="quickStats">
+                <!-- Quick stats will be populated by JS -->
+            </div>
+
+            <div class="quick-actions">
+                <a href="student-chat.html" class="action-btn-sidebar chat-btn">
+                    <i class="fas fa-comments"></i>
+                    <span>Chat with Teacher</span>
+                    <span id="unreadBadge" class="unread-dot" style="display: none;"></span>
+                </a>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="student-list.html" class="back-btn-sidebar">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Change Student</span>
+                </a>
+                <a href="index.html" class="back-btn-sidebar">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="student-main-content">
+            <div class="student-header">
+                <h1 id="studentNameHeader">Welcome, Student!</h1>
+                <a href="student-list.html" class="btn-secondary">
+                    <i class="fas fa-user-friends"></i> Change Student
+                </a>
+            </div>
+
+            <div class="tasks-section">
+                <div class="section-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Pending Tasks</span>
+                </div>
+                <div id="pendingTasksList" class="tasks-list">
+                    <!-- Pending tasks will be dynamically added here -->
+                </div>
+            </div>
+
+            <div class="tasks-section" style="margin-top: 2rem;">
+                <div class="section-title">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Completed Tasks</span>
+                </div>
+                <div id="completedTasksList" class="tasks-list">
+                    <!-- Completed tasks will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/data-manager.js"></script>
+    <script src="js/student-dashboard.js"></script>
+</body>
+</html>
+

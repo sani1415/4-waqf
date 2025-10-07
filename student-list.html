@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Student - Task Manager</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/student.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="student-list-container">
+        <div class="header-section">
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+            <h1>Select Your Name</h1>
+            <p class="subtitle">Choose your profile to view your tasks</p>
+        </div>
+
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchStudent" placeholder="Search for your name...">
+        </div>
+
+        <div id="studentCards" class="student-cards-grid">
+            <!-- Student cards will be dynamically added here -->
+        </div>
+
+        <div id="noStudentsMessage" class="empty-state" style="display: none;">
+            <i class="fas fa-users-slash"></i>
+            <h3>No Students Found</h3>
+            <p>Please contact your teacher to add students.</p>
+        </div>
+    </div>
+
+    <script src="js/data-manager.js"></script>
+    <script src="js/student-list.js"></script>
+</body>
+</html>
+

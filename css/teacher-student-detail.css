@@ -1,0 +1,416 @@
+/* Teacher Student Detail Page Styles */
+
+.detail-container {
+    padding: 2rem;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.breadcrumb a {
+    color: var(--primary-soft);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.breadcrumb a:hover {
+    color: var(--primary-light);
+}
+
+.breadcrumb i {
+    font-size: 0.75rem;
+}
+
+/* Student Profile Header */
+.student-detail-header {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: fadeIn 0.5s ease;
+}
+
+.student-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.profile-avatar-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-soft), var(--secondary-soft));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-md);
+}
+
+.profile-info h1 {
+    font-size: 2rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.profile-info p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Progress Overview Section */
+.progress-overview-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.overview-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: all 0.3s ease;
+    animation: fadeIn 0.6s ease;
+}
+
+.overview-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.card-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-content h3 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.card-content p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+/* Progress Card */
+.progress-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem 1.5rem;
+}
+
+.circular-progress {
+    margin-bottom: 1rem;
+}
+
+.progress-circle-outer {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(
+        var(--success-soft) var(--progress-degree, 0deg),
+        var(--border-color) var(--progress-degree, 0deg)
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin: 0 auto;
+}
+
+.progress-circle-inner {
+    width: 95px;
+    height: 95px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Tasks Detailed View */
+.tasks-detailed-view {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.task-section-detailed {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+    animation: fadeIn 0.7s ease;
+}
+
+.section-header-detailed {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.section-header-detailed h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+}
+
+.section-header-detailed i {
+    color: var(--primary-soft);
+}
+
+.task-count {
+    padding: 0.5rem 1rem;
+    background: var(--bg-primary);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.task-count.success {
+    background: #e8f5e9;
+    color: #2E7D32;
+}
+
+/* Tasks Grid */
+.tasks-grid-detailed {
+    display: grid;
+    gap: 1rem;
+}
+
+.task-detail-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.task-detail-card:hover {
+    background: white;
+    box-shadow: var(--shadow-sm);
+    border-left-color: var(--primary-soft);
+}
+
+.task-detail-card.completed {
+    opacity: 0.8;
+    border-left-color: var(--success-soft);
+}
+
+.task-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.task-detail-title {
+    flex: 1;
+}
+
+.task-detail-title h3 {
+    font-size: 1.15rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.task-detail-card.completed .task-detail-title h3 {
+    text-decoration: line-through;
+    color: var(--text-light);
+}
+
+.task-detail-description {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.task-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.meta-item i {
+    color: var(--primary-soft);
+}
+
+.task-status-badge {
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.task-status-badge.completed {
+    background: #e8f5e9;
+    color: #2E7D32;
+}
+
+.task-status-badge.pending {
+    background: #fff3e0;
+    color: #E65100;
+}
+
+.task-type-badge {
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.task-type-badge.individual {
+    background: #e3f2fd;
+    color: #1976D2;
+}
+
+.task-type-badge.group {
+    background: #f3e5f5;
+    color: #7B1FA2;
+}
+
+.deadline-badge {
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.deadline-badge.overdue {
+    background: #ffebee;
+    color: #C62828;
+}
+
+.deadline-badge.soon {
+    background: #fff3e0;
+    color: #E65100;
+}
+
+.deadline-badge.normal {
+    background: #e8f5e9;
+    color: #2E7D32;
+}
+
+/* Empty State */
+.empty-state-detailed {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.empty-state-detailed i {
+    font-size: 4rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+.empty-state-detailed h3 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .student-detail-header {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+    }
+
+    .student-profile-card {
+        flex-direction: column;
+    }
+
+    .action-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .detail-container {
+        padding: 1rem;
+    }
+
+    .progress-overview-section {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-avatar-large {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+    }
+
+    .profile-info h1 {
+        font-size: 1.5rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .action-buttons button {
+        width: 100%;
+    }
+
+    .task-detail-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+

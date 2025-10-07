@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management System - Waqf</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/landing.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="landing-container">
+        <div class="welcome-section">
+            <div class="logo-area">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h1 class="main-title">Welcome to Task Manager</h1>
+            <p class="subtitle">Manage and track student tasks efficiently</p>
+        </div>
+
+        <div class="selection-cards">
+            <div class="role-card teacher-card" onclick="window.location.href='teacher-dashboard.html'">
+                <div class="card-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <h2>Teacher</h2>
+                <p>Manage tasks and monitor student progress</p>
+                <div class="card-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </div>
+
+            <div class="role-card student-card" onclick="window.location.href='student-list.html'">
+                <div class="card-icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h2>Student</h2>
+                <p>View and complete your assigned tasks</p>
+                <div class="card-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            <p>Select your role to continue</p>
+        </div>
+    </div>
+</body>
+</html>
+
