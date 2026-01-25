@@ -1,13 +1,17 @@
 /**
- * Firebase Realtime Database Adapter
- * Uses Firebase for cloud data persistence
+ * Firebase Firestore Adapter
+ * Uses Firestore for cloud data persistence
  * Data syncs across all devices in real-time
  * 
  * SETUP REQUIRED:
  * 1. Create Firebase project at https://firebase.google.com
- * 2. Enable Realtime Database
- * 3. Update firebaseConfig in js/firebase-config.js
- * 4. Switch to this adapter in js/storage-config.js
+ * 2. Enable Firestore Database (not Realtime Database)
+ * 3. Update firebaseConfig in js/storage/firebase-config.js
+ * 4. Switch to this adapter in js/storage/config.js
+ * 
+ * AUTO-INITIALIZATION:
+ * - Collections are created automatically when first data is written
+ * - No manual setup needed in Firestore Console
  */
 
 class FirebaseAdapter extends StorageAdapter {
@@ -20,7 +24,7 @@ class FirebaseAdapter extends StorageAdapter {
     }
 
     /**
-     * Initialize Firebase adapter
+     * Initialize Firebase Firestore adapter
      */
     async init() {
         try {
@@ -32,7 +36,7 @@ class FirebaseAdapter extends StorageAdapter {
 
             // Check if Firebase config exists
             if (typeof firebaseConfig === 'undefined') {
-                console.error('❌ Firebase config not found. Update js/firebase-config.js');
+                console.error('❌ Firebase config not found. Update js/storage/firebase-config.js');
                 return false;
             }
 
@@ -41,12 +45,17 @@ class FirebaseAdapter extends StorageAdapter {
                 firebase.initializeApp(firebaseConfig);
             }
 
-            // Get database reference
-            this.db = firebase.database();
+            // Get Firestore reference
+            this.db = firebase.firestore();
             this.ready = true;
 
-            console.log('✅ Firebase adapter initialized');
-            console.log('🔄 Real-time sync enabled');
+            console.log('✅ Firebase Firestore adapter initialized');
+            console.log('🔄 Real-time sync enabled with Firestore');
+            console.log('📦 Collections will be created automatically when needed');
+            
+            // Auto-initialize collections (they'll be created when first data is written)
+            await this.ensureCollectionsExist();
+            
             return true;
 
         } catch (error) {
@@ -57,9 +66,34 @@ class FirebaseAdapter extends StorageAdapter {
     }
 
     /**
-     * Get data from Firebase
-     * @param {string} key - The key to retrieve
-     * @returns {Promise<any>} The data or null
+     * Ensure collections exist by checking and initializing if needed
+     * Firestore creates collections automatically, but we check structure
+     */
+    async ensureCollectionsExist() {
+        try {
+            const collections = ['students', 'tasks', 'messages', 'quizzes', 'quizResults'];
+            console.log('🔍 Checking Firestore collections...');
+            
+            for (const collectionName of collections) {
+                const snapshot = await this.db.collection(collectionName).limit(1).get();
+                if (snapshot.empty) {
+                    console.log(`📝 Collection "${collectionName}" is empty - will be created on first write`);
+                } else {
+                    console.log(`✅ Collection "${collectionName}" exists with data`);
+                }
+            }
+            
+            console.log('✅ Firestore ready for use');
+        } catch (error) {
+            console.warn('⚠️ Could not verify collections:', error.message);
+            // Don't fail initialization - collections will be created on first write
+        }
+    }
+
+    /**
+     * Get data from Firestore
+     * @param {string} key - The collection name to retrieve
+     * @returns {Promise<any>} The data array or null
      */
     async get(key) {
         try {
@@ -72,32 +106,44 @@ class FirebaseAdapter extends StorageAdapter {
                 return this.cache[key];
             }
 
-            const ref = this.db.ref(key);
-            const snapshot = await ref.once('value');
-            const value = snapshot.val() || null;
-
-            // Cache value and attach a real-time listener to keep it fresh
-            this.cache[key] = value;
-            if (!this.listeners[key]) {
-                const handler = (snap) => {
-                    this.cache[key] = snap.val() || null;
-                };
-                ref.on('value', handler);
-                this.listeners[key] = () => ref.off('value', handler);
+            // Get all documents from collection
+            const snapshot = await this.db.collection(key).get();
+            
+            if (snapshot.empty) {
+                console.log(`📭 Collection "${key}" is empty`);
+                this.cache[key] = null;
+                return null;
             }
 
-            return value;
+            // Convert Firestore documents to array
+            const data = [];
+            snapshot.forEach(doc => {
+                data.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+
+            // Cache the data
+            this.cache[key] = data;
+            
+            // Set up real-time listener if not already listening
+            if (!this.listeners[key]) {
+                this.setupRealtimeListener(key);
+            }
+
+            return data;
 
         } catch (error) {
-            console.error(`Error getting ${key} from Firebase:`, error);
+            console.error(`Error getting ${key} from Firestore:`, error);
             return null;
         }
     }
 
     /**
-     * Set data in Firebase
-     * @param {string} key - The key to store data under
-     * @param {any} data - The data to store
+     * Set data in Firestore
+     * @param {string} key - The collection name
+     * @param {any} data - The data to store (array of objects or single object)
      * @returns {Promise<void>}
      */
     async set(key, data) {
@@ -106,19 +152,70 @@ class FirebaseAdapter extends StorageAdapter {
                 throw new Error('Firebase adapter not initialized');
             }
 
-            await this.db.ref(key).set(data);
-            // Optimistically update cache
+            // Handle null or empty data
+            if (!data) {
+                console.log(`⚠️ No data provided for ${key}, skipping write`);
+                return;
+            }
+
+            // If data is an array, write each item as a document
+            if (Array.isArray(data)) {
+                // Handle empty arrays - just clear the collection
+                if (data.length === 0) {
+                    console.log(`⚠️ Empty array for ${key}, clearing collection`);
+                    const existingDocs = await this.db.collection(key).get();
+                    const batch = this.db.batch();
+                    existingDocs.forEach(doc => {
+                        batch.delete(doc.ref);
+                    });
+                    if (!existingDocs.empty) {
+                        await batch.commit();
+                    }
+                    this.cache[key] = null;
+                    return;
+                }
+
+                const batch = this.db.batch();
+                const collectionRef = this.db.collection(key);
+
+                // First, delete all existing documents
+                const existingDocs = await collectionRef.get();
+                existingDocs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+
+                // Then add new documents
+                data.forEach(item => {
+                    // Use item.id as document ID if available, otherwise auto-generate
+                    // IMPORTANT: Convert ID to string (Firestore requires string IDs)
+                    const docId = item.id ? String(item.id) : this.db.collection(key).doc().id;
+                    const docRef = collectionRef.doc(docId);
+                    batch.set(docRef, item);
+                });
+
+                await batch.commit();
+                console.log(`✅ Saved ${data.length} documents to ${key}`);
+            } else {
+                // Single object - save as one document
+                // IMPORTANT: Convert ID to string
+                const docId = data.id ? String(data.id) : 'data';
+                const docRef = this.db.collection(key).doc(docId);
+                await docRef.set(data);
+                console.log(`✅ Saved document to ${key}`);
+            }
+
+            // Update cache
             this.cache[key] = data;
 
         } catch (error) {
-            console.error(`Error setting ${key} in Firebase:`, error);
+            console.error(`Error setting ${key} in Firestore:`, error);
             throw error;
         }
     }
 
     /**
-     * Delete data from Firebase
-     * @param {string} key - The key to delete
+     * Delete data from Firestore
+     * @param {string} key - The collection name to delete
      * @returns {Promise<void>}
      */
     async delete(key) {
@@ -127,7 +224,17 @@ class FirebaseAdapter extends StorageAdapter {
                 throw new Error('Firebase adapter not initialized');
             }
 
-            await this.db.ref(key).remove();
+            // Delete all documents in the collection
+            const snapshot = await this.db.collection(key).get();
+            const batch = this.db.batch();
+
+            snapshot.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+
+            await batch.commit();
+            console.log(`🗑️ Deleted all documents from ${key}`);
+
             // Clear cache and listener
             delete this.cache[key];
             if (this.listeners[key]) {
@@ -136,14 +243,14 @@ class FirebaseAdapter extends StorageAdapter {
             }
 
         } catch (error) {
-            console.error(`Error deleting ${key} from Firebase:`, error);
+            console.error(`Error deleting ${key} from Firestore:`, error);
             throw error;
         }
     }
 
     /**
-     * Clear all Firebase data
-     * WARNING: This will delete ALL data in your Firebase database!
+     * Clear all Firestore data
+     * WARNING: This will delete ALL collections in your Firestore database!
      * @returns {Promise<void>}
      */
     async clear() {
@@ -152,22 +259,46 @@ class FirebaseAdapter extends StorageAdapter {
                 throw new Error('Firebase adapter not initialized');
             }
 
-            // Clear all main data nodes
-            const clearPromises = [
-                this.db.ref('students').remove(),
-                this.db.ref('tasks').remove(),
-                this.db.ref('messages').remove(),
-                this.db.ref('quizzes').remove(),
-                this.db.ref('quizResults').remove()
-            ];
+            const collections = ['students', 'tasks', 'messages', 'quizzes', 'quizResults'];
+            
+            for (const collectionName of collections) {
+                await this.delete(collectionName);
+            }
 
-            await Promise.all(clearPromises);
-            console.log('⚠️ All Firebase data cleared');
+            // Clear all cache
+            this.cache = {};
+            
+            console.log('⚠️ All Firestore data cleared');
 
         } catch (error) {
-            console.error('Error clearing Firebase:', error);
+            console.error('Error clearing Firestore:', error);
             throw error;
         }
+    }
+
+    /**
+     * Setup real-time listener for a collection
+     * @param {string} key - Collection name
+     */
+    setupRealtimeListener(key) {
+        const unsubscribe = this.db.collection(key).onSnapshot(
+            (snapshot) => {
+                const data = [];
+                snapshot.forEach(doc => {
+                    data.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                this.cache[key] = data.length > 0 ? data : null;
+                console.log(`🔄 Real-time update: ${key} (${data.length} items)`);
+            },
+            (error) => {
+                console.error(`Error in ${key} listener:`, error);
+            }
+        );
+
+        this.listeners[key] = unsubscribe;
     }
 
     /**
@@ -183,12 +314,12 @@ class FirebaseAdapter extends StorageAdapter {
      * @returns {string}
      */
     getName() {
-        return 'Firebase';
+        return 'Firestore';
     }
 
     /**
-     * Listen for real-time updates
-     * @param {string} key - The key to listen to
+     * Listen for real-time updates on a collection
+     * @param {string} key - The collection name to listen to
      * @param {Function} callback - Callback function when data changes
      * @returns {Function} Unsubscribe function
      */
@@ -198,23 +329,33 @@ class FirebaseAdapter extends StorageAdapter {
             return () => {};
         }
 
-        const ref = this.db.ref(key);
-        ref.on('value', (snapshot) => {
-            callback(snapshot.val());
-        });
+        const unsubscribe = this.db.collection(key).onSnapshot(
+            (snapshot) => {
+                const data = [];
+                snapshot.forEach(doc => {
+                    data.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                callback(data.length > 0 ? data : null);
+            },
+            (error) => {
+                console.error(`Error listening to ${key}:`, error);
+            }
+        );
 
-        // Return unsubscribe function
-        return () => ref.off('value');
+        return unsubscribe;
     }
 
     /**
-     * Migrate data from localStorage to Firebase
-     * Useful for initial setup
+     * Migrate data from localStorage to Firestore
+     * Useful for initial setup or data import
      * @returns {Promise<void>}
      */
     async migrateFromLocalStorage() {
         try {
-            console.log('🔄 Migrating data from localStorage to Firebase...');
+            console.log('🔄 Migrating data from localStorage to Firestore...');
 
             const keys = ['students', 'tasks', 'messages', 'quizzes', 'quizResults'];
             
@@ -222,8 +363,10 @@ class FirebaseAdapter extends StorageAdapter {
                 const data = localStorage.getItem(key);
                 if (data) {
                     const parsed = JSON.parse(data);
-                    await this.set(key, parsed);
-                    console.log(`✅ Migrated ${key}: ${Array.isArray(parsed) ? parsed.length : 'N/A'} items`);
+                    if (parsed && (Array.isArray(parsed) ? parsed.length > 0 : true)) {
+                        await this.set(key, parsed);
+                        console.log(`✅ Migrated ${key}: ${Array.isArray(parsed) ? parsed.length : '1'} items`);
+                    }
                 }
             }
 
@@ -234,5 +377,79 @@ class FirebaseAdapter extends StorageAdapter {
             throw error;
         }
     }
-}
 
+    /**
+     * Add a single document to a collection
+     * @param {string} collectionName - Collection name
+     * @param {Object} data - Document data
+     * @returns {Promise<string>} Document ID
+     */
+    async addDocument(collectionName, data) {
+        try {
+            if (!this.ready) {
+                throw new Error('Firebase adapter not initialized');
+            }
+
+            const docRef = await this.db.collection(collectionName).add(data);
+            console.log(`✅ Added document to ${collectionName} with ID: ${docRef.id}`);
+            
+            // Invalidate cache for this collection
+            delete this.cache[collectionName];
+            
+            return docRef.id;
+
+        } catch (error) {
+            console.error(`Error adding document to ${collectionName}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Update a single document in a collection
+     * @param {string} collectionName - Collection name
+     * @param {string} docId - Document ID
+     * @param {Object} data - Data to update
+     * @returns {Promise<void>}
+     */
+    async updateDocument(collectionName, docId, data) {
+        try {
+            if (!this.ready) {
+                throw new Error('Firebase adapter not initialized');
+            }
+
+            await this.db.collection(collectionName).doc(docId).update(data);
+            console.log(`✅ Updated document ${docId} in ${collectionName}`);
+            
+            // Invalidate cache for this collection
+            delete this.cache[collectionName];
+
+        } catch (error) {
+            console.error(`Error updating document in ${collectionName}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Delete a single document from a collection
+     * @param {string} collectionName - Collection name
+     * @param {string} docId - Document ID
+     * @returns {Promise<void>}
+     */
+    async deleteDocument(collectionName, docId) {
+        try {
+            if (!this.ready) {
+                throw new Error('Firebase adapter not initialized');
+            }
+
+            await this.db.collection(collectionName).doc(docId).delete();
+            console.log(`🗑️ Deleted document ${docId} from ${collectionName}`);
+            
+            // Invalidate cache for this collection
+            delete this.cache[collectionName];
+
+        } catch (error) {
+            console.error(`Error deleting document from ${collectionName}:`, error);
+            throw error;
+        }
+    }
+}

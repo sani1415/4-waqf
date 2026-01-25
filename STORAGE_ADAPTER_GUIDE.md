@@ -4,6 +4,8 @@
 
 Your application now uses a **flexible storage adapter pattern** that allows you to easily switch between different storage backends without changing your application code.
 
+**Current Setup: Firebase Firestore** ✅
+
 ## 📁 Architecture
 
 ```
@@ -27,108 +29,29 @@ Your application now uses a **flexible storage adapter pattern** that allows you
        ┌──────┴──────┐
        ▼             ▼
 ┌─────────────┐  ┌─────────────┐
-│ localStorage│  │  Firebase   │
+│ localStorage│  │  Firestore  │
 │  Adapter    │  │   Adapter   │
 └─────────────┘  └─────────────┘
-   (Current)        (Ready!)
+  (Available)      (ACTIVE ✅)
 ```
 
 ## 🚀 Current Setup
 
-**By default, your app uses `localStorage`** - no configuration needed!
+**By default, your app uses `Firestore`** - Firebase's cloud database!
 
-- ✅ Works immediately
-- ✅ Data persists in browser
-- ✅ No account/setup required
-- ❌ Data doesn't sync across devices
-- ❌ Data is per-browser only
+- ✅ Cross-device synchronization
+- ✅ Real-time updates across all devices  
+- ✅ Data stored in cloud (no data loss)
+- ✅ Works across different browsers/devices
+- ✅ Automatic backups
+- ✅ Offline support with caching
+- ✅ Auto-created collections
 
-## 🔄 Switching to Firebase (Cross-Device Sync)
+## 🔄 Switching to localStorage (Browser-Only Storage)
 
-### Step 1: Create Firebase Project (5 minutes)
+If you want to switch from Firestore to localStorage (browser-only storage):
 
-1. Go to [https://firebase.google.com](https://firebase.google.com)
-2. Click "Get started" or "Go to console"
-3. Sign in with your Google account
-4. Click "Add project"
-5. Enter project name: `waqf` (or any name you like)
-6. Disable Google Analytics (not needed for now)
-7. Click "Create project"
-8. Wait for project creation, then click "Continue"
-
-### Step 2: Enable Realtime Database (2 minutes)
-
-1. In Firebase Console, click "Build" in left sidebar
-2. Click "Realtime Database"
-3. Click "Create Database"
-4. Choose a location (closest to you or your users)
-5. **Security Rules:** Choose "Start in test mode" for now
-   - ⚠️ **Important:** This allows anyone to read/write. We'll secure it later!
-6. Click "Enable"
-
-### Step 3: Get Firebase Configuration (3 minutes)
-
-1. In Firebase Console, click the gear icon ⚙️ (Settings) next to "Project Overview"
-2. Click "Project settings"
-3. Scroll down to "Your apps" section
-4. Click the Web icon `</>`
-5. Enter app nickname: `waqf-web`
-6. **Don't** check "Set up Firebase Hosting" (not needed)
-7. Click "Register app"
-8. **Copy the `firebaseConfig` object** - it looks like this:
-
-```javascript
-const firebaseConfig = {
-  apiKey: "AIzaSyB1234567890abcdefghijklmnop",
-  authDomain: "your-project.firebaseapp.com",
-  databaseURL: "https://your-project-default-rtdb.firebaseio.com",
-  projectId: "your-project",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef1234567890"
-};
-```
-
-### Step 4: Update Your Code (2 minutes)
-
-#### 4a. Update Firebase Config
-
-Open `js/storage/firebase-config.js` and **replace the entire config** with your Firebase config:
-
-```javascript
-// js/storage/firebase-config.js
-const firebaseConfig = {
-  apiKey: "YOUR_ACTUAL_API_KEY",
-  authDomain: "YOUR_ACTUAL_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://YOUR_ACTUAL_PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "YOUR_ACTUAL_PROJECT_ID",
-  storageBucket: "YOUR_ACTUAL_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_ACTUAL_SENDER_ID",
-  appId: "YOUR_ACTUAL_APP_ID"
-};
-```
-
-#### 4b. Enable Firebase in HTML (Already done for all pages!)
-
-In your HTML files, **uncomment** the Firebase SDK lines:
-
-**Change this:**
-```html
-<!-- Firebase SDK (Uncomment when using Firebase) -->
-<!-- <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script> -->
-<!-- <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script> -->
-```
-
-**To this:**
-```html
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-```
-
-**Note:** All storage adapters are now organized in `js/storage/` folder!
-
-#### 4c. Switch Storage Backend
+### Step 1: Update Config (1 line change!)
 
 Open `js/storage/config.js` and **change ONE line**:
 
@@ -136,28 +59,20 @@ Open `js/storage/config.js` and **change ONE line**:
 // js/storage/config.js
 
 // Change this line:
-const STORAGE_TYPE = 'localStorage';  // ← Current
+const DEFAULT_STORAGE_TYPE = 'firebase';  // ← Current
 
 // To this:
-const STORAGE_TYPE = 'firebase';      // ← New!
+const DEFAULT_STORAGE_TYPE = 'localStorage';  // ← New!
 ```
 
-### Step 5: Test It! (1 minute)
+That's it! Your app now uses localStorage instead of Firestore.
 
-1. Refresh your application
-2. Open browser console (F12)
-3. You should see:
-   ```
-   🔧 Using Firebase storage adapter
-   ✅ Firebase adapter initialized
-   🔄 Real-time sync enabled
-   ✅ DataManager initialized with Firebase
-   ✅ Application ready!
-   ```
-
-4. Add a student or create a task
-5. Open the same URL on your phone or another computer
-6. **Your data syncs automatically!** 🎉
+**Benefits of localStorage:**
+- ✅ Works offline immediately
+- ✅ No internet required
+- ✅ Fast access
+- ❌ Data only on one browser/device
+- ❌ No cross-device sync
 
 ---
 

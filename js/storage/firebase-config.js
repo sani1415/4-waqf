@@ -1,5 +1,5 @@
 /**
- * Firebase Configuration
+ * Firebase Configuration - Firestore Setup
  * 
  * SETUP INSTRUCTIONS:
  * 1. Go to https://firebase.google.com
@@ -9,34 +9,20 @@
  * 5. Click "Add app" > Web (</>) icon
  * 6. Register app and copy the config object
  * 7. Replace the config below with your Firebase config
- * 8. Enable Realtime Database in Firebase Console:
- *    - Go to Build > Realtime Database
+ * 8. Enable Firestore Database in Firebase Console:
+ *    - Go to Build > Firestore Database
  *    - Click "Create Database"
- *    - Choose location
+ *    - Choose location (e.g., asia-south1)
  *    - Start in "Test mode" for now (we'll secure it later)
  */
 
-// LIVE CONFIG - filled from your Firebase console
+// LIVE CONFIG - akhbaarulmadinah project with Firestore
 const firebaseConfig = {
-    apiKey: "AIzaSyBzPoIbqyEUS0fmyZT6EOpCrxkSpKCGg1k",
-    authDomain: "waqf-task.firebaseapp.com",
-    databaseURL: "https://waqf-task-default-rtdb.firebaseio.com",
-    projectId: "waqf-task",
-    storageBucket: "waqf-task.firebasestorage.app",
-    messagingSenderId: "317347776811",
-    appId: "1:317347776811:web:cac00727d867f6b2299d6e"
+    apiKey: "AIzaSyCDa1_V3HUafIXWbc5afD60xopujPFHu7c",
+    authDomain: "akhbaarulmadinah.firebaseapp.com",
+    projectId: "akhbaarulmadinah",
+    storageBucket: "akhbaarulmadinah.firebasestorage.app",
+    messagingSenderId: "980144439407",
+    appId: "1:980144439407:web:8219d6fe22cf380be98d9a"
 };
-
-// Example of a real config (DO NOT USE - this is just for reference):
-/*
-const firebaseConfig = {
-    apiKey: "AIzaSyB1234567890abcdefghijklmnop",
-    authDomain: "waqf-app.firebaseapp.com",
-    databaseURL: "https://waqf-app-default-rtdb.firebaseio.com",
-    projectId: "waqf-app",
-    storageBucket: "waqf-app.appspot.com",
-    messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abcdef1234567890"
-};
-*/
 
