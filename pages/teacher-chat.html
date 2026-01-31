@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat with Teacher - Task Manager</title>
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/messaging.css">
+    <title>Chat - Task Manager</title>
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/messaging.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -15,17 +15,15 @@
             <button class="back-button" onclick="goBack()">
                 <i class="fas fa-arrow-left"></i>
             </button>
-            <div class="chat-header-info">
-                <div class="chat-avatar teacher-avatar">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                </div>
+            <div class="chat-header-info" onclick="viewStudentDetail()">
+                <div class="chat-avatar" id="chatAvatar">S</div>
                 <div class="chat-header-details">
-                    <h3>Teacher</h3>
-                    <p>Your Instructor</p>
+                    <h3 id="studentName">Student Name</h3>
+                    <p id="studentStatus">Student</p>
                 </div>
             </div>
-            <button class="info-button" onclick="goToDashboard()">
-                <i class="fas fa-home"></i>
+            <button class="info-button" onclick="viewStudentDetail()">
+                <i class="fas fa-info-circle"></i>
             </button>
         </div>
 
@@ -56,15 +54,15 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
     <!-- Storage Adapters (in separate folder) -->
-    <script src="js/storage/adapter.js"></script>
-    <script src="js/storage/localStorage.js"></script>
-    <script src="js/storage/firebase.js"></script>
-    <script src="js/storage/firebase-config.js"></script>
-    <script src="js/storage/config.js"></script>
+    <script src="../js/storage/adapter.js"></script>
+    <script src="../js/storage/localStorage.js"></script>
+    <script src="../js/storage/firebase.js"></script>
+    <script src="../js/storage/firebase-config.js"></script>
+    <script src="../js/storage/config.js"></script>
     
     <!-- Data Manager & App Logic -->
-    <script src="js/data-manager.js"></script>
-    <script src="js/student-chat.js"></script>
+    <script src="../js/data-manager.js"></script>
+    <script src="../js/teacher-chat.js"></script>
 </body>
 </html>
 

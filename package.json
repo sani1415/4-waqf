@@ -2,21 +2,9 @@
   "name": "waqf",
   "version": "1.0.0",
   "private": true,
-  "description": "Waqf task manager - static site with E2E tests",
+  "description": "Waqf task manager",
   "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:ui": "playwright test --ui",
-    "test:debug": "playwright test --debug",
-    "test:chromium": "playwright test --project=chromium",
-    "test:firefox": "playwright test --project=firefox",
-    "test:mobile": "playwright test --project=mobile-chrome --project=mobile-safari",
-    "test:report": "playwright show-report",
-    "test:install": "playwright install --with-deps",
     "serve": "python -m http.server 8000"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.47.0"
   }
 }
 

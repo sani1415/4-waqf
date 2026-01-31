@@ -1,6 +1,9 @@
-// Teacher Dashboard JavaScript
+﻿// Teacher Dashboard JavaScript
 // NOTE: This file is being updated to work with async storage adapters
 // Some functions may still need async/await additions
+
+// Initialize task filter at the top level to avoid temporal dead zone issues
+let currentTaskFilter = 'all';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Wait for dataManager to be ready before initializing
@@ -11,10 +14,66 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Hash routing support for teacher-dashboard.html
+// Allows external links like teacher-dashboard.html#students to open the correct section.
+let __isUpdatingHash = false;
+
+function hashToSection(hash) {
+    const h = String(hash || '').replace(/^#/, '').trim();
+    const map = {
+        'dashboard': 'dashboard',
+        'manage-tasks': 'manage-tasks',
+        'create-task': 'manage-tasks', // legacy link used by some pages
+        'students': 'students',
+        'daily-overview': 'daily-overview',
+        'analytics': 'analytics'
+    };
+    return map[h] || null;
+}
+
+function sectionToHash(sectionName) {
+    const map = {
+        'dashboard': 'dashboard',
+        'manage-tasks': 'manage-tasks',
+        'students': 'students',
+        'daily-overview': 'daily-overview',
+        'analytics': 'analytics'
+    };
+    return map[sectionName] || null;
+}
+
+async function applySectionFromHash() {
+    try {
+        const section = hashToSection(window.location.hash);
+        if (!section) return;
+        await switchSection(section);
+
+        // Extra UX: if hash was create-task, bring the create task form into view
+        if (String(window.location.hash).replace(/^#/, '') === 'create-task') {
+            const form = document.getElementById('createTaskForm');
+            if (form && typeof form.scrollIntoView === 'function') {
+                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    } catch (e) {
+        console.warn('⚠️ Failed to apply section from hash:', e);
+    }
+}
+
 // Initialize page after dataManager is ready
 function initializePage() {
+    setupDataManagerHelpers(); // Set up helper functions on dataManager
     initializeTeacherDashboard();
     setupEventListeners();
+
+    // Apply hash on first load (e.g., teacher-dashboard.html#students)
+    applySectionFromHash();
+
+    // Keep UI in sync if the hash changes (manual edit or internal links)
+    window.addEventListener('hashchange', () => {
+        if (__isUpdatingHash) return;
+        applySectionFromHash();
+    });
 }
 
 // Initialize Dashboard
@@ -153,6 +212,20 @@ async function switchSection(sectionName, clickedElement) {
     } else if (sectionName === 'analytics') {
         await updateAnalytics();
     }
+
+    // Update URL hash to reflect current section (without jumping/scrolling)
+    try {
+        const hash = sectionToHash(sectionName);
+        if (hash && window.location.hash !== `#${hash}`) {
+            __isUpdatingHash = true;
+            window.history.replaceState(null, '', `#${hash}`);
+        }
+    } catch (e) {
+        // ignore
+    } finally {
+        // release flag on next tick so hashchange triggered by other code still works
+        setTimeout(() => { __isUpdatingHash = false; }, 0);
+    }
 }
 
 // Update Dashboard
@@ -247,12 +320,54 @@ async function loadStudentCheckboxes() {
         return;
     }
 
-    container.innerHTML = students.map(student => `
-        <label class="checkbox-item">
-            <input type="checkbox" name="assignedStudents" value="${student.id}">
-            <span>${student.name}</span>
-        </label>
-    `).join('');
+    // Optional: pre-select a specific student if coming from another screen
+    let targetId = null;
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const fromUrl = params.get('studentId');
+        const fromSession = typeof sessionStorage !== 'undefined'
+            ? sessionStorage.getItem('assignTaskStudentId')
+            : null;
+        if (fromUrl || fromSession) {
+            targetId = parseInt(fromUrl || fromSession);
+        }
+    } catch (e) {
+        // ignore
+    }
+
+    let foundTarget = false;
+    container.innerHTML = students.map(student => {
+        const isTarget = targetId && student.id === targetId;
+        if (isTarget) foundTarget = true;
+        return `
+            <label class="checkbox-item">
+                <input type="checkbox" name="assignedStudents" value="${student.id}" ${isTarget ? 'checked' : ''}>
+                <span>${student.name}</span>
+            </label>
+        `;
+    }).join('');
+
+    if (foundTarget) {
+        // Ensure "Assign to All" is off and individual selection is enabled
+        const assignToAll = document.getElementById('assignToAll');
+        if (assignToAll) {
+            assignToAll.checked = false;
+        }
+        container.style.opacity = '1';
+        container.style.pointerEvents = 'auto';
+
+        // Clear hints so it doesn't keep auto-selecting on future visits
+        try {
+            if (typeof sessionStorage !== 'undefined') {
+                sessionStorage.removeItem('assignTaskStudentId');
+            }
+            const url = new URL(window.location.href);
+            url.searchParams.delete('studentId');
+            window.history.replaceState(null, '', url.toString());
+        } catch (e) {
+            // ignore
+        }
+    }
 }
 
 // Handle Task Type Change
@@ -356,10 +471,15 @@ async function loadStudentsList() {
 
         studentsHTML.push(`
             <div class="student-card fade-in">
-                <div class="student-card-avatar" onclick="viewStudentDetail(${student.id})" style="cursor: pointer;">${initial}</div>
-                <h3 onclick="viewStudentDetail(${student.id})" style="cursor: pointer;">${student.name}</h3>
+                <div class="student-card-header" onclick="viewStudentDetail(${student.id})" style="cursor: pointer;">
+                    <div class="student-card-avatar">${initial}</div>
+                    <div>
+                        <h3 class="student-name">${student.name}</h3>
+                        <p class="student-meta">${student.grade || 'No grade'}${student.phone ? ` • ${student.phone}` : ''}</p>
+                    </div>
+                </div>
                 
-                <!-- New: Grade and Phone -->
+                <!-- New: Grade and Phone badges -->
                 <div class="compact-badges">
                     <span class="mini-badge">${student.grade || 'N/A'}</span>
                     ${student.phone ? `<span class="mini-badge"><i class="fas fa-phone"></i> ${student.phone}</span>` : ''}
@@ -372,23 +492,30 @@ async function loadStudentsList() {
                         <div class="mini-progress-bar">
                             <div class="mini-progress-fill daily" style="width: ${dailyPercent}%"></div>
                         </div>
-                        <span class="mini-label">${dailyPercent}%</span>
+                        <span class="mini-percent">${dailyPercent}%</span>
                     </div>
                     <div class="mini-progress-row">
                         <span class="mini-label">📋 Tasks</span>
                         <div class="mini-progress-bar">
                             <div class="mini-progress-fill onetime" style="width: ${oneTimePercent}%"></div>
                         </div>
-                        <span class="mini-label">${oneTimePercent}%</span>
+                        <span class="mini-percent">${oneTimePercent}%</span>
                     </div>
                 </div>
                 
-                <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
-                    <button class="btn-secondary" onclick="viewStudentDetail(${student.id})" style="flex: 1;">
-                        <i class="fas fa-eye"></i> View
+                <button class="btn-secondary btn-full" onclick="viewStudentDetail(${student.id})">
+                    <i class="fas fa-eye"></i> View details
+                </button>
+
+                <div class="student-card-actions-inline">
+                    <button class="icon-btn" title="Assign task" onclick="assignTaskForStudent(${student.id}); event.stopPropagation();">
+                        <i class="fas fa-plus-circle"></i>
                     </button>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteStudent(${student.id})" style="flex: 1;">
-                        <i class="fas fa-trash"></i> Remove
+                    <button class="icon-btn" title="Chat" onclick="messageStudent(${student.id}); event.stopPropagation();">
+                        <i class="fas fa-comments"></i>
+                    </button>
+                    <button class="icon-btn danger" title="Remove student" onclick="event.stopPropagation(); deleteStudent(${student.id});">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
@@ -571,7 +698,25 @@ async function updateAnalytics() {
 
 // View Student Detail
 function viewStudentDetail(studentId) {
-    window.location.href = `teacher-student-detail.html?studentId=${studentId}`;
+    window.location.href = `pages/teacher-student-detail.html?studentId=${studentId}`;
+}
+
+// Assign task for a specific student from the Students section
+function assignTaskForStudent(studentId) {
+    try {
+        if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem('assignTaskStudentId', String(studentId));
+        }
+    } catch (e) {
+        // ignore
+    }
+    // Switch to Manage Tasks section so the form is visible
+    switchSection('manage-tasks');
+}
+
+// Open chat with a specific student from the dashboard
+function messageStudent(studentId) {
+    window.location.href = `pages/teacher-chat.html?studentId=${studentId}`;
 }
 
 // Close modal when clicking outside
@@ -855,19 +1000,26 @@ async function showEmptyStateOverview() {
 }
 
 // Helper: Get Daily Tasks
-dataManager.getDailyTasks = async function() {
-    const tasks = await this.getTasks();
-    return tasks.filter(task => task.type === 'daily');
-};
+// This will be set up after dataManager is ready
+function setupDataManagerHelpers() {
+    if (typeof dataManager !== 'undefined' && dataManager.getTasks) {
+        dataManager.getDailyTasks = async function() {
+            const tasks = await this.getTasks();
+            return tasks.filter(task => task.type === 'daily');
+        };
+        
+        dataManager.isDailyTaskCompletedForDate = async function(taskId, studentId, dateString) {
+            const task = await this.getTaskById(taskId);
+            if (!task || !task.dailyCompletions) return false;
+            
+            const studentCompletions = task.dailyCompletions[studentId] || [];
+            return studentCompletions.includes(dateString);
+        };
+    }
+}
 
 // Helper: Check if daily task is completed for specific date
-dataManager.isDailyTaskCompletedForDate = async function(taskId, studentId, dateString) {
-    const task = await this.getTaskById(taskId);
-    if (!task || !task.dailyCompletions) return false;
-    
-    const studentCompletions = task.dailyCompletions[studentId] || [];
-    return studentCompletions.includes(dateString);
-};
+// Moved to setupDataManagerHelpers() function above
 
 // Helper: Get date string in YYYY-MM-DD format
 function getDateStringOverview(date) {
@@ -908,8 +1060,6 @@ async function resetSampleData() {
 /* ===================================
    MANAGE TASKS FUNCTIONS
    =================================== */
-
-let currentTaskFilter = 'all';
 
 // Switch Manage Task Tabs
 async function switchManageTaskTab(tabName) {

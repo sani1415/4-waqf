@@ -1,4 +1,4 @@
-// Teacher Quizzes Management
+﻿// Teacher Quizzes Management
 
 let questionCounter = 0;
 
@@ -638,6 +638,7 @@ async function loadQuizResults(quizId) {
                             <th>Status</th>
                             <th>Time Taken</th>
                             <th>Submitted At</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -661,6 +662,19 @@ async function loadQuizResults(quizId) {
                                     </td>
                                     <td>${minutes}m ${seconds}s</td>
                                     <td>${new Date(result.submittedAt).toLocaleString()}</td>
+                                    <td>
+                                        ${student ? `
+                                            <button class="btn-quiz-action btn-small" onclick="window.location.href='pages/teacher-student-detail.html?studentId=${student.id}';">
+                                                <i class="fas fa-user"></i> Profile
+                                            </button>
+                                            <button class="btn-quiz-action btn-small" onclick="window.location.href='pages/teacher-dashboard.html?studentId=${student.id}#manage-tasks';">
+                                                <i class="fas fa-tasks"></i> Tasks
+                                            </button>
+                                            <button class="btn-quiz-action btn-small" onclick="window.location.href='pages/teacher-chat.html?studentId=${student.id}';">
+                                                <i class="fas fa-comments"></i> Chat
+                                            </button>
+                                        ` : ''}
+                                    </td>
                                 </tr>
                             `;
                         }).join('')}
@@ -742,6 +756,19 @@ async function loadPendingReviews() {
                                 <span><i class="fas fa-calendar"></i> Submitted: ${new Date(result.submittedAt).toLocaleDateString()}</span>
                                 <span><i class="fas fa-clipboard-list"></i> ${ungradedAnswers.length} question(s) pending</span>
                             </div>
+                        </div>
+                        <div class="pending-review-actions">
+                            ${student ? `
+                                <button class="btn-quiz-action btn-small" onclick="window.location.href='pages/teacher-student-detail.html?studentId=${student.id}';">
+                                    <i class="fas fa-user"></i> Profile
+                                </button>
+                                <button class="btn-quiz-action btn-small" onclick="window.location.href='pages/teacher-dashboard.html?studentId=${student.id}#manage-tasks';">
+                                    <i class="fas fa-tasks"></i> Tasks
+                                </button>
+                                <button class="btn-quiz-action btn-small" onclick="window.location.href='pages/teacher-chat.html?studentId=${student.id}';">
+                                    <i class="fas fa-comments"></i> Chat
+                                </button>
+                            ` : ''}
                         </div>
                     </div>
                     

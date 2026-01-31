@@ -1,4 +1,4 @@
-// Student Chat Window JavaScript
+﻿// Student Chat Window JavaScript
 
 let currentStudentId = null;
 
@@ -26,7 +26,7 @@ async function initializeChat() {
 
     if (!currentStudentId) {
         alert('Please select your profile first!');
-        window.location.href = 'student-list.html';
+        window.location.href = 'pages/student-list.html';
         return;
     }
 
@@ -144,10 +144,10 @@ function escapeHtml(text) {
 
 // Go Back
 function goBack() {
-    window.location.href = 'student-dashboard.html';
+    window.location.href = 'pages/student-dashboard.html';
 }
 
 // Go to Dashboard
 function goToDashboard() {
-    window.location.href = 'student-dashboard.html';
+    window.location.href = 'pages/student-dashboard.html';
 }

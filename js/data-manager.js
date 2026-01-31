@@ -1320,9 +1320,15 @@ let dataManager;
             window.dispatchEvent(new Event('dataManagerReady'));
         } else {
             console.error('❌ Application initialization failed');
+            if (typeof window !== 'undefined' && typeof window.showConnectionIcon === 'function') {
+                window.showConnectionIcon('failed');
+            }
         }
         
     } catch (error) {
         console.error('❌ Fatal error during initialization:', error);
+        if (typeof window !== 'undefined' && typeof window.showConnectionIcon === 'function') {
+            window.showConnectionIcon('failed');
+        }
     }
 })();

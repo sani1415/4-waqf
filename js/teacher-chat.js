@@ -1,4 +1,4 @@
-// Teacher Chat Window JavaScript
+﻿// Teacher Chat Window JavaScript
 
 let currentStudent = null;
 let currentStudentId = null;
@@ -28,7 +28,7 @@ async function initializeChat() {
 
     if (!currentStudentId) {
         alert('No student selected!');
-        window.location.href = 'teacher-messages.html';
+        window.location.href = 'pages/teacher-messages.html';
         return;
     }
 
@@ -36,7 +36,7 @@ async function initializeChat() {
 
     if (!currentStudent) {
         alert('Student not found!');
-        window.location.href = 'teacher-messages.html';
+        window.location.href = 'pages/teacher-messages.html';
         return;
     }
 
@@ -164,11 +164,11 @@ function escapeHtml(text) {
 
 // Go Back
 function goBack() {
-    window.location.href = 'teacher-messages.html';
+    window.location.href = 'pages/teacher-messages.html';
 }
 
 // View Student Detail
 function viewStudentDetail() {
-    window.location.href = `teacher-student-detail.html?studentId=${currentStudentId}`;
+    window.location.href = `pages/teacher-student-detail.html?studentId=${currentStudentId}`;
 }
 

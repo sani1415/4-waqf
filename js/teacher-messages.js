@@ -1,4 +1,4 @@
-// Teacher Messages List JavaScript
+﻿// Teacher Messages List JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
     // Wait for dataManager to be ready before initializing
@@ -61,6 +61,17 @@ async function loadChatsList() {
                         <span class="chat-item-message">${lastMessageText}</span>
                         ${unreadCount > 0 ? `<span class="unread-badge">${unreadCount}</span>` : ''}
                     </div>
+                    <div class="chat-item-actions">
+                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='pages/teacher-student-detail.html?studentId=${student.id}';">
+                            <i class="fas fa-user"></i> Profile
+                        </button>
+                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='pages/teacher-dashboard.html?studentId=${student.id}#manage-tasks';">
+                            <i class="fas fa-tasks"></i> Tasks
+                        </button>
+                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='pages/teacher-chat.html?studentId=${student.id}';">
+                            <i class="fas fa-comments"></i> Chat
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -69,7 +80,7 @@ async function loadChatsList() {
 
 // Open Chat
 function openChat(studentId) {
-    window.location.href = `teacher-chat.html?studentId=${studentId}`;
+    window.location.href = `pages/teacher-chat.html?studentId=${studentId}`;
 }
 
 // Format Time

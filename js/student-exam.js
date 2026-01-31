@@ -1,4 +1,4 @@
-// Student Quiz Taking Logic
+﻿// Student Quiz Taking Logic
 
 let currentQuiz = null;
 let currentQuestionIndex = 0;
@@ -25,14 +25,14 @@ async function initializePage() {
 
     if (!quizId || !studentId) {
         alert('❌ Invalid quiz or student!');
-        window.location.href = 'student-dashboard.html';
+        window.location.href = 'pages/student-dashboard.html';
         return;
     }
 
     // Check if student already took this quiz
     if (await dataManager.hasStudentTakenQuiz(quizId, studentId)) {
         alert('⚠️ You have already taken this quiz!');
-        window.location.href = 'student-dashboard.html';
+        window.location.href = 'pages/student-dashboard.html';
         return;
     }
 
@@ -50,7 +50,7 @@ async function loadQuiz(quizId) {
     
     if (!currentQuiz) {
         alert('❌ Quiz not found!');
-        window.location.href = 'student-dashboard.html';
+        window.location.href = 'pages/student-dashboard.html';
         return;
     }
     
@@ -456,7 +456,7 @@ async function submitQuiz() {
         showResult(result);
     } else {
         alert('❌ Error submitting quiz!');
-        window.location.href = 'student-dashboard.html';
+        window.location.href = 'pages/student-dashboard.html';
     }
 }
 
@@ -526,7 +526,7 @@ function showResult(result) {
                     </div>
                 </div>
                 
-                <a href="student-dashboard.html" class="btn-take-quiz" style="margin-top: 2rem; text-decoration: none;">
+                <a href="pages/student-dashboard.html" class="btn-take-quiz" style="margin-top: 2rem; text-decoration: none;">
                     <i class="fas fa-home"></i> Back to Dashboard
                 </a>
             </div>
@@ -579,7 +579,7 @@ function showResult(result) {
                     </div>
                 </div>
                 
-                <a href="student-dashboard.html" class="btn-take-quiz" style="margin-top: 2rem; text-decoration: none;">
+                <a href="pages/student-dashboard.html" class="btn-take-quiz" style="margin-top: 2rem; text-decoration: none;">
                     <i class="fas fa-home"></i> Back to Dashboard
                 </a>
             </div>

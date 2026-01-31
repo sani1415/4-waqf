@@ -1,4 +1,4 @@
-// Student List Page JavaScript
+﻿// Student List Page JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
     // Wait for dataManager to be ready before loading data
@@ -51,7 +51,7 @@ function selectStudent(studentId) {
     // Store selected student ID in sessionStorage
     sessionStorage.setItem('currentStudentId', studentId);
     // Navigate to student dashboard
-    window.location.href = 'student-dashboard.html';
+    window.location.href = 'pages/student-dashboard.html';
 }
 
 // Setup Search Functionality

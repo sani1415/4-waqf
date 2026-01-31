@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher – Students Card Prototypes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-page: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --primary: #2563eb;
+            --primary-soft: #dbeafe;
+            --danger: #dc2626;
+            --danger-soft: #fee2e2;
+            --radius-md: 12px;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+            --shadow-md: 0 4px 10px rgba(15, 23, 42, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+        }
+
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.25rem 3rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.75rem;
+            align-items: flex-start;
+        }
+
+        .prototype-block h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .prototype-note {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .student-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1.5rem;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .student-card + .student-card {
+            margin-top: 1.25rem;
+        }
+
+        .student-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .student-card-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #60a5fa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .student-name {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin: 0 0 0.15rem;
+        }
+
+        .student-meta {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .compact-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0.35rem 0 0.6rem;
+        }
+
+        .mini-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .mini-badge.daily {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .mini-badge.onetime {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .mini-badge i {
+            font-size: 0.7rem;
+        }
+
+        .progress-details-dual {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            margin-top: 0.25rem;
+        }
+
+        .mini-progress-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .mini-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            min-width: 52px;
+        }
+
+        .mini-progress-bar {
+            flex: 1;
+            height: 6px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(15, 23, 42, 0.08);
+        }
+
+        .mini-progress-fill {
+            height: 100%;
+            border-radius: inherit;
+        }
+
+        .mini-progress-fill.daily {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+        .mini-progress-fill.onetime {
+            background: linear-gradient(90deg, #2563eb, #60a5fa);
+        }
+
+        .mini-percent {
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 36px;
+            text-align: right;
+        }
+
+        .btn-primary.full,
+        .btn-secondary.full {
+            width: 100%;
+            border-radius: 999px;
+            padding: 0.5rem 0.9rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            margin-top: 0.85rem;
+        }
+
+        .btn-primary.full {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary.full {
+            background: #eef2ff;
+            color: #3730a3;
+        }
+
+        .btn-primary.full i,
+        .btn-secondary.full i {
+            font-size: 0.9rem;
+        }
+
+        .student-card-links {
+            margin-top: 0.4rem;
+            font-size: 0.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+
+        .link-btn {
+            border: none;
+            background: none;
+            padding: 0;
+            color: #2563eb;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.8rem;
+        }
+
+        .link-btn.danger {
+            color: #b91c1c;
+        }
+
+        .link-btn i {
+            font-size: 0.8rem;
+        }
+
+        .student-card-links .divider {
+            color: var(--text-secondary);
+        }
+
+        .student-card-actions-top {
+            position: absolute;
+            top: 0.65rem;
+            right: 0.7rem;
+            display: flex;
+            gap: 0.35rem;
+        }
+
+        .icon-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            border: none;
+            background: #eff6ff;
+            color: #1d4ed8;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.75rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .icon-btn.danger {
+            background: var(--danger-soft);
+            color: var(--danger);
+        }
+
+        .icon-btn i {
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <h1>Students Card – UI Prototypes</h1>
+        <p class="subtitle">
+            These are standalone design ideas for the Manage Students cards. They are not wired into the app yet.
+        </p>
+
+        <div class="grid">
+            <div class="prototype-block">
+                <h2>Option A – Primary button + subtle text links</h2>
+                <p class="prototype-note">
+                    One clear main action (View profile), plus small text links for Assign task, Chat, and Remove.
+                    Clean and readable, but still compact.
+                </p>
+
+                <div class="student-card">
+                    <div class="student-card-header">
+                        <div class="student-card-avatar">A</div>
+                        <div>
+                            <h3 class="student-name">Ahmed Khan</h3>
+                            <p class="student-meta">Grade 5 • +966 5X XXX XXXX</p>
+                        </div>
+                    </div>
+
+                    <div class="student-card-progress">
+                        <div class="compact-badges">
+                            <span class="mini-badge daily">
+                                <i class="fas fa-calendar-day"></i> 3/5 Daily
+                            </span>
+                            <span class="mini-badge onetime">
+                                <i class="fas fa-tasks"></i> 8/12 Tasks
+                            </span>
+                        </div>
+
+                        <div class="progress-details-dual">
+                            <div class="mini-progress-row">
+                                <span class="mini-label">📅 Daily</span>
+                                <div class="mini-progress-bar">
+                                    <div class="mini-progress-fill daily" style="width: 60%;"></div>
+                                </div>
+                                <span class="mini-percent">60%</span>
+                            </div>
+                            <div class="mini-progress-row">
+                                <span class="mini-label">📋 Tasks</span>
+                                <div class="mini-progress-bar">
+                                    <div class="mini-progress-fill onetime" style="width: 75%;"></div>
+                                </div>
+                                <span class="mini-percent">75%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="student-card-actions primary-row">
+                        <button class="btn-primary full">
+                            <i class="fas fa-user-circle"></i>
+                            View student profile
+                        </button>
+                    </div>
+
+                    <div class="student-card-links">
+                        <button class="link-btn">
+                            <i class="fas fa-plus-circle"></i>
+                            Assign task
+                        </button>
+                        <span class="divider">•</span>
+                        <button class="link-btn">
+                            <i class="fas fa-comments"></i>
+                            Chat
+                        </button>
+                        <span class="divider">•</span>
+                        <button class="link-btn danger">
+                            <i class="fas fa-trash"></i>
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="prototype-block">
+                <h2>Option B – Top-right icon actions + View button</h2>
+                <p class="prototype-note">
+                    Small circular icons in the top-right corner for quick actions, with a single
+                    "View details" button at the bottom.
+                </p>
+
+                <div class="student-card">
+                    <div class="student-card-actions-top">
+                        <button class="icon-btn" title="Assign task">
+                            <i class="fas fa-plus-circle"></i>
+                        </button>
+                        <button class="icon-btn" title="Chat">
+                            <i class="fas fa-comments"></i>
+                        </button>
+                        <button class="icon-btn danger" title="Remove student">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+
+                    <div class="student-card-header">
+                        <div class="student-card-avatar">A</div>
+                        <div>
+                            <h3 class="student-name">Ahmed Khan</h3>
+                            <p class="student-meta">Grade 5 • +966 5X XXX XXXX</p>
+                        </div>
+                    </div>
+
+                    <div class="student-card-progress">
+                        <div class="compact-badges">
+                            <span class="mini-badge daily">
+                                <i class="fas fa-calendar-day"></i> 3/5 Daily
+                            </span>
+                            <span class="mini-badge onetime">
+                                <i class="fas fa-tasks"></i> 8/12 Tasks
+                            </span>
+                        </div>
+
+                        <div class="progress-details-dual">
+                            <div class="mini-progress-row">
+                                <span class="mini-label">📅 Daily</span>
+                                <div class="mini-progress-bar">
+                                    <div class="mini-progress-fill daily" style="width: 60%;"></div>
+                                </div>
+                                <span class="mini-percent">60%</span>
+                            </div>
+                            <div class="mini-progress-row">
+                                <span class="mini-label">📋 Tasks</span>
+                                <div class="mini-progress-bar">
+                                    <div class="mini-progress-fill onetime" style="width: 75%;"></div>
+                                </div>
+                                <span class="mini-percent">75%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-secondary full">
+                        <i class="fas fa-eye"></i>
+                        View details
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

@@ -411,11 +411,12 @@ body {
 .student-card {
     background: white;
     border-radius: var(--radius-lg);
-    padding: 1.5rem;
+    padding: 1rem 1.25rem;
     box-shadow: var(--shadow-sm);
     transition: all 0.3s ease;
-    text-align: center;
+    text-align: left;
     border: 2px solid transparent;
+    position: relative;
 }
 
 .student-card:hover {
@@ -433,8 +434,8 @@ body {
 }
 
 .student-card-avatar {
-    width: 80px;
-    height: 80px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--primary-soft), var(--secondary-soft));
     display: flex;
@@ -442,8 +443,8 @@ body {
     justify-content: center;
     color: white;
     font-weight: 700;
-    font-size: 1.75rem;
-    margin: 0 auto 1rem;
+    font-size: 1.4rem;
+    margin: 0 auto 0.75rem;
     transition: all 0.3s ease;
 }
 
@@ -456,7 +457,21 @@ body {
 .student-card p {
     font-size: 0.9rem;
     color: var(--text-secondary);
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Student card header + meta */
+.student-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.student-meta {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
 }
 
 .delete-btn {
@@ -473,6 +488,47 @@ body {
 .delete-btn:hover {
     background: #C77777;
     transform: scale(1.05);
+}
+
+/* Inline icon actions for student card (Option B) */
+.student-card-actions-inline {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+}
+
+.icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    border: none;
+    background: #eff6ff;
+    color: #1d4ed8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.75rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.icon-btn.danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.icon-btn i {
+    pointer-events: none;
+}
+
+.btn-full {
+    width: 100%;
+    margin-top: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
 }
 
 /* Analytics */
