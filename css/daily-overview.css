@@ -480,22 +480,71 @@
 
 @media (max-width: 768px) {
     .overview-container {
-        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+        padding: 0.5rem 0.75rem;
+        padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+        overflow-x: hidden;
+    }
+    
+    /* Compact date selector - native-app style */
+    .date-selector-section {
+        padding: 0.5rem 0.75rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .date-selector-header h3 {
+        font-size: 0.9rem !important;
+        margin-bottom: 0.5rem !important;
     }
     
     .date-selector-controls {
         flex-direction: column;
         align-items: stretch;
+        gap: 0.5rem !important;
     }
     
-    .date-btn,
+    .date-btn {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.8rem !important;
+        width: 100%;
+    }
+    
+    .date-btn i {
+        font-size: 0.75rem;
+    }
+    
     .date-picker,
     .selected-date-display {
         width: 100%;
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.85rem !important;
+    }
+    
+    /* Compact best students */
+    .best-students-section {
+        padding: 0.5rem 0.75rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .best-students-header h3 {
+        font-size: 0.9rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .best-student-card {
+        padding: 0.6rem 0.75rem !important;
+    }
+    
+    .best-student-card h4 {
+        font-size: 0.9rem !important;
+    }
+    
+    .best-student-card p {
+        font-size: 0.75rem !important;
     }
     
     .best-students-grid {
         grid-template-columns: 1fr;
+        gap: 0.5rem !important;
     }
     
     .table-header {
@@ -530,10 +579,10 @@
     .overview-table tbody tr {
         background: white;
         border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border-radius: 8px;
+        padding: 0.6rem 0.75rem;
+        margin-bottom: 0.5rem;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
     }
     
     .overview-table tbody tr.top-performer {
@@ -542,7 +591,7 @@
     }
     
     .overview-table tbody td {
-        padding: 0.5rem 0;
+        padding: 0.35rem 0;
         border: none;
         border-bottom: 1px solid #F1F5F9;
         text-align: left !important;
@@ -597,13 +646,21 @@
     }
     
     .student-avatar-small {
-        width: 36px;
-        height: 36px;
-        font-size: 0.9rem;
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
     }
     
     .task-status {
-        font-size: 1.2rem;
+        font-size: 1rem;
+    }
+    
+    .table-stats {
+        font-size: 0.8rem;
+    }
+    
+    .table-header h3 {
+        font-size: 0.9rem !important;
     }
 }
 

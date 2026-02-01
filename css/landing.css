@@ -188,17 +188,59 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .landing-container {
+        padding: 0.75rem 1rem;
+        padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    .welcome-section {
+        margin-bottom: 2rem;
+    }
+
     .main-title {
-        font-size: 2rem;
+        font-size: 1.75rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
     }
     
     .selection-cards {
         grid-template-columns: 1fr;
+        gap: 1rem;
         max-width: 400px;
+        width: 100%;
+    }
+
+    .role-card {
+        padding: 1rem 0.75rem;
+        min-height: 44px;
+    }
+
+    .card-icon {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 0.75rem;
+    }
+
+    .card-icon i {
+        font-size: 1.75rem;
+    }
+
+    .role-card h2 {
+        font-size: 1.1rem;
+    }
+
+    .role-card p {
+        font-size: 0.85rem;
     }
     
     .logo-area i {
-        font-size: 4rem;
+        font-size: 3.5rem;
+    }
+
+    .footer-note {
+        margin-top: 2rem;
     }
 }
 

@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waqf Task Manager - Android Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7B9EBD;
+            --primary-light: #A8C5E3;
+            --secondary: #B8A5D6;
+            --success: #88B68D;
+            --warning: #E8B68A;
+            --danger: #D99999;
+            --background: #F5F7FA;
+            --surface: #FFFFFF;
+            --text-primary: #4A5568;
+            --text-secondary: #718096;
+            --border: #E2E8F0;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: var(--background);
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* App Bar */
+        .app-bar {
+            background-color: var(--primary);
+            color: white;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .app-bar-title {
+            font-size: 20px;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            min-height: 40px;
+        }
+
+        .icon-btn:active {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: 80px;
+        }
+
+        /* Landing Screen */
+        .landing-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+            gap: 24px;
+        }
+
+        .app-logo {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .app-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .app-subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .role-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 32px;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .role-card:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .role-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .role-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .role-description {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Stat Cards */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Section Headers */
+        .section-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        /* Lists */
+        .list-item {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .list-item:active {
+            transform: scale(0.99);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .list-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .list-item-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .list-item-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .list-item-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #E6F4EA;
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: #FEF3E0;
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: #FCE8E8;
+            color: var(--danger);
+        }
+
+        .badge-primary {
+            background: #E6F0F8;
+            color: var(--primary);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 480px;
+            width: 100%;
+            background: var(--surface);
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            transition: color 0.2s ease;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .nav-label {
+            font-size: 12px;
+        }
+
+        /* FAB */
+        .fab {
+            position: fixed;
+            bottom: 80px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            background: var(--surface);
+            color: var(--text-primary);
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:active {
+            background: #6B8EAD;
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:active {
+            background: var(--border);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Checkbox */
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--surface);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 48px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            font-size: 16px;
+            background: var(--surface);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        /* Modal/Bottom Sheet */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: flex-end;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* Chip Filter */
+        .chip-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 8px 16px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Chat */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 140px);
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 16px;
+        }
+
+        .message.sent {
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            word-wrap: break-word;
+        }
+
+        .message.received .message-bubble {
+            background: var(--surface);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.sent .message-bubble {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .chat-input-area {
+            padding: 12px 16px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            font-size: 14px;
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Exam Taking */
+        .exam-header {
+            background: var(--surface);
+            padding: 16px;
+            margin: -16px -16px 16px -16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .exam-timer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .timer {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--danger);
+        }
+
+        .question-counter {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .question-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .question-text {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .question-type {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .option {
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option:hover {
+            border-color: var(--primary-light);
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            background: #E6F0F8;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 16px;
+        }
+
+        /* Student Avatar */
+        .student-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            margin-right: 12px;
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .list-item-content {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Table (for daily overview) */
+        .table-container {
+            overflow-x: auto;
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--text-primary);
+            background: var(--background);
+        }
+
+        .status-icon {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Landing Screen -->
+    <div id="landing" class="screen active">
+        <div class="landing-content">
+            <div class="app-logo">📚</div>
+            <h1 class="app-title">Waqf Task Manager</h1>
+            <p class="app-subtitle">Manage tasks, exams, and student progress</p>
+            
+            <div class="role-card" onclick="navigateTo('teacher-dashboard')">
+                <div class="role-icon">👨‍🏫</div>
+                <h2 class="role-title">Teacher</h2>
+                <p class="role-description">Manage students, tasks, and exams</p>
+            </div>
+            
+            <div class="role-card" onclick="navigateTo('student-list')">
+                <div class="role-icon">👨‍🎓</div>
+                <h2 class="role-title">Student</h2>
+                <p class="role-description">View tasks, take exams, and chat</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Dashboard -->
+    <div id="teacher-dashboard" class="screen">
+        <div class="app-bar">
+            <div class="app-bar-title">Dashboard</div>
+            <button class="icon-btn" onclick="navigateTo('landing')">🏠</button>
+        </div>
+        
+        <div class="content">
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">24</div>
+                    <div class="stat-label">Students</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">18</div>
+                    <div class="stat-label">Active Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">156</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+            </div>
+            
+            <h2 class="section-header">Student Progress</h2>
+            <div id="studentProgressList">
+                <div class="list-item" onclick="navigateTo('teacher-student-detail')">
+                    <div class="list-item-content">
+                        <div class="student-avatar">AM</div>
+                        <div class="student-info">
+                            <div class="list-item-title">Ahmed Mohammed</div>
+                            <div class="list-item-subtitle">Grade 10A • ID: 2024001</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 85%"></div>
+                            </div>
+                            <div class="list-item-meta">85% complete • 17/20 tasks</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="student-avatar">FH</div>
+                        <div class="student-info">
+                            <div class="list-item-title">Fatima Hassan</div>
+                            <div class="list-item-subtitle">Grade 10A • ID: 2024002</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 92%"></div>
+                            </div>
+                            <div class="list-item-meta">92% complete • 23/25 tasks</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="student-avatar">OA</div>
+                        <div class="student-info">
+                            <div class="list-item-title">Omar Ali</div>
+                            <div class="list-item-subtitle">Grade 9B • ID: 2024003</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 68%"></div>
+                            </div>
+                            <div class="list-item-meta">68% complete • 15/22 tasks</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bottom-nav">
+            <button class="nav-item active" onclick="showTeacherTab('teacher-dashboard')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Home</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-tasks')">
+                <div class="nav-icon">✓</div>
+                <div class="nav-label">Tasks</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-students')">
+                <div class="nav-icon">👥</div>
+                <div class="nav-label">Students</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-exams')">
+                <div class="nav-icon">📝</div>
+                <div class="nav-label">Exams</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-messages')">
+                <div class="nav-icon">💬</div>
+                <div class="nav-label">Messages</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Teacher Tasks -->
+    <div id="teacher-tasks" class="screen">
+        <div class="app-bar">
+            <button class="icon-btn" onclick="showTeacherTab('teacher-dashboard')">←</button>
+            <div class="app-bar-title">Manage Tasks</div>
+            <button class="icon-btn" onclick="navigateTo('landing')">🏠</button>
+        </div>
+        
+        <div class="content">
+            <div class="tabs">
+                <button class="tab active" onclick="showTaskTab('create')">Create</button>
+                <button class="tab" onclick="showTaskTab('view')">View All</button>
+            </div>
+            
+            <div id="taskCreateTab">
+                <form onsubmit="createTask(event)">
+                    <div class="form-group">
+                        <label class="form-label">Task Title *</label>
+                        <input type="text" class="form-input" placeholder="Enter task title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" placeholder="Enter task description"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Task Type *</label>
+                        <select class="form-select" id="taskType" onchange="toggleDeadline()">
+                            <option value="one-time">One-time Task</option>
+                            <option value="daily">Daily Task</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="deadlineGroup">
+                        <label class="form-label">Deadline</label>
+                        <input type="date" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Assign To</label>
+                        <div class="checkbox-item">
+                            <input type="checkbox" class="checkbox" id="assignAll">
+                            <label for="assignAll">Assign to all students</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" class="checkbox">
+                            <label>Ahmed Mohammed (Grade 10A)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" class="checkbox">
+                            <label>Fatima Hassan (Grade 10A)</label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full">Create Task</button>
+                </form>
+            </div>
+            
+            <div id="taskViewTab" style="display: none;">
+                <div class="chip-group">
+                    <button class="chip active" onclick="filterTasks('all')">All</button>
+                    <button class="chip" onclick="filterTasks('one-time')">One-time</button>
+                    <button class="chip" onclick="filterTasks('daily')">Daily</button>
+                </div>
+                
+                <div id="tasksList">
+                    <div class="list-item">
+                        <div class="list-item-header">
+                            <div class="list-item-title">Complete Quran Memorization</div>
+                            <span class="badge badge-primary">Daily</span>
+                        </div>
+                        <div class="list-item-subtitle">Memorize and recite assigned verses</div>
+                        <div class="list-item-meta">Assigned to: 24 students • 18 completed today</div>
+                    </div>
+                    
+                    <div class="list-item">
+                        <div class="list-item-header">
+                            <div class="list-item-title">Islamic History Essay</div>
+                            <span class="badge badge-warning">One-time</span>
+                        </div>
+                        <div class="list-item-subtitle">Write 500 words on the Golden Age of Islam</div>
+                        <div class="list-item-meta">Due: Dec 15, 2024 • 12/20 completed</div>
+                    </div>
+                    
+                    <div class="list-item">
+                        <div class="list-item-header">
+                            <div class="list-item-title">Fajr Prayer Attendance</div>
+                            <span class="badge badge-primary">Daily</span>
+                        </div>
+                        <div class="list-item-subtitle">Attend and document Fajr prayer</div>
+                        <div class="list-item-meta">Assigned to: 24 students • 22 completed today</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bottom-nav">
+            <button class="nav-item" onclick="showTeacherTab('teacher-dashboard')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Home</div>
+            </button>
+            <button class="nav-item active" onclick="showTeacherTab('teacher-tasks')">
+                <div class="nav-icon">✓</div>
+                <div class="nav-label">Tasks</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-students')">
+                <div class="nav-icon">👥</div>
+                <div class="nav-label">Students</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-exams')">
+                <div class="nav-icon">📝</div>
+                <div class="nav-label">Exams</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-messages')">
+                <div class="nav-icon">💬</div>
+                <div class="nav-label">Messages</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Teacher Students -->
+    <div id="teacher-students" class="screen">
+        <div class="app-bar">
+            <button class="icon-btn" onclick="showTeacherTab('teacher-dashboard')">←</button>
+            <div class="app-bar-title">Students</div>
+            <button class="icon-btn" onclick="navigateTo('landing')">🏠</button>
+        </div>
+        
+        <div class="content">
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" placeholder="Search students..." onkeyup="searchStudents(this.value)">
+            </div>
+            
+            <div id="studentsList">
+                <div class="list-item" onclick="navigateTo('teacher-student-detail')">
+                    <div class="list-item-content">
+                        <div class="student-avatar">AM</div>
+                        <div class="student-info">
+                            <div class="list-item-title">Ahmed Mohammed</div>
+                            <div class="list-item-subtitle">Grade 10A • ID: 2024001</div>
+                            <div class="list-item-meta">📧 ahmed.m@student.waqf.edu • 📱 +123456789</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="student-avatar">FH</div>
+                        <div class="student-info">
+                            <div class="list-item-title">Fatima Hassan</div>
+                            <div class="list-item-subtitle">Grade 10A • ID: 2024002</div>
+                            <div class="list-item-meta">📧 fatima.h@student.waqf.edu • 📱 +123456790</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="student-avatar">OA</div>
+                        <div class="student-info">
+                            <div class="list-item-title">Omar Ali</div>
+                            <div class="list-item-subtitle">Grade 9B • ID: 2024003</div>
+                            <div class="list-item-meta">📧 omar.a@student.waqf.edu • 📱 +123456791</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="fab" onclick="openModal('addStudentModal')">+</button>
+        
+        <div class="bottom-nav">
+            <button class="nav-item" onclick="showTeacherTab('teacher-dashboard')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Home</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-tasks')">
+                <div class="nav-icon">✓</div>
+                <div class="nav-label">Tasks</div>
+            </button>
+            <button class="nav-item active" onclick="showTeacherTab('teacher-students')">
+                <div class="nav-icon">👥</div>
+                <div class="nav-label">Students</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-exams')">
+                <div class="nav-icon">📝</div>
+                <div class="nav-label">Exams</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-messages')">
+                <div class="nav-icon">💬</div>
+                <div class="nav-label">Messages</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Teacher Student Detail -->
+    <div id="teacher-student-detail" class="screen">
+        <div class="app-bar">
+            <button class="icon-btn" onclick="showTeacherTab('teacher-students')">←</button>
+            <div class="app-bar-title">Student Details</div>
+            <button class="icon-btn">✏️</button>
+        </div>
+        
+        <div class="content">
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="student-avatar" style="width: 80px; height: 80px; font-size: 36px;">AM</div>
+                    <div class="student-info">
+                        <div class="list-item-title" style="font-size: 20px;">Ahmed Mohammed</div>
+                        <div class="list-item-subtitle">Grade 10A • Section A</div>
+                        <span class="badge badge-success">Active</span>
+                    </div>
+                </div>
+            </div>
+            
+            <h2 class="section-header">Contact Information</h2>
+            <div class="list-item">
+                <div class="list-item-title">Student ID</div>
+                <div class="list-item-subtitle">2024001</div>
+            </div>
+            <div class="list-item">
+                <div class="list-item-title">Email</div>
+                <div class="list-item-subtitle">ahmed.m@student.waqf.edu</div>
+            </div>
+            <div class="list-item">
+                <div class="list-item-title">Phone</div>
+                <div class="list-item-subtitle">+123456789</div>
+            </div>
+            
+            <h2 class="section-header">Academic Information</h2>
+            <div class="list-item">
+                <div class="list-item-title">Enrollment Date</div>
+                <div class="list-item-subtitle">September 1, 2024</div>
+            </div>
+            <div class="list-item">
+                <div class="list-item-title">Date of Birth</div>
+                <div class="list-item-subtitle">January 15, 2009</div>
+            </div>
+            
+            <h2 class="section-header">Parent/Guardian</h2>
+            <div class="list-item">
+                <div class="list-item-title">Parent Name</div>
+                <div class="list-item-subtitle">Mohammed Ahmed</div>
+            </div>
+            <div class="list-item">
+                <div class="list-item-title">Parent Phone</div>
+                <div class="list-item-subtitle">+123456788</div>
+            </div>
+            
+            <h2 class="section-header">Performance</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">Task Completion</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">92%</div>
+                    <div class="stat-label">Exam Average</div>
+                </div>
+            </div>
+            
+            <h2 class="section-header">Notes</h2>
+            <div class="list-item">
+                <div class="list-item-subtitle">Excellent student with strong memorization skills. Shows leadership qualities in group activities.</div>
+                <div class="list-item-meta">Added: Nov 20, 2024</div>
+            </div>
+            
+            <button class="btn btn-primary btn-full" onclick="navigateTo('teacher-chat')">💬 Message Student</button>
+        </div>
+        
+        <div class="bottom-nav">
+            <button class="nav-item" onclick="showTeacherTab('teacher-dashboard')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Home</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-tasks')">
+                <div class="nav-icon">✓</div>
+                <div class="nav-label">Tasks</div>
+            </button>
+            <button class="nav-item active" onclick="showTeacherTab('teacher-students')">
+                <div class="nav-icon">👥</div>
+                <div class="nav-label">Students</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-exams')">
+                <div class="nav-icon">📝</div>
+                <div class="nav-label">Exams</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-messages')">
+                <div class="nav-icon">💬</div>
+                <div class="nav-label">Messages</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Teacher Exams -->
+    <div id="teacher-exams" class="screen">
+        <div class="app-bar">
+            <button class="icon-btn" onclick="showTeacherTab('teacher-dashboard')">←</button>
+            <div class="app-bar-title">Exams</div>
+            <button class="icon-btn" onclick="navigateTo('landing')">🏠</button>
+        </div>
+        
+        <div class="content">
+            <div class="tabs">
+                <button class="tab active" onclick="showExamTab('all')">All</button>
+                <button class="tab" onclick="showExamTab('results')">Results</button>
+                <button class="tab" onclick="showExamTab('pending')">Pending</button>
+            </div>
+            
+            <div id="examAllTab">
+                <div class="list-item" onclick="navigateTo('teacher-exam-detail')">
+                    <div class="list-item-header">
+                        <div class="list-item-title">Islamic History Quiz</div>
+                        <span class="badge badge-success">Active</span>
+                    </div>
+                    <div class="list-item-subtitle">📚 History • ⏱️ 30 mins • ✅ 70% passing</div>
+                    <div class="list-item-meta">Due: Dec 20, 2024 • 15/24 completed</div>
+                </div>
+                
+                <div class="list-item">
+                    <div class="list-item-header">
+                        <div class="list-item-title">Quran Recitation Test</div>
+                        <span class="badge badge-warning">Upcoming</span>
+                    </div>
+                    <div class="list-item-subtitle">📖 Quran • ⏱️ 45 mins • ✅ 80% passing</div>
+                    <div class="list-item-meta">Due: Dec 25, 2024 • 0/24 completed</div>
+                </div>
+                
+                <div class="list-item">
+                    <div class="list-item-header">
+                        <div class="list-item-title">Arabic Grammar Exam</div>
+                        <span class="badge badge-danger">Closed</span>
+                    </div>
+                    <div class="list-item-subtitle">📝 Arabic • ⏱️ 60 mins • ✅ 75% passing</div>
+                    <div class="list-item-meta">Due: Dec 10, 2024 • 24/24 completed</div>
+                </div>
+            </div>
+            
+            <div id="examResultsTab" style="display: none;">
+                <div class="list-item">
+                    <div class="list-item-header">
+                        <div class="list-item-title">Arabic Grammar Exam</div>
+                    </div>
+                    <div class="list-item-subtitle">Average Score: 82% • Pass Rate: 87.5%</div>
+                    <div class="list-item-meta">21/24 passed • 3 failed</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 87.5%"></div>
+                    </div>
+                </div>
+                
+                <div class="list-item">
+                    <div class="list-item-header">
+                        <div class="list-item-title">Islamic History Quiz</div>
+                    </div>
+                    <div class="list-item-subtitle">Average Score: 88% • Pass Rate: 93.3%</div>
+                    <div class="list-item-meta">14/15 passed • 1 failed</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 93.3%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="examPendingTab" style="display: none;">
+                <div class="list-item">
+                    <div class="list-item-header">
+                        <div class="list-item-title">Ahmed Mohammed</div>
+                        <span class="badge badge-warning">Pending</span>
+                    </div>
+                    <div class="list-item-subtitle">Islamic History Quiz • Essay Question</div>
+                    <div class="list-item-meta">Submitted: 2 hours ago</div>
+                    <button class="btn btn-primary" style="margin-top: 12px;">Grade Now</button>
+                </div>
+                
+                <div class="list-item">
+                    <div class="list-item-header">
+                        <div class="list-item-title">Fatima Hassan</div>
+                        <span class="badge badge-warning">Pending</span>
+                    </div>
+                    <div class="list-item-subtitle">Islamic History Quiz • Short Answer</div>
+                    <div class="list-item-meta">Submitted: 5 hours ago</div>
+                    <button class="btn btn-primary" style="margin-top: 12px;">Grade Now</button>
+                </div>
+            </div>
+        </div>
+        
+        <button class="fab" onclick="navigateTo('teacher-exam-create')">+</button>
+        
+        <div class="bottom-nav">
+            <button class="nav-item" onclick="showTeacherTab('teacher-dashboard')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Home</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-tasks')">
+                <div class="nav-icon">✓</div>
+                <div class="nav-label">Tasks</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-students')">
+                <div class="nav-icon">👥</div>
+                <div class="nav-label">Students</div>
+            </button>
+            <button class="nav-item active" onclick="showTeacherTab('teacher-exams')">
+                <div class="nav-icon">📝</div>
+                <div class="nav-label">Exams</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-messages')">
+                <div class="nav-icon">💬</div>
+                <div class="nav-label">Messages</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Teacher Exam Create -->
+    <div id="teacher-exam-create" class="screen">
+        <div class="app-bar">
+            <button class="icon-btn" onclick="showTeacherTab('teacher-exams')">←</button>
+            <div class="app-bar-title">Create Exam</div>
+            <button class="icon-btn">💾</button>
+        </div>
+        
+        <div class="content">
+            <form onsubmit="createExam(event)">
+                <div class="form-group">
+                    <label class="form-label">Exam Title *</label>
+                    <input type="text" class="form-input" placeholder="Enter exam title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Subject *</label>
+                    <select class="form-select" required>
+                        <option value="">Select subject</option>
+                        <option value="quran">Quran</option>
+                        <option value="arabic">Arabic</option>
+                        <option value="history">Islamic History</option>
+                        <option value="fiqh">Fiqh</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" placeholder="Enter exam description"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Time Limit (minutes) *</label>
+                    <input type="number" class="form-input" placeholder="30" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Passing Percentage *</label>
+                    <input type="number" class="form-input" placeholder="70" min="0" max="100" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Deadline *</label>
+                    <input type="datetime-local" class="form-input" required>
+                </div>
+                
+                <h2 class="section-header">Questions</h2>
+                <div id="questionsList">
+                    <div class="list-item">
+                        <div class="list-item-header">
+                            <div class="list-item-title">Question 1</div>
+                            <span class="badge badge-primary">MCQ</span>
+                        </div>
+                        <div class="list-item-subtitle">What is the first pillar of Islam?</div>
+                    </div>
+                </div>
+                
+                <button type="button" class="btn btn-secondary btn-full" onclick="openModal('addQuestionModal')" style="margin-bottom: 16px;">+ Add Question</button>
+                
+                <h2 class="section-header">Assign To</h2>
+                <div class="checkbox-item">
+                    <input type="checkbox" class="checkbox" id="assignAllExam">
+                    <label for="assignAllExam">Assign to all students</label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">Create Exam</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Teacher Messages -->
+    <div id="teacher-messages" class="screen">
+        <div class="app-bar">
+            <button class="icon-btn" onclick="showTeacherTab('teacher-dashboard')">←</button>
+            <div class="app-bar-title">Messages</div>
+            <button class="icon-btn" onclick="navigateTo('landing')">🏠</button>
+        </div>
+        
+        <div class="content">
+            <div class="list-item" onclick="navigateTo('teacher-chat')">
+                <div class="list-item-content">
+                    <div class="student-avatar">AM</div>
+                    <div class="student-info">
+                        <div class="list-item-header">
+                            <div class="list-item-title">Ahmed Mohammed</div>
+                            <span class="badge badge-primary">2</span>
+                        </div>
+                        <div class="list-item-subtitle">Assalamu alaikum teacher, I have a question about...</div>
+                        <div class="list-item-meta">2 hours ago</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="student-avatar">FH</div>
+                    <div class="student-info">
+                        <div class="list-item-header">
+                            <div class="list-item-title">Fatima Hassan</div>
+                        </div>
+                        <div class="list-item-subtitle">Thank you for the feedback on my essay!</div>
+                        <div class="list-item-meta">Yesterday</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="student-avatar">OA</div>
+                    <div class="student-info">
+                        <div class="list-item-header">
+                            <div class="list-item-title">Omar Ali</div>
+                        </div>
+                        <div class="list-item-subtitle">Can we schedule a meeting to discuss my progress?</div>
+                        <div class="list-item-meta">2 days ago</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bottom-nav">
+            <button class="nav-item" onclick="showTeacherTab('teacher-dashboard')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Home</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-tasks')">
+                <div class="nav-icon">✓</div>
+                <div class="nav-label">Tasks</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-students')">
+                <div class="nav-icon">👥</div>
+                <div class="nav-label">Students</div>
+            </button>
+            <button class="nav-item" onclick="showTeacherTab('teacher-exams')">
+                <div class="nav-icon">📝</div>
+                <div class="nav-label">Exams</div>
+            </button>
+            <button class="nav-item active" onclick="showTeacherTab('teacher-messages')">
+                <div class="nav-icon">💬</div>
+                <div class="nav-label">Messages</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Teacher Chat -->
+    <div id="teacher-chat" class="screen">
+        <div class="app-bar">
+            <button class="icon-btn" onclick="showTeacherTab('teacher-messages')">←</button>
+            <div class="app-bar-title">Ahmed Mohammed</div>
+        </div>
+        
+        <div class="chat-container">
+            <div class="messages-area" id="messagesArea">
+                <div class="message received">
+                    <div>
+                        <div class="message-bubble">
+                            <div>Assalamu alaikum teacher, I have a question about today's lesson.</div>
+                            <div class="message-time">10:30 AM</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="message sent">
+                    <div>
+                        <div class="message-bubble">
+                            <div>Wa alaikum assalam Ahmed! Of course, what would you like to know?</div>
+                            <div class="message-time">10:32 AM</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="message received">
+                    <div>
+                        <div class="message-bubble">
+                            <div>Can you explain the concept of Zakat again? I want to make sure I understand it correctly.</div>
+                            <div class="message-time">10:33 AM</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="message sent">
+                    <div>
+                        <div class="message-bubble">
+                            <div>Certainly! Zakat is one of the five pillars of Islam. It's an obligatory charity given to those in need, calculated as 2.5% of one's savings.</div>
+                            <div class="message-time">10:35 AM</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" placeholder="Type a message..." id="messageInput">
+                <button class="send-btn" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student List -->
+    <div id="student-list" class="screen">
+        <div class="app-bar">
+            <button class="icon-btn" onclick="navigateTo('landing')">←</button>
+            <div class="app-bar-title">Select Student</div>
+        </div>
+        
+        <div class="content">
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" placeholder="Search by name or ID..." onkeyup="searchStudentList(this.value)">
+            </div>
+            
+            <div id="studentSelectList">
+                <div class="list-item" onclick="selectStudent('ahmed')">
+                    <div class="list-item-content">
+                        <div class="student-avatar">AM</div>
+                        <div class="student-info">
+                            <div class="list-item-title">Ahmed Mohammed</div>
+                            <div class="list-item-subtitle">Grade 10A • ID: 2024001</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-item" onclick="selectStudent('fatima')">
+                    <div class="list-item-content">
+                        <div class="student-avatar">FH</div>
+                        <div class="student-info">
+                            <div class="list-item-title">Fatima Hassan</div>
+                            <div class="list-item-subtitle">Grade 10A • ID: 2024002</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-item" onclick="selectStudent('omar')">
+                    <div class="list-item-content">
+                        <div class="student-avatar">OA</div>
+                        <div class="student-info">
+                            <div class="list-item-title">Omar Ali</div>
+                            <div class="list-item-subtitle">Grade 9B • ID: 2024003</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Dashboard -->
+    <div id="student-dashboard" class="screen">
+        <div class="app-bar">
+            <button class="icon-btn" onclick="navigateTo('student-list')">←</button>
+            <div class="app-bar-title">My Dashboard</div>
+            <button class="icon-btn" onclick="navigateTo('student-chat')">💬</button>
+        </div>
+        
+        <div class="content">
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="student-avatar" style="width: 60px; height: 60px; font-size: 28px;">AM</div>
+                    <div class="student-info">
+                        <div class="list-item-title" style="font-size: 18px;">Ahmed Mohammed</div>
+                        <div class="list-item-subtitle">Grade 10A • ID: 2024001</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">Task Completion</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">92%</div>
+                    <div class="stat-label">Exam Average</div>
+                </div>
+            </div>
+            
+            <h2 class="section-header">Daily Tasks</h2>
+            <div class="list-item">
+                <div class="checkbox-item" style="width: 100%;">
+                    <input type="checkbox" class="checkbox" id="daily1" checked>
+                    <label for="daily1" style="flex: 1;">
+                        <div class="list-item-title">Fajr Prayer Attendance</div>
+                        <div class="list-item-subtitle">Attend and document Fajr prayer</div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="list-item">
+                <div class="checkbox-item" style="width: 100%;">
+                    <input type="checkbox" class="checkbox" id="daily2" checked>
+                    <label for="daily2" style="flex: 1;">
+                        <div class="list-item-title">Quran Memorization</div>
+                        <div class="list-item-subtitle">Memorize and recite Surah Al-Mulk verses 1-5</div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="list-item">
+                <div class="checkbox-item" style="width: 100%;">
+                    <input type="checkbox" class="checkbox" id="daily3">
+                    <label for="daily3" style="flex: 1;">
+                        <div class="list-item-title">Arabic Practice</div>
+                        <div class="list-item-subtitle">Complete 15 minutes of Arabic reading</div>
+                    </label>
+                </div>
+            </div>
+            
+            <h2 class="section-header">One-time Tasks</h2>
+            <div class="list-item">
+                <div class="checkbox-item" style="width: 100%;">
+                    <input type="checkbox" class="checkbox" id="onetime1">
+                    <label for="onetime1" style="flex: 1;">
+                        <div class="list-item-title">Islamic History Essay</div>
+                        <div class="list-item-subtitle">Write 500 words on the Golden Age of Islam</div>
+                        <div class="list-item-meta">Due: Dec 15, 2024</div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="list-item">
+                <div class="checkbox-item" style="width: 100%;">
+                    <input type="checkbox" class="checkbox" id="onetime2" checked>
+                    <label for="onetime2" style="flex: 1;">
+                        <div class="list-item-title">Hadith Research</div>
+                        <div class="list-item-subtitle">Research and present 5 Hadiths on honesty</div>
+                        <div class="list-item-meta">Due: Dec 12, 2024</div>
+                    </label>
+                </div>
+            </div>
+            
+            <h2 class="section-header">Available Exams</h2>
+            <div class="list-item" onclick="navigateTo('student-exam-take')">
+                <div class="list-item-header">
+                    <div class="list-item-title">Islamic History Quiz</div>
+                    <span class="badge badge-warning">Pending</span>
+                </div>
+                <div class="list-item-subtitle">📚 History • ⏱️ 30 mins • ✅ 70% passing</div>
+                <div class="list-item-meta">Due: Dec 20, 2024</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Exam Take -->
+    <div id="student-exam-take" class="screen">
+        <div class="app-bar">
+            <button class="icon-btn" onclick="if(confirm('Are you sure you want to exit? Your progress will be lost.')) navigateTo('student-dashboard')">←</button>
+            <div class="app-bar-title">Islamic History Quiz</div>
+        </div>
+        
+        <div class="content">
+            <div class="exam-header">
+                <div class="exam-timer">
+                    <span class="timer" id="examTimer">28:45</span>
+                    <span class="question-counter">Question 1 of 10</span>
+                </div>
+            </div>
+            
+            <div class="question-card">
+                <div class="question-type">Multiple Choice</div>
+                <div class="question-text">What is considered the Golden Age of Islam?</div>
+                
+                <div class="option" onclick="selectOption(this)">
+                    <input type="radio" name="q1" style="margin-right: 12px;">
+                    A) 7th-8th centuries
+                </div>
+                <div class="option" onclick="selectOption(this)">
+                    <input type="radio" name="q1" style="margin-right: 12px;">
+                    B) 8th-13th centuries
+                </div>
+                <div class="option" onclick="selectOption(this)">
+                    <input type="radio" name="q1" style="margin-right: 12px;">
+                    C) 14th-15th centuries
+                </div>
+                <div class="option" onclick="selectOption(this)">
+                    <input type="radio" name="q1" style="margin-right: 12px;">
+                    D) 16th-17th centuries
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 12px;">
+                <button class="btn btn-secondary" style="flex: 1;">Previous</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="nextQuestion()">Next</button>
+            </div>
+            
+            <button class="btn btn-secondary btn-full" style="margin-top: 12px;" onclick="if(confirm('Are you sure you want to submit? You have answered 1 out of 10 questions.')) submitExam()">Submit Exam</button>
+        </div>
+    </div>
+
+    <!-- Student Chat -->
+    <div id="student-chat" class="screen">
+        <div class="app-bar">
+            <button class="icon-btn" onclick="navigateTo('student-dashboard')">←</button>
+            <div class="app-bar-title">Teacher</div>
+        </div>
+        
+        <div class="chat-container">
+            <div class="messages-area">
+                <div class="message sent">
+                    <div>
+                        <div class="message-bubble">
+                            <div>Assalamu alaikum teacher, I have a question about today's lesson.</div>
+                            <div class="message-time">10:30 AM</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="message received">
+                    <div>
+                        <div class="message-bubble">
+                            <div>Wa alaikum assalam Ahmed! Of course, what would you like to know?</div>
+                            <div class="message-time">10:32 AM</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="message sent">
+                    <div>
+                        <div class="message-bubble">
+                            <div>Can you explain the concept of Zakat again? I want to make sure I understand it correctly.</div>
+                            <div class="message-time">10:33 AM</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="message received">
+                    <div>
+                        <div class="message-bubble">
+                            <div>Certainly! Zakat is one of the five pillars of Islam. It's an obligatory charity given to those in need, calculated as 2.5% of one's savings.</div>
+                            <div class="message-time">10:35 AM</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" placeholder="Type a message..." id="studentMessageInput">
+                <button class="send-btn" onclick="sendStudentMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="addStudentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Student</h2>
+                <button class="icon-btn" style="color: var(--text-primary);" onclick="closeModal('addStudentModal')">✕</button>
+            </div>
+            
+            <form onsubmit="addStudent(event)">
+                <div class="form-group">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Student ID *</label>
+                    <input type="text" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Grade</label>
+                    <input type="text" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Section</label>
+                    <input type="text" class="form-input">
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">Add Student</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="addQuestionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Question</h2>
+                <button class="icon-btn" style="color: var(--text-primary);" onclick="closeModal('addQuestionModal')">✕</button>
+            </div>
+            
+            <form onsubmit="addQuestion(event)">
+                <div class="form-group">
+                    <label class="form-label">Question Type *</label>
+                    <select class="form-select" id="questionType" required>
+                        <option value="mcq">Multiple Choice</option>
+                        <option value="true_false">True/False</option>
+                        <option value="fill_blank">Fill in the Blank</option>
+                        <option value="short_answer">Short Answer</option>
+                        <option value="essay">Essay</option>
+                        <option value="file_upload">File Upload</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Question Text *</label>
+                    <textarea class="form-textarea" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Points *</label>
+                    <input type="number" class="form-input" value="1" min="1" required>
+                </div>
+                
+                <div id="mcqOptions" class="form-group">
+                    <label class="form-label">Options</label>
+                    <input type="text" class="form-input" placeholder="Option A" style="margin-bottom: 8px;">
+                    <input type="text" class="form-input" placeholder="Option B" style="margin-bottom: 8px;">
+                    <input type="text" class="form-input" placeholder="Option C" style="margin-bottom: 8px;">
+                    <input type="text" class="form-input" placeholder="Option D">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Correct Answer *</label>
+                    <input type="text" class="form-input" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">Add Question</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        function navigateTo(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function showTeacherTab(tabId) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            navigateTo(tabId);
+        }
+
+        // Task Management
+        function showTaskTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tab === 'create') {
+                document.getElementById('taskCreateTab').style.display = 'block';
+                document.getElementById('taskViewTab').style.display = 'none';
+            } else {
+                document.getElementById('taskCreateTab').style.display = 'none';
+                document.getElementById('taskViewTab').style.display = 'block';
+            }
+        }
+
+        function toggleDeadline() {
+            const taskType = document.getElementById('taskType').value;
+            const deadlineGroup = document.getElementById('deadlineGroup');
+            deadlineGroup.style.display = taskType === 'one-time' ? 'block' : 'none';
+        }
+
+        function createTask(e) {
+            e.preventDefault();
+            alert('Task created successfully!');
+            showTaskTab('view');
+        }
+
+        function filterTasks(type) {
+            document.querySelectorAll('.chip').forEach(chip => chip.classList.remove('active'));
+            event.target.classList.add('active');
+            // Filter logic would go here
+        }
+
+        // Student Management
+        function searchStudents(query) {
+            // Search logic would go here
+            console.log('Searching for:', query);
+        }
+
+        function searchStudentList(query) {
+            // Search logic would go here
+            console.log('Searching for:', query);
+        }
+
+        function selectStudent(studentId) {
+            localStorage.setItem('selectedStudent', studentId);
+            navigateTo('student-dashboard');
+        }
+
+        // Exam Management
+        function showExamTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('examAllTab').style.display = tab === 'all' ? 'block' : 'none';
+            document.getElementById('examResultsTab').style.display = tab === 'results' ? 'block' : 'none';
+            document.getElementById('examPendingTab').style.display = tab === 'pending' ? 'block' : 'none';
+        }
+
+        function createExam(e) {
+            e.preventDefault();
+            alert('Exam created successfully!');
+            navigateTo('teacher-exams');
+        }
+
+        // Exam Taking
+        let examTimeRemaining = 1725; // 28:45 in seconds
+
+        function startExamTimer() {
+            const timerElement = document.getElementById('examTimer');
+            if (!timerElement) return;
+            
+            setInterval(() => {
+                if (examTimeRemaining > 0) {
+                    examTimeRemaining--;
+                    const minutes = Math.floor(examTimeRemaining / 60);
+                    const seconds = examTimeRemaining % 60;
+                    timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                } else {
+                    alert('Time is up! Submitting exam...');
+                    submitExam();
+                }
+            }, 1000);
+        }
+
+        function selectOption(element) {
+            const options = element.parentElement.querySelectorAll('.option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            element.querySelector('input[type="radio"]').checked = true;
+        }
+
+        function nextQuestion() {
+            alert('Moving to next question...');
+            // Logic to load next question
+        }
+
+        function submitExam() {
+            alert('Exam submitted successfully!');
+            navigateTo('student-dashboard');
+        }
+
+        // Chat
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                const messagesArea = document.getElementById('messagesArea');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message sent';
+                messageDiv.innerHTML = `
+                    <div>
+                        <div class="message-bubble">
+                            <div>${message}</div>
+                            <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                        </div>
+                    </div>
+                `;
+                messagesArea.appendChild(messageDiv);
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+                input.value = '';
+            }
+        }
+
+        function sendStudentMessage() {
+            const input = document.getElementById('studentMessageInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                alert('Message sent!');
+                input.value = '';
+            }
+        }
+
+        // Modal Management
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function addStudent(e) {
+            e.preventDefault();
+            alert('Student added successfully!');
+            closeModal('addStudentModal');
+        }
+
+        function addQuestion(e) {
+            e.preventDefault();
+            alert('Question added successfully!');
+            closeModal('addQuestionModal');
+        }
+
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+
+        // Initialize exam timer if on exam page
+        if (document.getElementById('examTimer')) {
+            startExamTimer();
+        }
+
+        // Enter key support for chat
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const activeScreen = document.querySelector('.screen.active');
+                if (activeScreen && activeScreen.id === 'teacher-chat') {
+                    sendMessage();
+                } else if (activeScreen && activeScreen.id === 'student-chat') {
+                    sendStudentMessage();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

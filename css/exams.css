@@ -32,36 +32,46 @@ body:has(.exam-tabs) .main-content {
 .exam-tabs,
 .quiz-tabs {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    border-bottom: 2px solid #E2E8F0;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.25rem;
+    background: #F1F5F9;
+    border-radius: 10px;
     width: 100%;
+    border-bottom: none;
 }
 
 .quiz-tab-btn {
-    padding: 1rem 2rem;
+    flex: 1;
+    min-width: 0;
+    padding: 0.6rem 0.75rem;
     background: transparent;
     border: none;
-    border-bottom: 3px solid transparent;
-    font-size: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: center;
+    gap: 0.4rem;
+    white-space: nowrap;
 }
 
 .quiz-tab-btn:hover {
     color: #9C27B0;
-    background: rgba(156, 39, 176, 0.05);
+    background: rgba(156, 39, 176, 0.08);
 }
 
 .quiz-tab-btn.active {
     color: #9C27B0;
-    border-bottom-color: #9C27B0;
+    background: white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
+
 
 .quiz-tab-content {
     display: none;
@@ -72,16 +82,59 @@ body:has(.exam-tabs) .main-content {
     display: block;
 }
 
-/* Form Styles */
+/* Form inputs - compact, not oversized */
+body:has(.exam-tabs) .form-group input,
+body:has(.exam-tabs) .form-group select,
+body:has(.exam-tabs) .form-group textarea {
+    padding: 0.5rem 0.65rem;
+    font-size: 0.9rem;
+    min-height: 36px;
+}
+
+body:has(.exam-tabs) textarea#quizDescription {
+    min-height: 56px;
+    resize: vertical;
+}
+
+/* Form Styles - 2 inputs per row, no long single boxes */
 .form-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+/* 3-column row for Time Limit, Passing %, Deadline */
+.form-row.form-row-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Form divider */
+.form-divider {
+    margin: 1rem 0;
+    border: none;
+    border-top: 2px solid #E2E8F0;
 }
 
 /* Questions Section */
 .questions-section {
     margin-top: 2rem;
+}
+
+.section-header-questions {
+    margin-bottom: 1rem;
+}
+
+.form-actions {
+    margin-top: 1.5rem;
+}
+
+.assign-all-wrapper {
+    margin-bottom: 1rem;
+}
+
+.tab-description {
+    color: #64748B;
+    margin-bottom: 1rem;
 }
 
 .btn-add-question {
@@ -906,41 +959,244 @@ body:has(.exam-tabs) .main-content {
     margin-left: 0.5rem;
 }
 
-/* Responsive */
+/* Responsive - Exam page: cut wasted space on mobile */
 @media (max-width: 768px) {
     body:has(.exam-tabs) .main-content {
-        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+        padding: 0.5rem 0.75rem;
+        padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+        overflow-x: hidden;
     }
 
+    /* Exam tabs - compact */
+    .exam-tabs,
     .quiz-tabs {
-        gap: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.2rem;
+        padding: 0.2rem;
+        background: #E2E8F0;
+        border-radius: 8px;
+        border-bottom: none;
+        margin-bottom: 0.5rem !important;
     }
     
     .quiz-tab-btn {
         flex: 1;
+        min-width: 0;
         justify-content: center;
-        padding: 1rem;
-        font-size: 0.9rem;
+        padding: 0.4rem 0.5rem !important;
+        font-size: 0.8rem !important;
+        border-radius: 6px;
+        border-bottom: none;
+        background: transparent;
+    }
+    
+    .quiz-tab-btn i {
+        font-size: 0.75rem !important;
+    }
+    
+    .quiz-tab-btn.active {
+        background: white;
+        color: #9C27B0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    
+    /* User info: icon only on mobile */
+    body:has(.exam-tabs) .user-info .user-info-text {
+        display: none;
+    }
+    
+    body:has(.exam-tabs) .user-info {
+        padding: 0.35rem;
+    }
+    
+    /* Quiz content - cut padding/margins */
+    .quiz-tab-content {
+        padding: 0.75rem !important;
+    }
+    
+    .quiz-tab-content > h2 {
+        font-size: 1rem !important;
+        margin-bottom: 0.6rem !important;
+    }
+    
+    .quiz-tab-content > p,
+    .tab-description {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    /* Form - tighter spacing */
+    .quiz-tab-content form hr,
+    body:has(.exam-tabs) hr {
+        margin: 0.75rem 0 !important;
     }
     
     .form-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
+    }
+    
+    .form-row.form-row-3 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .form-group {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    body:has(.exam-tabs) .form-group input,
+    body:has(.exam-tabs) .form-group select,
+    body:has(.exam-tabs) .form-group textarea {
+        padding: 0.4rem 0.55rem !important;
+        font-size: 0.88rem !important;
+        min-height: 34px !important;
+    }
+    
+    .assign-all-wrapper {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .form-group label.checkbox-item {
+        padding: 0.5rem 0.6rem !important;
+    }
+    
+    .checkbox-group {
+        margin-top: 0.5rem !important;
+        max-height: 160px !important;
+        padding: 0.5rem !important;
+    }
+    
+    .checkbox-item {
+        padding: 0.4rem 0.5rem !important;
+    }
+    
+    .form-divider {
+        margin: 0.75rem 0 !important;
+    }
+    
+    .section-header-questions {
+        margin-bottom: 0.6rem !important;
+    }
+    
+    .form-actions {
+        margin-top: 0.75rem !important;
+    }
+    
+    .form-actions button {
+        padding: 0.5rem 0.9rem !important;
+    }
+    
+    /* Questions section */
+    .questions-section {
+        margin-top: 0.75rem !important;
+    }
+    
+    .questions-section .section-header {
+        margin-bottom: 0.6rem !important;
+    }
+    
+    .questions-section .section-header h3 {
+        font-size: 0.95rem !important;
+    }
+    
+    .btn-add-question {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.85rem !important;
+    }
+    
+    #questionsContainer {
+        gap: 0.5rem !important;
+    }
+    
+    /* Question cards - compact */
+    .question-card {
+        padding: 0.6rem 0.75rem !important;
+    }
+    
+    .question-header {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .question-number {
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .btn-remove-question {
+        padding: 0.35rem 0.6rem !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .question-input-group {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .question-input-group label {
+        margin-bottom: 0.25rem !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .question-input-group input,
+    .question-input-group textarea,
+    .question-type-select {
+        padding: 0.5rem 0.6rem !important;
+        font-size: 0.9rem !important;
     }
     
     .options-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+        gap: 0.4rem !important;
+        margin-bottom: 0.5rem !important;
     }
     
+    .option-input-wrapper {
+        padding: 0.5rem 0.6rem !important;
+    }
+    
+    .radio-option {
+        padding: 0.5rem 0.6rem !important;
+    }
+    
+    .radio-label {
+        font-size: 0.9rem !important;
+    }
+    
+    .expected-answer,
+    .grading-rubric,
+    .fill-blank-answer,
+    .upload-instructions {
+        padding: 0.5rem 0.6rem !important;
+        font-size: 0.9rem !important;
+    }
+    
+    /* All exams / quiz cards */
     .quizzes-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem !important;
+    }
+    
+    .quiz-card,
+    .quiz-meta-card {
+        padding: 0.6rem 0.75rem !important;
+    }
+    
+    .quiz-card h3,
+    .quiz-meta-card h3 {
+        font-size: 0.95rem !important;
     }
     
     .quiz-meta {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem !important;
     }
     
     .analytics-cards {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem !important;
+    }
+    
+    .analytics-card {
+        padding: 0.6rem 0.75rem !important;
     }
     
     .results-table {
@@ -949,7 +1205,30 @@ body:has(.exam-tabs) .main-content {
     
     .results-table th,
     .results-table td {
-        padding: 0.75rem 0.5rem;
+        padding: 0.5rem 0.4rem !important;
+    }
+    
+    /* Empty state */
+    .empty-state {
+        padding: 1.5rem 1rem !important;
+    }
+    
+    .empty-state i {
+        font-size: 2.5rem !important;
+    }
+    
+    .empty-state h3 {
+        font-size: 0.95rem !important;
+    }
+    
+    /* Pending reviews */
+    .pending-review-card {
+        padding: 0.6rem 0.75rem !important;
+    }
+    
+    .grading-question-info {
+        padding: 0.75rem 1rem !important;
+        margin-bottom: 0.75rem !important;
     }
 }
 

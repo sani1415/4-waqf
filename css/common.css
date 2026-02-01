@@ -50,6 +50,12 @@ body {
     min-height: 100vh;
 }
 
+/* Prevent horizontal page expansion on teacher pages (mobile) */
+body.teacher-page,
+body.teacher-dashboard {
+    overflow-x: hidden;
+}
+
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
     width: 8px;
@@ -243,7 +249,54 @@ button, .btn-primary, .btn-secondary { min-height: 44px; }
     .mobile-only { display: block !important; }
     /* Force single column for card/list grids */
     .students-grid, .tasks-list-compact, .tasks-list, .progress-list { grid-template-columns: 1fr !important; }
-    .card, .content-section { padding: 1rem; }
+    .card, .content-section { padding: 0.5rem 0.75rem !important; }
+    /* Compact section header: title + actions stack vertically */
+    .section-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.35rem;
+        margin-bottom: 0.75rem !important;
+    }
+    .section-header h2,
+    .section-header h3,
+    .section-title {
+        font-size: 0.95rem !important;
+    }
+    /* Compact buttons - native-app style */
+    .btn-primary,
+    .btn-secondary {
+        padding: 0.4rem 0.7rem !important;
+        font-size: 0.8rem !important;
+        min-height: 32px !important;
+    }
+    .btn-primary i,
+    .btn-secondary i {
+        font-size: 0.75rem !important;
+    }
+    /* Compact form inputs */
+    .form-group {
+        margin-bottom: 0.5rem !important;
+    }
+    .form-group label {
+        font-size: 0.82rem !important;
+    }
+    input, select, textarea {
+        padding: 0.45rem 0.65rem !important;
+        font-size: 0.88rem !important;
+    }
+    /* Compact modal */
+    .modal-content {
+        padding: 1rem !important;
+        width: 95% !important;
+    }
+    .modal-content h2 {
+        font-size: 1rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    /* Global compact cards */
+    .card {
+        margin-bottom: 0.75rem !important;
+    }
 }
 
 /* Modal */

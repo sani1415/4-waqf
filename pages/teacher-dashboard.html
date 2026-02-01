@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="../css/daily-overview.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
+<body class="teacher-dashboard">
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -79,7 +79,7 @@
                     </div>
                     <div class="stat-info">
                         <h3 id="totalStudents">0</h3>
-                        <p>Total Students</p>
+                        <p><span class="stat-label-desktop">Total Students</span><span class="stat-label-mobile">Students</span></p>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -88,7 +88,7 @@
                     </div>
                     <div class="stat-info">
                         <h3 id="totalTasks">0</h3>
-                        <p>Total Tasks</p>
+                        <p><span class="stat-label-desktop">Total Tasks</span><span class="stat-label-mobile">Tasks</span></p>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -97,7 +97,7 @@
                     </div>
                     <div class="stat-info">
                         <h3 id="completedTasks">0</h3>
-                        <p>Completed Tasks</p>
+                        <p><span class="stat-label-desktop">Completed Tasks</span><span class="stat-label-mobile">Done</span></p>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -106,16 +106,29 @@
                     </div>
                     <div class="stat-info">
                         <h3 id="pendingTasks">0</h3>
-                        <p>Pending Tasks</p>
+                        <p><span class="stat-label-desktop">Pending Tasks</span><span class="stat-label-mobile">Pending</span></p>
                     </div>
                 </div>
             </div>
 
             <div class="dashboard-content">
                 <div class="students-progress">
-                    <h2>Students Progress</h2>
-                    <div id="studentsProgressList" class="progress-list">
-                        <!-- Students progress will be dynamically added here -->
+                    <div class="progress-section-header">
+                        <h2 class="section-title">Students Progress</h2>
+                        <div class="progress-tabs">
+                            <button type="button" class="progress-tab daily active" data-progress-view="daily"><i class="fas fa-redo-alt"></i> Daily</button>
+                            <button type="button" class="progress-tab onetime" data-progress-view="onetime"><i class="fas fa-clipboard-list"></i> One-time</button>
+                            <button type="button" class="progress-tab spreadsheet" data-progress-view="spreadsheet"><i class="fas fa-table"></i> Spreadsheet</button>
+                        </div>
+                    </div>
+                    <div id="view-daily" class="progress-view active">
+                        <div id="studentsProgressListDaily" class="progress-list progress-summary-list"></div>
+                    </div>
+                    <div id="view-onetime" class="progress-view">
+                        <div id="studentsProgressListOnetime" class="progress-list progress-summary-list"></div>
+                    </div>
+                    <div id="view-spreadsheet" class="progress-view">
+                        <div id="studentsProgressSpreadsheet" class="spreadsheet-wrap"></div>
                     </div>
                 </div>
             </div>

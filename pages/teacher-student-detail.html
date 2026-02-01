@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="../css/teacher-student-detail.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
+<body class="teacher-page">
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -476,6 +476,30 @@
             </form>
         </div>
     </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav" id="bottomNav" aria-label="Main navigation">
+        <a href="/pages/teacher-dashboard.html" class="bottom-nav-item" title="Dashboard">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="/pages/teacher-dashboard.html#manage-tasks" class="bottom-nav-item" title="Tasks">
+            <i class="fas fa-tasks"></i>
+            <span>Tasks</span>
+        </a>
+        <a href="/pages/teacher-dashboard.html#students" class="bottom-nav-item active" title="Students">
+            <i class="fas fa-users"></i>
+            <span>Students</span>
+        </a>
+        <a href="/pages/teacher-messages.html" class="bottom-nav-item" title="Messages">
+            <i class="fas fa-comments"></i>
+            <span>Messages</span>
+        </a>
+        <a href="#" class="bottom-nav-item bottom-nav-menu" id="bottomNavMenu" title="Menu">
+            <i class="fas fa-ellipsis-v"></i>
+            <span>Menu</span>
+        </a>
+    </nav>
 
     <!-- Firebase SDK (Uncomment when using Firebase) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>

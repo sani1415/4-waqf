@@ -116,12 +116,15 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    height: 100dvh;
+    min-height: -webkit-fill-available;
     background: var(--bg-primary);
 }
 
 .chat-header {
     background: white;
     padding: 1rem 1.5rem;
+    padding-top: calc(1rem + env(safe-area-inset-top, 0px));
     box-shadow: var(--shadow-sm);
     display: flex;
     align-items: center;
@@ -271,6 +274,7 @@
 .message-input-container {
     background: white;
     padding: 1rem 1.5rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
     box-shadow: 0 -2px 8px rgba(123, 158, 189, 0.08);
 }
 
@@ -359,34 +363,85 @@
 @media (max-width: 768px) {
     .messages-container,
     .content-with-bottom-nav {
-        padding: 1rem;
-        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+        padding: 0.5rem 0.75rem;
+        padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+        overflow-x: hidden;
+    }
+
+    .messages-header h2 {
+        font-size: 1rem !important;
+    }
+    
+    .messages-header p {
+        font-size: 0.85rem !important;
+    }
+
+    .messages-header {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.35rem;
+        margin-bottom: 1rem !important;
     }
 
     .message-bubble {
         max-width: 85%;
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.9rem !important;
     }
 
     .messages-area {
-        padding: 1rem;
-    }
-
-    .chat-header {
-        padding: 1rem;
-    }
-
-    .message-input-container {
         padding: 0.75rem 1rem;
     }
 
+    .chat-header {
+        padding: 0.6rem 1rem;
+    }
+    
+    .chat-header-details h3 {
+        font-size: 0.95rem !important;
+    }
+    
+    .chat-header-details p {
+        font-size: 0.8rem !important;
+    }
+    
+    .chat-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem !important;
+    }
+
+    .message-input-container {
+        padding: 0.6rem 1rem;
+        padding-bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px));
+    }
+    
+    .message-input-container input {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.9rem !important;
+    }
+
     .chat-item {
-        padding: 1rem;
+        padding: 0.5rem 0.75rem;
     }
 
     .chat-item-avatar {
-        width: 50px;
-        height: 50px;
-        font-size: 1.25rem;
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+
+    .chat-item-name {
+        font-size: 0.9rem;
+    }
+    
+    .chat-item-message {
+        font-size: 0.85rem !important;
+    }
+    
+    .chat-item-time {
+        font-size: 0.75rem !important;
     }
 }
 

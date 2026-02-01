@@ -463,11 +463,51 @@ function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
     
-    if (menuToggle) {
+    if (menuToggle && sidebar) {
         menuToggle.addEventListener('click', function() {
             sidebar.classList.toggle('active');
+            toggleOverlay(sidebar.classList.contains('active'));
         });
     }
+
+    // Bottom nav Menu button - opens sidebar
+    const bottomNavMenu = document.getElementById('bottomNavMenu');
+    if (bottomNavMenu && sidebar) {
+        bottomNavMenu.addEventListener('click', function(e) {
+            e.preventDefault();
+            sidebar.classList.add('active');
+            toggleOverlay(true);
+        });
+    }
+
+    // Click outside to close on mobile
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth <= 1024 && sidebar && sidebar.classList.contains('active')) {
+            const clickedInsideSidebar = sidebar.contains(e.target);
+            const clickedMenuToggle = menuToggle && menuToggle.contains(e.target);
+            const clickedBottomNav = document.getElementById('bottomNav') && document.getElementById('bottomNav').contains(e.target);
+            if (!clickedInsideSidebar && !clickedMenuToggle && !clickedBottomNav) {
+                sidebar.classList.remove('active');
+                toggleOverlay(false);
+            }
+        }
+    });
+}
+
+function toggleOverlay(show) {
+    let overlay = document.getElementById('sidebarOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'sidebarOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.35);display:none;';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) sidebar.classList.remove('active');
+            toggleOverlay(false);
+        });
+    }
+    overlay.style.display = show ? 'block' : 'none';
 }
 
 /* ===================================

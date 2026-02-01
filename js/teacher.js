@@ -167,6 +167,9 @@ function setupEventListeners() {
         }
     });
 
+    // Progress tabs (Daily, One-time, Spreadsheet)
+    setupProgressTabs();
+
     // Create Task Form
     const taskForm = document.getElementById('createTaskForm');
     if (taskForm) {
@@ -272,11 +275,13 @@ async function updateDashboard() {
     await loadStudentsProgress();
 }
 
-// Load Students Progress
+// Load Students Progress (Daily, One-time, Spreadsheet views)
 async function loadStudentsProgress() {
-    const progressList = document.getElementById('studentsProgressList');
-    // Show skeletons while loading
-    progressList.innerHTML = `
+    const dailyList = document.getElementById('studentsProgressListDaily');
+    const onetimeList = document.getElementById('studentsProgressListOnetime');
+    const spreadsheetWrap = document.getElementById('studentsProgressSpreadsheet');
+
+    const skeletonHtml = `
         <div class="skeleton-list">
             ${Array.from({length: 5}).map(() => `
                 <div style="display:flex;align-items:center;gap:12px;">
@@ -289,55 +294,131 @@ async function loadStudentsProgress() {
                 </div>
             `).join('')}
         </div>`;
+
+    if (dailyList) dailyList.innerHTML = skeletonHtml;
+    if (onetimeList) onetimeList.innerHTML = skeletonHtml;
+    if (spreadsheetWrap) spreadsheetWrap.innerHTML = '<div class="skeleton-list"><div class="skeleton skeleton-text" style="height:200px;"></div></div>';
+
     const studentsProgress = await dataManager.getStudentProgress();
+    const today = getDateStringOverview(new Date());
+    const dailyTasks = await dataManager.getDailyTasks();
+    const tasks = await dataManager.getTasks();
+    const oneTimeTasks = tasks.filter(t => t.type === 'one-time');
+
+    const emptyMsg = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No students found. Add students to get started.</p>';
 
     if (studentsProgress.length === 0) {
-        progressList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No students found. Add students to get started.</p>';
+        if (dailyList) dailyList.innerHTML = emptyMsg;
+        if (onetimeList) onetimeList.innerHTML = emptyMsg;
+        if (spreadsheetWrap) spreadsheetWrap.innerHTML = emptyMsg;
         return;
     }
 
-    progressList.innerHTML = studentsProgress.map(item => {
-        const { student, stats } = item;
-        const initial = student.name.charAt(0).toUpperCase();
-        
-        // Calculate daily percentage
-        const dailyPercentage = stats.dailyTotal > 0 ? Math.round((stats.dailyCompletedToday / stats.dailyTotal) * 100) : 0;
+    // Build Daily view
+    if (dailyList) {
+        dailyList.innerHTML = studentsProgress.map(item => {
+            const { student, stats } = item;
+            const initial = student.name.charAt(0).toUpperCase();
+            const dailyPercentage = stats.dailyTotal > 0 ? Math.round((stats.dailyCompletedToday / stats.dailyTotal) * 100) : 0;
+            const badgeBg = dailyPercentage >= 80 ? '#e8f5e9' : dailyPercentage >= 50 ? '#fff3e0' : '#ffebee';
+            const badgeColor = dailyPercentage >= 80 ? '#2e7d32' : dailyPercentage >= 50 ? '#e65100' : '#c62828';
+            const barBg = dailyPercentage >= 80 ? 'linear-gradient(90deg,#88B68D,#9DC9A3)' : 'linear-gradient(90deg,#FF9800,#FFB74D)';
+            return `
+                <div class="student-summary-row" onclick="viewStudentDetail(${student.id})" style="cursor: pointer;">
+                    <div class="student-avatar">${initial}</div>
+                    <div class="student-info">
+                        <div class="student-name" title="${(student.name || '').replace(/"/g, '&quot;')}">${student.name}</div>
+                        <div class="student-grade">${student.grade || 'N/A'} • Section ${student.section || 'N/A'} • ${stats.dailyCompletedToday}/${stats.dailyTotal} tasks</div>
+                    </div>
+                    <span class="completion-badge" style="background:${badgeBg};color:${badgeColor};">${dailyPercentage}%</span>
+                    <div class="progress-bar-container"><div class="progress-bar" style="width:${dailyPercentage}%;background:${barBg};"></div></div>
+                </div>
+            `;
+        }).join('');
+    }
 
-        return `
-            <div class="student-progress-item fade-in" onclick="viewStudentDetail(${student.id})" style="cursor: pointer;">
-                <div class="student-info">
-                    <div class="student-name-section">
-                        <div class="student-avatar">${initial}</div>
-                        <span class="student-name">${student.name}</span>
+    // Build One-time view
+    if (onetimeList) {
+        onetimeList.innerHTML = studentsProgress.map(item => {
+            const { student, stats } = item;
+            const initial = student.name.charAt(0).toUpperCase();
+            const badgeBg = stats.percentage >= 80 ? '#e8f5e9' : stats.percentage >= 50 ? '#e3f2fd' : '#ffebee';
+            const badgeColor = stats.percentage >= 80 ? '#2e7d32' : stats.percentage >= 50 ? '#1565c0' : '#c62828';
+            const barBg = stats.percentage >= 80 ? 'linear-gradient(90deg,#88B68D,#9DC9A3)' : 'linear-gradient(90deg,#2196F3,#64B5F6)';
+            return `
+                <div class="student-summary-row" onclick="viewStudentDetail(${student.id})" style="cursor: pointer;">
+                    <div class="student-avatar">${initial}</div>
+                    <div class="student-info">
+                        <div class="student-name" title="${(student.name || '').replace(/"/g, '&quot;')}">${student.name}</div>
+                        <div class="student-grade">${student.grade || 'N/A'} • Section ${student.section || 'N/A'} • ${stats.completed}/${stats.total} tasks</div>
                     </div>
-                    <div class="compact-badges">
-                        <span class="mini-badge daily">
-                            <i class="fas fa-calendar-day"></i> ${stats.dailyCompletedToday}/${stats.dailyTotal}
-                        </span>
-                        <span class="mini-badge onetime">
-                            <i class="fas fa-tasks"></i> ${stats.completed}/${stats.total}
-                        </span>
-                    </div>
+                    <span class="completion-badge" style="background:${badgeBg};color:${badgeColor};">${stats.percentage}%</span>
+                    <div class="progress-bar-container"><div class="progress-bar" style="width:${stats.percentage}%;background:${barBg};"></div></div>
                 </div>
-                <div class="progress-details-dual">
-                    <div class="mini-progress-row">
-                        <span class="mini-label">Daily:</span>
-                        <div class="mini-progress-bar">
-                            <div class="mini-progress-fill daily-mini" style="width: ${dailyPercentage}%"></div>
-                        </div>
-                        <span class="mini-percent">${dailyPercentage}%</span>
-                    </div>
-                    <div class="mini-progress-row">
-                        <span class="mini-label">Tasks:</span>
-                        <div class="mini-progress-bar">
-                            <div class="mini-progress-fill onetime-mini" style="width: ${stats.percentage}%"></div>
-                        </div>
-                        <span class="mini-percent">${stats.percentage}%</span>
-                    </div>
-                </div>
-            </div>
+            `;
+        }).join('');
+    }
+
+    // Build Spreadsheet view
+    if (spreadsheetWrap && (dailyTasks.length > 0 || oneTimeTasks.length > 0)) {
+        const allTasks = [...dailyTasks, ...oneTimeTasks];
+        const taskCols = allTasks.map(t => `<th class="task-col" title="${(t.title || '').replace(/"/g, '&quot;')}">${truncateTextOverview(t.title || 'Task', 15)}</th>`).join('');
+
+        const rows = [];
+        for (const item of studentsProgress) {
+            const { student } = item;
+            const cells = [];
+            for (const task of allTasks) {
+                const isAssigned = task.assignedTo && task.assignedTo.includes(parseInt(student.id));
+                let icon = '<span class="cross">✗</span>';
+                if (isAssigned) {
+                    const completed = task.type === 'daily'
+                        ? await dataManager.isDailyTaskCompletedForDate(task.id, student.id, today)
+                        : (task.completedBy && task.completedBy.includes(parseInt(student.id)));
+                    icon = completed ? '<span class="tick">✓</span>' : '<span class="cross">✗</span>';
+                } else {
+                    icon = '<span style="color:#94A3B8;">—</span>';
+                }
+                cells.push(`<td>${icon}</td>`);
+            }
+            rows.push(`
+                <tr onclick="viewStudentDetail(${student.id})" style="cursor: pointer;">
+                    <td class="student-col">${student.name}</td>
+                    ${cells.join('')}
+                </tr>
+            `);
+        }
+
+        spreadsheetWrap.innerHTML = `
+            <table class="spreadsheet-table">
+                <thead>
+                    <tr>
+                        <th class="student-col">Student</th>
+                        ${taskCols}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows.join('')}
+                </tbody>
+            </table>
         `;
-    }).join('');
+    } else if (spreadsheetWrap) {
+        spreadsheetWrap.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No tasks assigned yet. Create tasks to see the spreadsheet view.</p>';
+    }
+}
+
+// Setup progress tab switching (Daily, One-time, Spreadsheet)
+function setupProgressTabs() {
+    document.querySelectorAll('.progress-tab').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const view = this.getAttribute('data-progress-view');
+            document.querySelectorAll('.progress-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.progress-view').forEach(v => v.classList.remove('active'));
+            this.classList.add('active');
+            const el = document.getElementById('view-' + view);
+            if (el) el.classList.add('active');
+        });
+    });
 }
 
 // Load Student Checkboxes for Task Assignment
