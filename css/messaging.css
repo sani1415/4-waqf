@@ -320,22 +320,47 @@
 }
 
 /* Empty State */
-.no-messages {
+.no-messages,
+.empty-state {
     text-align: center;
-    padding: 3rem;
+    padding: 2.5rem 1.5rem;
     color: var(--text-secondary);
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    margin-top: 1rem;
 }
 
-.no-messages i {
+.no-messages i,
+.empty-state i {
     font-size: 3rem;
     color: var(--text-light);
     margin-bottom: 1rem;
+    display: block;
+}
+
+.no-messages h3,
+.empty-state h3 {
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    font-size: 1.15rem;
+}
+
+.no-messages p,
+.empty-state p {
+    margin: 0;
+    font-size: 0.95rem;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .messages-container {
+    .messages-container,
+    .content-with-bottom-nav {
         padding: 1rem;
+        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
     }
 
     .message-bubble {

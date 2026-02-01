@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,7 +11,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="user-avatar">
                     <i class="fas fa-user-tie"></i>
@@ -19,31 +19,31 @@
                 <h3>Teacher Portal</h3>
             </div>
             <nav class="sidebar-nav">
-                <a href="teacher-dashboard.html" class="nav-item">
+                <a href="/pages/teacher-dashboard.html" class="nav-item">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="teacher-dashboard.html#manage-tasks" class="nav-item">
+                <a href="/pages/teacher-dashboard.html#manage-tasks" class="nav-item">
                     <i class="fas fa-tasks"></i>
                     <span>Manage Tasks</span>
                 </a>
-                <a href="teacher-dashboard.html#students" class="nav-item">
+                <a href="/pages/teacher-dashboard.html#students" class="nav-item">
                     <i class="fas fa-users"></i>
                     <span>Students</span>
                 </a>
-                <a href="teacher-dashboard.html#daily-overview" class="nav-item">
+                <a href="/pages/teacher-dashboard.html#daily-overview" class="nav-item">
                     <i class="fas fa-table"></i>
                     <span>Daily Tasks Overview</span>
                 </a>
-                <a href="teacher-exams.html" class="nav-item active">
+                <a href="/pages/teacher-exams.html" class="nav-item active">
                     <i class="fas fa-graduation-cap"></i>
                     <span>Exams</span>
                 </a>
-                <a href="teacher-messages.html" class="nav-item">
+                <a href="/pages/teacher-messages.html" class="nav-item">
                     <i class="fas fa-comments"></i>
                     <span>Messages</span>
                 </a>
-                <a href="index.html" class="nav-item logout">
+                <a href="/index.html" class="nav-item logout">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </a>
@@ -53,7 +53,10 @@
     <!-- Main Content -->
     <div class="main-content">
             <div class="top-bar">
-                <h1><i class="fas fa-graduation-cap"></i> Exams Management</h1>
+                <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title"><i class="fas fa-graduation-cap"></i> Exams Management</h1>
             </div>
 
             <!-- Tab Navigation -->
@@ -203,6 +206,30 @@
                 </div>
             </div>
     </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav" id="bottomNav" aria-label="Main navigation">
+        <a href="/pages/teacher-dashboard.html" class="bottom-nav-item" title="Dashboard">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="/pages/teacher-dashboard.html#manage-tasks" class="bottom-nav-item" title="Tasks">
+            <i class="fas fa-tasks"></i>
+            <span>Tasks</span>
+        </a>
+        <a href="/pages/teacher-dashboard.html#students" class="bottom-nav-item" title="Students">
+            <i class="fas fa-users"></i>
+            <span>Students</span>
+        </a>
+        <a href="/pages/teacher-messages.html" class="bottom-nav-item" title="Messages">
+            <i class="fas fa-comments"></i>
+            <span>Messages</span>
+        </a>
+        <a href="/pages/teacher-exams.html" class="bottom-nav-item active" title="Exams">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Exams</span>
+        </a>
+    </nav>
 
     <!-- Grading Modal -->
     <div id="gradingModal" class="modal">

@@ -1,4 +1,4 @@
-﻿// Teacher Quizzes Management
+// Teacher Quizzes Management
 
 let questionCounter = 0;
 
@@ -18,12 +18,53 @@ function initializePage() {
     loadAllQuizzes();
     loadQuizResultsSelector();
     updatePendingCount();
+    setupMobileMenu();
 
     // Add first question by default
     addQuestion();
 
     // Setup form submission
     document.getElementById('createQuizForm').addEventListener('submit', handleCreateQuiz);
+}
+
+// Setup mobile sidebar menu and overlay
+function setupMobileMenu() {
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    if (!menuToggle || !sidebar) return;
+
+    menuToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('active');
+        toggleOverlay(sidebar.classList.contains('active'));
+    });
+
+    let overlay = document.getElementById('sidebarOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'sidebarOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.35);display:none;';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('active');
+            toggleOverlay(false);
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth <= 1024 && sidebar.classList.contains('active')) {
+            const clickedInsideSidebar = sidebar.contains(e.target) || menuToggle.contains(e.target);
+            const clickedBottomNav = document.getElementById('bottomNav') && document.getElementById('bottomNav').contains(e.target);
+            if (!clickedInsideSidebar && !clickedBottomNav) {
+                sidebar.classList.remove('active');
+                toggleOverlay(false);
+            }
+        }
+    });
+}
+
+function toggleOverlay(show) {
+    const overlay = document.getElementById('sidebarOverlay');
+    if (overlay) overlay.style.display = show ? 'block' : 'none';
 }
 
 /* ===================================
@@ -664,13 +705,13 @@ async function loadQuizResults(quizId) {
                                     <td>${new Date(result.submittedAt).toLocaleString()}</td>
                                     <td>
                                         ${student ? `
-                                            <button class="btn-quiz-action btn-small" onclick="window.location.href='pages/teacher-student-detail.html?studentId=${student.id}';">
+                                            <button class="btn-quiz-action btn-small" onclick="window.location.href='/pages/teacher-student-detail.html?studentId=${student.id}';">
                                                 <i class="fas fa-user"></i> Profile
                                             </button>
-                                            <button class="btn-quiz-action btn-small" onclick="window.location.href='pages/teacher-dashboard.html?studentId=${student.id}#manage-tasks';">
+                                            <button class="btn-quiz-action btn-small" onclick="window.location.href='/pages/teacher-dashboard.html?studentId=${student.id}#manage-tasks';">
                                                 <i class="fas fa-tasks"></i> Tasks
                                             </button>
-                                            <button class="btn-quiz-action btn-small" onclick="window.location.href='pages/teacher-chat.html?studentId=${student.id}';">
+                                            <button class="btn-quiz-action btn-small" onclick="window.location.href='/pages/teacher-chat.html?studentId=${student.id}';">
                                                 <i class="fas fa-comments"></i> Chat
                                             </button>
                                         ` : ''}
@@ -759,13 +800,13 @@ async function loadPendingReviews() {
                         </div>
                         <div class="pending-review-actions">
                             ${student ? `
-                                <button class="btn-quiz-action btn-small" onclick="window.location.href='pages/teacher-student-detail.html?studentId=${student.id}';">
+                                <button class="btn-quiz-action btn-small" onclick="window.location.href='/pages/teacher-student-detail.html?studentId=${student.id}';">
                                     <i class="fas fa-user"></i> Profile
                                 </button>
-                                <button class="btn-quiz-action btn-small" onclick="window.location.href='pages/teacher-dashboard.html?studentId=${student.id}#manage-tasks';">
+                                <button class="btn-quiz-action btn-small" onclick="window.location.href='/pages/teacher-dashboard.html?studentId=${student.id}#manage-tasks';">
                                     <i class="fas fa-tasks"></i> Tasks
                                 </button>
-                                <button class="btn-quiz-action btn-small" onclick="window.location.href='pages/teacher-chat.html?studentId=${student.id}';">
+                                <button class="btn-quiz-action btn-small" onclick="window.location.href='/pages/teacher-chat.html?studentId=${student.id}';">
                                     <i class="fas fa-comments"></i> Chat
                                 </button>
                             ` : ''}

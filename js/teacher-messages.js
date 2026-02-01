@@ -1,4 +1,4 @@
-﻿// Teacher Messages List JavaScript
+// Teacher Messages List JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
     // Wait for dataManager to be ready before initializing
@@ -62,13 +62,13 @@ async function loadChatsList() {
                         ${unreadCount > 0 ? `<span class="unread-badge">${unreadCount}</span>` : ''}
                     </div>
                     <div class="chat-item-actions">
-                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='pages/teacher-student-detail.html?studentId=${student.id}';">
+                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='/pages/teacher-student-detail.html?studentId=${student.id}';">
                             <i class="fas fa-user"></i> Profile
                         </button>
-                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='pages/teacher-dashboard.html?studentId=${student.id}#manage-tasks';">
+                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='/pages/teacher-dashboard.html?studentId=${student.id}#manage-tasks';">
                             <i class="fas fa-tasks"></i> Tasks
                         </button>
-                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='pages/teacher-chat.html?studentId=${student.id}';">
+                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='/pages/teacher-chat.html?studentId=${student.id}';">
                             <i class="fas fa-comments"></i> Chat
                         </button>
                     </div>
@@ -80,7 +80,7 @@ async function loadChatsList() {
 
 // Open Chat
 function openChat(studentId) {
-    window.location.href = `pages/teacher-chat.html?studentId=${studentId}`;
+    window.location.href = `/pages/teacher-chat.html?studentId=${studentId}`;
 }
 
 // Format Time
@@ -102,7 +102,7 @@ function formatTime(timestamp) {
     }
 }
 
-// Setup Mobile Menu
+// Setup Mobile Menu and overlay
 function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
@@ -110,7 +110,36 @@ function setupMobileMenu() {
     if (menuToggle) {
         menuToggle.addEventListener('click', function() {
             sidebar.classList.toggle('active');
+            toggleOverlay(sidebar.classList.contains('active'));
         });
     }
+    
+    // Overlay - click to close sidebar
+    let overlay = document.getElementById('sidebarOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'sidebarOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.35);display:none;';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            toggleOverlay(false);
+        });
+    }
+    
+    // Bottom nav Menu button
+    const bottomNavMenu = document.getElementById('bottomNavMenu');
+    if (bottomNavMenu) {
+        bottomNavMenu.addEventListener('click', function(e) {
+            e.preventDefault();
+            sidebar.classList.add('active');
+            toggleOverlay(true);
+        });
+    }
+}
+
+function toggleOverlay(show) {
+    const overlay = document.getElementById('sidebarOverlay');
+    if (overlay) overlay.style.display = show ? 'block' : 'none';
 }
 

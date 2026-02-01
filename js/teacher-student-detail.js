@@ -1,4 +1,4 @@
-﻿// Teacher Student Detail Page JavaScript
+// Teacher Student Detail Page JavaScript
 
 let currentStudent = null;
 
@@ -25,7 +25,7 @@ async function initializeStudentDetail() {
 
     if (!studentId) {
         alert('No student selected!');
-        window.location.href = 'pages/teacher-dashboard.html';
+        window.location.href = '/pages/teacher-dashboard.html';
         return;
     }
 
@@ -33,7 +33,7 @@ async function initializeStudentDetail() {
 
     if (!currentStudent) {
         alert('Student not found!');
-        window.location.href = 'pages/teacher-dashboard.html';
+        window.location.href = '/pages/teacher-dashboard.html';
         return;
     }
 
@@ -443,7 +443,7 @@ function getDaysLeftText(days) {
 // Go Back to Dashboard
 function goBack() {
     sessionStorage.removeItem('viewStudentId');
-    window.location.href = 'pages/teacher-dashboard.html#students';
+    window.location.href = '/pages/teacher-dashboard.html#students';
 }
 
 // Assign New Task
@@ -455,7 +455,7 @@ function assignNewTask() {
     } catch (e) {
         // ignore
     }
-    window.location.href = `pages/teacher-dashboard.html?studentId=${currentStudent.id}#create-task`;
+    window.location.href = `/pages/teacher-dashboard.html?studentId=${currentStudent.id}#create-task`;
 }
 
 // Setup Mobile Menu

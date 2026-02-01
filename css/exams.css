@@ -908,6 +908,10 @@ body:has(.exam-tabs) .main-content {
 
 /* Responsive */
 @media (max-width: 768px) {
+    body:has(.exam-tabs) .main-content {
+        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    }
+
     .quiz-tabs {
         gap: 0;
     }

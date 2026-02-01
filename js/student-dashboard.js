@@ -1,4 +1,4 @@
-﻿// Student Dashboard JavaScript
+// Student Dashboard JavaScript
 
 let currentStudent = null;
 
@@ -44,7 +44,7 @@ async function initializeStudentDashboard() {
 
     if (!studentId) {
         // Redirect to student list if no student selected
-        window.location.href = 'pages/student-list.html';
+        window.location.href = '/pages/student-list.html';
         return;
     }
 
@@ -52,7 +52,7 @@ async function initializeStudentDashboard() {
 
     if (!currentStudent) {
         alert('Student not found!');
-        window.location.href = 'pages/student-list.html';
+        window.location.href = '/pages/student-list.html';
         return;
     }
 
@@ -409,7 +409,7 @@ function getStudentId() {
 // Logout / Go Back
 function goBackToList() {
     sessionStorage.removeItem('currentStudentId');
-    window.location.href = 'pages/student-list.html';
+    window.location.href = '/pages/student-list.html';
 }
 
 /* ===================================
@@ -485,7 +485,7 @@ function loadAvailableQuizzes(quizzes) {
                     </div>
                 ` : ''}
                 
-                <a href="pages/student-exam-take.html?quizId=${quiz.id}" class="btn-take-quiz">
+                <a href="/pages/student-exam-take.html?quizId=${quiz.id}" class="btn-take-quiz">
                     <i class="fas fa-play"></i> Start Exam
                 </a>
             </div>

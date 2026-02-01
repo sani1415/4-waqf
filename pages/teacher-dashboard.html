@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Teacher Dashboard - Task Manager</title>
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/teacher.css">
@@ -34,11 +34,11 @@
                 <i class="fas fa-table"></i>
                 <span>Daily Tasks Overview</span>
             </a>
-            <a href="teacher-exams.html" class="nav-item">
+            <a href="/pages/teacher-exams.html" class="nav-item">
                 <i class="fas fa-graduation-cap"></i>
                 <span>Exams</span>
             </a>
-            <a href="teacher-messages.html" class="nav-item">
+            <a href="/pages/teacher-messages.html" class="nav-item">
                 <i class="fas fa-comments"></i>
                 <span>Messages</span>
                 <span id="totalUnreadBadge" class="nav-badge" style="display: none;">0</span>
@@ -50,7 +50,7 @@
         </nav>
 
         <div class="sidebar-footer">
-            <a href="index.html" class="nav-item">
+            <a href="/index.html" class="nav-item">
                 <i class="fas fa-arrow-left"></i>
                 <span>Back to Home</span>
             </a>
@@ -349,6 +349,30 @@
             </div>
         </section>
     </div>
+
+    <!-- Mobile Bottom Navigation (visible on screens ≤768px) -->
+    <nav class="bottom-nav" id="bottomNav" aria-label="Main navigation">
+        <a href="#" class="bottom-nav-item active" data-section="dashboard" title="Dashboard">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-section="manage-tasks" title="Tasks">
+            <i class="fas fa-tasks"></i>
+            <span>Tasks</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-section="students" title="Students">
+            <i class="fas fa-users"></i>
+            <span>Students</span>
+        </a>
+        <a href="/pages/teacher-messages.html" class="bottom-nav-item" title="Messages">
+            <i class="fas fa-comments"></i>
+            <span>Messages</span>
+        </a>
+        <a href="#" class="bottom-nav-item bottom-nav-menu" id="bottomNavMenu" title="More">
+            <i class="fas fa-ellipsis-v"></i>
+            <span>Menu</span>
+        </a>
+    </nav>
 
     <!-- Add Student Modal - Enhanced Comprehensive Form -->
     <div id="addStudentModal" class="modal">

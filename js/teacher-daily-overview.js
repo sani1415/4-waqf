@@ -198,14 +198,14 @@ async function buildOverviewTable(studentPerformance, dailyTasks) {
         else if (sp.percentage >= 60) completionClass = 'good';
         else if (sp.percentage >= 40) completionClass = 'average';
 
-        // Build task status cells
+        // Build task status cells (with data-task-title for mobile card layout)
         const taskCells = [];
         for (const task of dailyTasks) {
             const isCompleted = await isDailyTaskCompletedForDate(task.id, student.id, getDateString(selectedDate));
             const statusIcon = isCompleted ? '✅' : '❌';
             const statusClass = isCompleted ? 'completed' : 'pending';
-
-            taskCells.push(`<td><span class="task-status ${statusClass}">${statusIcon}</span></td>`);
+            const safeTitle = (task.title || '').replace(/"/g, '&quot;');
+            taskCells.push(`<td data-task-title="${safeTitle}"><span class="task-status ${statusClass}">${statusIcon}</span></td>`);
         }
 
         const trophyIcon = isTopPerformer ? '<span class="completion-trophy">🏆</span>' : '';
@@ -313,6 +313,35 @@ function setupMobileMenu() {
     if (menuToggle) {
         menuToggle.addEventListener('click', function() {
             sidebar.classList.toggle('active');
+            toggleOverlay(sidebar.classList.contains('active'));
         });
     }
+
+    let overlay = document.getElementById('sidebarOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'sidebarOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.35);display:none;';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('active');
+            toggleOverlay(false);
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth <= 1024 && sidebar.classList.contains('active')) {
+            const clickedInsideSidebar = sidebar.contains(e.target) || (menuToggle && menuToggle.contains(e.target));
+            const clickedBottomNav = document.getElementById('bottomNav') && document.getElementById('bottomNav').contains(e.target);
+            if (!clickedInsideSidebar && !clickedBottomNav) {
+                sidebar.classList.remove('active');
+                toggleOverlay(false);
+            }
+        }
+    });
+}
+
+function toggleOverlay(show) {
+    const overlay = document.getElementById('sidebarOverlay');
+    if (overlay) overlay.style.display = show ? 'block' : 'none';
 }

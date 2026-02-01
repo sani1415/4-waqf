@@ -1,4 +1,4 @@
-﻿// Teacher Dashboard JavaScript
+// Teacher Dashboard JavaScript
 // NOTE: This file is being updated to work with async storage adapters
 // Some functions may still need async/await additions
 
@@ -132,11 +132,35 @@ function setupEventListeners() {
         });
     }
 
-    // Click outside to close on mobile
+    // Bottom nav (mobile) - section switches
+    document.querySelectorAll('.bottom-nav-item[data-section]').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const section = this.getAttribute('data-section');
+            if (section) {
+                sidebar.classList.remove('active');
+                toggleOverlay(false);
+                switchSection(section, document.querySelector(`.nav-item[data-section="${section}"]`));
+            }
+        });
+    });
+
+    // Bottom nav Menu button - opens sidebar
+    const bottomNavMenu = document.getElementById('bottomNavMenu');
+    if (bottomNavMenu) {
+        bottomNavMenu.addEventListener('click', function(e) {
+            e.preventDefault();
+            sidebar.classList.add('active');
+            toggleOverlay(true);
+        });
+    }
+
+    // Click outside to close on mobile (exclude bottom nav - it has its own handlers)
     document.addEventListener('click', function(e) {
         if (window.innerWidth <= 1024 && sidebar.classList.contains('active')) {
             const clickedInsideSidebar = sidebar.contains(e.target) || (menuToggle && menuToggle.contains(e.target));
-            if (!clickedInsideSidebar) {
+            const clickedBottomNav = document.getElementById('bottomNav') && document.getElementById('bottomNav').contains(e.target);
+            if (!clickedInsideSidebar && !clickedBottomNav) {
                 sidebar.classList.remove('active');
                 toggleOverlay(false);
             }
@@ -175,17 +199,23 @@ function toggleOverlay(show = true) {
 
 // Switch Between Sections
 async function switchSection(sectionName, clickedElement) {
-    // Update nav items
+    // Update sidebar nav items
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
     });
     // Use the passed element or find by data-section attribute
     if (clickedElement) {
-        clickedElement.closest('.nav-item').classList.add('active');
+        const nav = clickedElement.closest('.nav-item');
+        if (nav) nav.classList.add('active');
     } else {
         const navItem = document.querySelector(`.nav-item[data-section="${sectionName}"]`);
         if (navItem) navItem.classList.add('active');
     }
+
+    // Sync bottom nav active state
+    document.querySelectorAll('.bottom-nav-item[data-section]').forEach(item => {
+        item.classList.toggle('active', item.getAttribute('data-section') === sectionName);
+    });
 
     // Update sections
     document.querySelectorAll('.content-section').forEach(section => {
@@ -698,7 +728,7 @@ async function updateAnalytics() {
 
 // View Student Detail
 function viewStudentDetail(studentId) {
-    window.location.href = `pages/teacher-student-detail.html?studentId=${studentId}`;
+    window.location.href = `/pages/teacher-student-detail.html?studentId=${studentId}`;
 }
 
 // Assign task for a specific student from the Students section
@@ -716,7 +746,7 @@ function assignTaskForStudent(studentId) {
 
 // Open chat with a specific student from the dashboard
 function messageStudent(studentId) {
-    window.location.href = `pages/teacher-chat.html?studentId=${studentId}`;
+    window.location.href = `/pages/teacher-chat.html?studentId=${studentId}`;
 }
 
 // Close modal when clicking outside
@@ -918,14 +948,14 @@ async function buildOverviewTableDashboard(studentPerformance, dailyTasks) {
         else if (sp.percentage >= 60) completionClass = 'good';
         else if (sp.percentage >= 40) completionClass = 'average';
         
-        // Build task status cells
+        // Build task status cells (with data-task-title for mobile card layout)
         const taskCells = [];
         for (const task of dailyTasks) {
             const isCompleted = await dataManager.isDailyTaskCompletedForDate(task.id, student.id, getDateStringOverview(selectedDateOverview));
             const statusIcon = isCompleted ? '✅' : '❌';
             const statusClass = isCompleted ? 'completed' : 'pending';
-            
-            taskCells.push(`<td><span class="task-status ${statusClass}">${statusIcon}</span></td>`);
+            const safeTitle = (task.title || '').replace(/"/g, '&quot;');
+            taskCells.push(`<td data-task-title="${safeTitle}"><span class="task-status ${statusClass}">${statusIcon}</span></td>`);
         }
         
         const trophyIcon = isTopPerformer ? '<span class="completion-trophy">🏆</span>' : '';
