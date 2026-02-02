@@ -56,12 +56,14 @@ async function loadChatsList() {
         const { student, lastMessage, unreadCount } = chat;
         const initial = student.name.charAt(0).toUpperCase();
         
-        let lastMessageText = 'No messages yet';
+        const noMsgLabel = typeof window.t === 'function' ? window.t('no_messages_yet') : 'No messages yet';
+        let lastMessageText = noMsgLabel;
         let lastMessageTime = '';
         
         if (lastMessage) {
             const maxLength = 50;
-            const prefix = lastMessage.sender === 'teacher' ? 'You: ' : '';
+            const youPrefix = typeof window.t === 'function' ? window.t('you_prefix') : 'You: ';
+            const prefix = lastMessage.sender === 'teacher' ? youPrefix : '';
             lastMessageText = prefix + (lastMessage.message.length > maxLength ? 
                 lastMessage.message.substring(0, maxLength) + '...' : 
                 lastMessage.message);
@@ -82,13 +84,13 @@ async function loadChatsList() {
                     </div>
                     <div class="chat-item-actions">
                         <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='/pages/teacher-student-detail.html?studentId=${student.id}';">
-                            <i class="fas fa-user"></i> Profile
+                            <i class="fas fa-user"></i> ${typeof window.t === 'function' ? window.t('profile') : 'Profile'}
                         </button>
                         <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='/pages/teacher-dashboard.html?studentId=${student.id}#manage-tasks';">
-                            <i class="fas fa-tasks"></i> Tasks
+                            <i class="fas fa-tasks"></i> ${typeof window.t === 'function' ? window.t('tasks') : 'Tasks'}
                         </button>
                         <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='/pages/teacher-chat.html?studentId=${student.id}';">
-                            <i class="fas fa-comments"></i> Chat
+                            <i class="fas fa-comments"></i> ${typeof window.t === 'function' ? window.t('chat') : 'Chat'}
                         </button>
                     </div>
                 </div>
@@ -130,7 +132,7 @@ function formatTime(timestamp) {
         // Today - show time
         return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
     } else if (diffDays === 1) {
-        return 'Yesterday';
+        return typeof window.t === 'function' ? window.t('yesterday') : 'Yesterday';
     } else if (diffDays < 7) {
         return date.toLocaleDateString('en-US', { weekday: 'short' });
     } else {

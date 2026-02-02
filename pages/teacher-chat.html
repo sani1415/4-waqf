@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Chat - Task Manager</title>
+    <script src="../js/i18n.js"></script>
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/messaging.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -22,6 +23,10 @@
                     <p id="studentStatus">Student</p>
                 </div>
             </div>
+            <div class="lang-switcher lang-switcher-compact" style="margin-right: 0.5rem;" aria-label="Language">
+                <button type="button" class="lang-btn" data-lang="en" onclick="setLang('en')" title="English">EN</button>
+                <button type="button" class="lang-btn" data-lang="bn" onclick="setLang('bn')" title="বাংলা">বাং</button>
+            </div>
             <button class="info-button" onclick="viewStudentDetail()">
                 <i class="fas fa-info-circle"></i>
             </button>
@@ -38,6 +43,7 @@
                 <input 
                     type="text" 
                     id="messageInput" 
+                    data-i18n-placeholder="type_message"
                     placeholder="Type a message..." 
                     autocomplete="off"
                     required

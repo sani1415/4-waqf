@@ -27,8 +27,8 @@ A beautiful, modern web application for managing student tasks with real-time pr
 **Option 2 (recommended):** Use a local server:
 ```powershell
 npm run serve
-# Or: python -m http.server 8000
-# Then open: http://localhost:8000
+Or: python -m http.server 8000
+Then open: http://localhost:8000
 ```
 
 ### Where to edit (important)

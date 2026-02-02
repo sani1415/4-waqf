@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Take Quiz - Student</title>
+    <script src="../js/i18n.js"></script>
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/student.css">
     <link rel="stylesheet" href="../css/exams.css">
@@ -464,6 +465,10 @@
 </head>
 <body>
     <div class="quiz-taking-container">
+        <div class="lang-switcher lang-switcher-compact" style="position: absolute; top: 1rem; right: 1rem; z-index: 101;" aria-label="Language">
+            <button type="button" class="lang-btn" data-lang="en" onclick="setLang('en')" title="English">EN</button>
+            <button type="button" class="lang-btn" data-lang="bn" onclick="setLang('bn')" title="বাংলা">বাং</button>
+        </div>
         <!-- Quiz Header -->
         <div class="quiz-header" id="quizHeader">
             <!-- Quiz info will be loaded here -->
@@ -471,7 +476,7 @@
 
         <!-- Timer -->
         <div class="timer-container" id="timerContainer">
-            <div class="timer-label">Time Remaining</div>
+            <div class="timer-label" data-i18n="time_remaining">Time Remaining</div>
             <div class="timer-display" id="timerDisplay">00:00</div>
         </div>
 
@@ -484,19 +489,19 @@
         <div class="quiz-navigation">
             <div>
                 <div class="question-indicator">
-                    <span>Question <span id="currentQuestionNum">1</span> of <span id="totalQuestions">0</span></span>
+                    <span><span data-i18n="question_of">Question</span> <span id="currentQuestionNum">1</span> of <span id="totalQuestions">0</span></span>
                 </div>
                 <div class="progress-dots" id="progressDots"></div>
             </div>
             <div class="nav-buttons">
                 <button class="btn-nav btn-prev" id="btnPrev" onclick="previousQuestion()" style="display: none;">
-                    <i class="fas fa-arrow-left"></i> Previous
+                    <i class="fas fa-arrow-left"></i> <span data-i18n="previous">Previous</span>
                 </button>
                 <button class="btn-nav btn-next" id="btnNext" onclick="nextQuestion()">
-                    Next <i class="fas fa-arrow-right"></i>
+                    <span data-i18n="next">Next</span> <i class="fas fa-arrow-right"></i>
                 </button>
                 <button class="btn-nav btn-submit" id="btnSubmit" onclick="submitQuiz()" style="display: none;">
-                    <i class="fas fa-check"></i> Submit Quiz
+                    <i class="fas fa-check"></i> <span data-i18n="submit_quiz">Submit Quiz</span>
                 </button>
             </div>
         </div>
@@ -515,7 +520,7 @@
     
     <!-- Data Manager & App Logic -->
     <script src="../js/data-manager.js"></script>
-    <script src="../js/student-quiz.js"></script>
+    <script src="../js/student-exam.js"></script>
 </body>
 </html>
 

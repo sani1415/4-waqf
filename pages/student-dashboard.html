@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard - Task Manager</title>
+    <script src="../js/i18n.js"></script>
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/student.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -15,28 +16,28 @@
             <div class="student-profile">
                 <div class="student-profile-avatar">A</div>
                 <h2 id="studentNameSidebar">Student Name</h2>
-                <p id="studentRole">Student</p>
+                <p id="studentRole" data-i18n="student">Student</p>
             </div>
 
             <!-- Daily Tasks Progress -->
             <div class="daily-progress-section">
-                <h3><i class="fas fa-calendar-day"></i> Daily Tasks Progress</h3>
+                <h3><i class="fas fa-calendar-day"></i> <span data-i18n="daily_tasks_progress">Daily Tasks Progress</span></h3>
                 <div class="progress-bar-container">
                     <div class="progress-bar-fill daily-progress-fill" id="dailyProgressBar" style="width: 0%"></div>
                 </div>
                 <div class="progress-percentage daily-percentage" id="dailyProgressPercent">0%</div>
-                <p class="progress-label">Today's Completion</p>
+                <p class="progress-label" data-i18n="todays_completion">Today's Completion</p>
                 <div class="progress-stats">
                     <div class="stat-row">
-                        <span><i class="fas fa-clipboard-list"></i> Daily Total</span>
+                        <span><i class="fas fa-clipboard-list"></i> <span data-i18n="daily_total">Daily Total</span></span>
                         <span id="dailyTotalStat">0</span>
                     </div>
                     <div class="stat-row">
-                        <span><i class="fas fa-check-circle"></i> Completed Today</span>
+                        <span><i class="fas fa-check-circle"></i> <span data-i18n="completed_today">Completed Today</span></span>
                         <span id="dailyCompletedStat">0</span>
                     </div>
                     <div class="stat-row">
-                        <span><i class="fas fa-clock"></i> Pending Today</span>
+                        <span><i class="fas fa-clock"></i> <span data-i18n="pending_today">Pending Today</span></span>
                         <span id="dailyPendingStat">0</span>
                     </div>
                 </div>
@@ -44,23 +45,23 @@
 
             <!-- One-time Tasks Progress -->
             <div class="onetime-progress-section">
-                <h3><i class="fas fa-tasks"></i> One-time Tasks Progress</h3>
+                <h3><i class="fas fa-tasks"></i> <span data-i18n="onetime_tasks_progress">One-time Tasks Progress</span></h3>
                 <div class="progress-bar-container">
                     <div class="progress-bar-fill onetime-progress-fill" id="onetimeProgressBar" style="width: 0%"></div>
                 </div>
                 <div class="progress-percentage onetime-percentage" id="onetimeProgressPercent">0%</div>
-                <p class="progress-label">Overall Completion</p>
+                <p class="progress-label" data-i18n="overall_completion">Overall Completion</p>
                 <div class="progress-stats">
                     <div class="stat-row">
-                        <span><i class="fas fa-list"></i> Total Tasks</span>
+                        <span><i class="fas fa-list"></i> <span data-i18n="stat_total_tasks">Total Tasks</span></span>
                         <span id="onetimeTotalStat">0</span>
                     </div>
                     <div class="stat-row">
-                        <span><i class="fas fa-check-double"></i> Completed</span>
+                        <span><i class="fas fa-check-double"></i> <span data-i18n="legend_completed">Completed</span></span>
                         <span id="onetimeCompletedStat">0</span>
                     </div>
                     <div class="stat-row">
-                        <span><i class="fas fa-hourglass-half"></i> Pending</span>
+                        <span><i class="fas fa-hourglass-half"></i> <span data-i18n="stat_pending">Pending</span></span>
                         <span id="onetimePendingStat">0</span>
                     </div>
                 </div>
@@ -70,21 +71,21 @@
             <div class="quiz-progress-section">
                 <div class="progress-header">
                     <i class="fas fa-graduation-cap"></i>
-                    <h3>Exam Performance</h3>
+                    <h3 data-i18n="exam_performance">Exam Performance</h3>
                 </div>
                 <div class="progress-percentage quiz-percentage" id="quizProgressPercent">0%</div>
-                <p class="progress-label">Average Score</p>
+                <p class="progress-label" data-i18n="average_score">Average Score</p>
                 <div class="progress-stats">
                     <div class="stat-row">
-                        <span><i class="fas fa-clipboard-check"></i> Exams Taken</span>
+                        <span><i class="fas fa-clipboard-check"></i> <span data-i18n="exams_taken">Exams Taken</span></span>
                         <span id="quizTakenStat">0</span>
                     </div>
                     <div class="stat-row">
-                        <span><i class="fas fa-trophy"></i> Passed</span>
+                        <span><i class="fas fa-trophy"></i> <span data-i18n="passed">Passed</span></span>
                         <span id="quizPassedStat">0</span>
                     </div>
                     <div class="stat-row">
-                        <span><i class="fas fa-hourglass-half"></i> Pending</span>
+                        <span><i class="fas fa-hourglass-half"></i> <span data-i18n="stat_pending">Pending</span></span>
                         <span id="quizPendingStat">0</span>
                     </div>
                 </div>
@@ -93,7 +94,7 @@
             <div class="quick-actions">
                 <a href="/pages/student-chat.html" class="action-btn-sidebar chat-btn">
                     <i class="fas fa-comments"></i>
-                    <span>Chat with Teacher</span>
+                    <span data-i18n="chat_with_teacher">Chat with Teacher</span>
                     <span id="unreadBadge" class="unread-dot" style="display: none;"></span>
                 </a>
             </div>
@@ -101,11 +102,11 @@
             <div class="sidebar-footer">
                 <a href="/pages/student-list.html" class="back-btn-sidebar">
                     <i class="fas fa-arrow-left"></i>
-                    <span>Change Student</span>
+                    <span data-i18n="change_student">Change Student</span>
                 </a>
                 <a href="/index.html" class="back-btn-sidebar">
                     <i class="fas fa-home"></i>
-                    <span>Home</span>
+                    <span data-i18n="home">Home</span>
                 </a>
             </div>
         </div>
@@ -113,25 +114,31 @@
         <!-- Main Content -->
         <div class="student-main-content">
             <div class="student-header">
-                <h1 id="studentNameHeader">Welcome, Student!</h1>
-                <a href="/pages/student-list.html" class="btn-secondary">
-                    <i class="fas fa-user-friends"></i> Change Student
-                </a>
+                <h1 id="studentNameHeader" data-i18n="welcome_student">Welcome, Student!</h1>
+                <div class="student-header-actions" style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div class="lang-switcher lang-switcher-compact" aria-label="Language">
+                        <button type="button" class="lang-btn" data-lang="en" onclick="setLang('en')" title="English">EN</button>
+                        <button type="button" class="lang-btn" data-lang="bn" onclick="setLang('bn')" title="বাংলা">বাং</button>
+                    </div>
+                    <a href="/pages/student-list.html" class="btn-secondary">
+                        <i class="fas fa-user-friends"></i> <span data-i18n="change_student">Change Student</span>
+                    </a>
+                </div>
             </div>
 
             <!-- Tab Navigation -->
             <div class="tab-navigation">
                 <button class="tab-btn active" id="todayTab" onclick="switchTab('today')">
                     <i class="fas fa-calendar-day"></i>
-                    <span>Today</span>
+                    <span data-i18n="today">Today</span>
                 </button>
                 <button class="tab-btn" id="allTasksTab" onclick="switchTab('allTasks')">
                     <i class="fas fa-clipboard-list"></i>
-                    <span>All Tasks</span>
+                    <span data-i18n="all_tasks">All Tasks</span>
                 </button>
                 <button class="tab-btn" id="quizzesTab" onclick="switchTab('quizzes')">
                     <i class="fas fa-graduation-cap"></i>
-                    <span>Exams</span>
+                    <span data-i18n="nav_exams">Exams</span>
                 </button>
             </div>
 
@@ -141,7 +148,7 @@
                 <div class="tasks-section daily-tasks-section">
                     <div class="section-title">
                         <i class="fas fa-calendar-day"></i>
-                        <span>Today's Daily Tasks</span>
+                        <span data-i18n="todays_daily_tasks">Today's Daily Tasks</span>
                         <span class="today-date" id="todayDate"></span>
                     </div>
                     <div id="dailyTasksList" class="tasks-list daily-tasks-list">
@@ -156,7 +163,7 @@
                 <div class="tasks-section" style="margin-bottom: 2rem;">
                     <div class="section-title">
                         <i class="fas fa-clipboard-list"></i>
-                        <span>Pending Tasks</span>
+                        <span data-i18n="pending_tasks">Pending Tasks</span>
                     </div>
                     <div id="pendingTasksList" class="tasks-list">
                         <!-- Pending tasks will be dynamically added here -->
@@ -167,7 +174,7 @@
                 <div class="tasks-section">
                     <div class="section-title">
                         <i class="fas fa-check-circle"></i>
-                        <span>Completed Tasks</span>
+                        <span data-i18n="completed_tasks">Completed Tasks</span>
                     </div>
                     <div id="completedTasksList" class="tasks-list">
                         <!-- Completed tasks will be dynamically added here -->
@@ -181,7 +188,7 @@
                 <div class="tasks-section" style="margin-bottom: 2rem;">
                     <div class="section-title">
                         <i class="fas fa-clipboard-check"></i>
-                        <span>Available Quizzes</span>
+                        <span data-i18n="available_quizzes">Available Quizzes</span>
                     </div>
                     <div id="availableQuizzesList" class="quizzes-grid-student">
                         <!-- Available quizzes will be dynamically added here -->
@@ -192,7 +199,7 @@
                 <div class="tasks-section">
                     <div class="section-title">
                         <i class="fas fa-trophy"></i>
-                        <span>Completed Quizzes</span>
+                        <span data-i18n="completed_quizzes">Completed Quizzes</span>
                     </div>
                     <div id="completedQuizzesList" class="quizzes-grid-student">
                         <!-- Completed quizzes will be dynamically added here -->

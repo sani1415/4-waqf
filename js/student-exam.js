@@ -1,4 +1,7 @@
 // Student Quiz Taking Logic
+function _t(key) {
+    return typeof window.t === 'function' ? window.t(key) : key;
+}
 
 let currentQuiz = null;
 let currentQuestionIndex = 0;
@@ -24,14 +27,14 @@ async function initializePage() {
     const studentId = getStudentId();
 
     if (!quizId || !studentId) {
-        alert('❌ Invalid quiz or student!');
+        alert('❌ ' + _t('alert_invalid_quiz_student'));
         window.location.href = '/pages/student-dashboard.html';
         return;
     }
 
     // Check if student already took this quiz
     if (await dataManager.hasStudentTakenQuiz(quizId, studentId)) {
-        alert('⚠️ You have already taken this quiz!');
+        alert('⚠️ ' + _t('alert_already_taken'));
         window.location.href = '/pages/student-dashboard.html';
         return;
     }
@@ -49,7 +52,7 @@ async function loadQuiz(quizId) {
     currentQuiz = await dataManager.getQuizById(parseInt(quizId));
     
     if (!currentQuiz) {
-        alert('❌ Quiz not found!');
+        alert('❌ ' + _t('alert_quiz_not_found'));
         window.location.href = '/pages/student-dashboard.html';
         return;
     }
@@ -78,9 +81,9 @@ function loadQuizHeader() {
         <h1 class="quiz-title-header">${currentQuiz.title}</h1>
         ${currentQuiz.description ? `<p style="color: var(--text-secondary); margin-bottom: 1rem;">${currentQuiz.description}</p>` : ''}
         <div class="quiz-meta-header">
-            <span><i class="fas fa-question-circle"></i> ${currentQuiz.questions.length} Questions</span>
-            <span><i class="fas fa-star"></i> ${totalMarks} Total Marks</span>
-            <span><i class="fas fa-percent"></i> ${currentQuiz.passingPercentage}% to Pass</span>
+            <span><i class="fas fa-question-circle"></i> ${currentQuiz.questions.length} ${_t('questions_count')}</span>
+            <span><i class="fas fa-star"></i> ${totalMarks} ${_t('total_marks')}</span>
+            <span><i class="fas fa-percent"></i> ${currentQuiz.passingPercentage}% ${_t('to_pass')}</span>
         </div>
     `;
     
@@ -101,13 +104,13 @@ function startTimer() {
         // Warning when 5 minutes left
         if (timeRemaining === 300) {
             document.getElementById('timerContainer').classList.add('timer-warning');
-            alert('⚠️ Only 5 minutes remaining!');
+            alert('⚠️ ' + _t('alert_5_min_remaining'));
         }
         
         // Auto-submit when time is up
         if (timeRemaining <= 0) {
             clearInterval(timerInterval);
-            alert('⏰ Time is up! Quiz will be submitted automatically.');
+            alert('⏰ ' + _t('alert_time_up_submit'));
             submitQuiz();
         }
     }, 1000);

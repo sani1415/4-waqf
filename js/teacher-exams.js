@@ -1,4 +1,7 @@
 // Teacher Quizzes Management
+function _t(key, params) {
+    return typeof window.t === 'function' ? window.t(key, params) : key;
+}
 
 let questionCounter = 0;
 
@@ -323,7 +326,7 @@ function removeQuestion(questionId) {
         questionCard.remove();
         renumberQuestions();
     } else {
-        alert('❌ You must have at least one question!');
+        alert('❌ ' + _t('alert_at_least_one_question'));
     }
 }
 
@@ -354,7 +357,7 @@ async function handleCreateQuiz(e) {
     ).map(cb => parseInt(cb.value));
     
     if (selectedStudents.length === 0) {
-        alert('❌ Please select at least one student!');
+        alert('❌ ' + _t('alert_select_one_student'));
         return;
     }
     
@@ -369,7 +372,7 @@ async function handleCreateQuiz(e) {
         const marks = parseInt(card.querySelector('.question-marks').value);
         
         if (!questionText || !marks) {
-            alert(`❌ Please complete all required fields for Question ${i + 1}`);
+            alert('❌ ' + _t('alert_complete_required_question', { num: i + 1 }));
             return;
         }
         
@@ -386,7 +389,7 @@ async function handleCreateQuiz(e) {
             const correctAnswer = parseInt(card.querySelector(`input[name="correct-${card.id}"]:checked`)?.value);
             
             if (options.some(opt => !opt) || correctAnswer === undefined) {
-                alert(`❌ Please complete all options and select correct answer for Question ${i + 1}`);
+                alert('❌ ' + _t('alert_complete_options_correct', { num: i + 1 }));
                 return;
             }
             
@@ -397,7 +400,7 @@ async function handleCreateQuiz(e) {
             const correctAnswer = parseInt(card.querySelector(`input[name="correct-${card.id}"]:checked`)?.value);
             
             if (correctAnswer === undefined) {
-                alert(`❌ Please select True or False for Question ${i + 1}`);
+                alert('❌ ' + _t('alert_select_true_false', { num: i + 1 }));
                 return;
             }
             
@@ -409,7 +412,7 @@ async function handleCreateQuiz(e) {
             const answerText = answerInput?.value.trim();
             
             if (!answerText) {
-                alert(`❌ Please provide correct answer(s) for Question ${i + 1}`);
+                alert('❌ ' + _t('alert_provide_correct_answer', { num: i + 1 }));
                 return;
             }
             
@@ -452,7 +455,7 @@ async function handleCreateQuiz(e) {
     // Save quiz
     await dataManager.addQuiz(newQuiz);
     
-    alert('✅ Quiz created successfully!');
+    alert('✅ ' + _t('alert_quiz_created'));
     resetQuizForm();
     
     // Switch to view tab
@@ -505,19 +508,19 @@ async function loadAllQuizzes() {
                 <div class="quiz-meta">
                     <div class="quiz-meta-item">
                         <i class="fas fa-question-circle"></i>
-                        <span>${quiz.questions.length} Questions</span>
+                        <span>${quiz.questions.length} ${_t('questions_count')}</span>
                     </div>
                     <div class="quiz-meta-item">
                         <i class="fas fa-star"></i>
-                        <span>${totalMarks} Marks</span>
+                        <span>${totalMarks} ${_t('total_marks')}</span>
                     </div>
                     <div class="quiz-meta-item">
                         <i class="fas fa-clock"></i>
-                        <span>${quiz.timeLimit} Minutes</span>
+                        <span>${quiz.timeLimit} ${_t('minutes_label')}</span>
                     </div>
                     <div class="quiz-meta-item">
                         <i class="fas fa-users"></i>
-                        <span>${quiz.assignedTo.length} Students</span>
+                        <span>${quiz.assignedTo.length} ${_t('students_label')}</span>
                     </div>
                     ${quiz.deadline ? `
                         <div class="quiz-meta-item">
@@ -534,24 +537,24 @@ async function loadAllQuizzes() {
                 <div class="quiz-stats">
                     <div class="quiz-stat">
                         <span class="quiz-stat-value">${stats.totalAttempts}</span>
-                        <span class="quiz-stat-label">Attempts</span>
+                        <span class="quiz-stat-label">${_t('total_attempts')}</span>
                     </div>
                     <div class="quiz-stat">
                         <span class="quiz-stat-value">${stats.completionRate}%</span>
-                        <span class="quiz-stat-label">Completion</span>
+                        <span class="quiz-stat-label">${_t('completion_rate')}</span>
                     </div>
                     <div class="quiz-stat">
                         <span class="quiz-stat-value">${stats.averagePercentage}%</span>
-                        <span class="quiz-stat-label">Avg Score</span>
+                        <span class="quiz-stat-label">${_t('avg_score')}</span>
                     </div>
                 </div>
                 
                 <div class="quiz-actions">
                     <button class="btn-quiz-action btn-view-results" onclick="viewQuizResults(${quiz.id})">
-                        <i class="fas fa-chart-line"></i> View Results
+                        <i class="fas fa-chart-line"></i> ${_t('view_results')}
                     </button>
                     <button class="btn-quiz-action btn-delete-quiz" onclick="deleteQuiz(${quiz.id})">
-                        <i class="fas fa-trash"></i> Delete
+                        <i class="fas fa-trash"></i> ${_t('delete')}
                     </button>
                 </div>
             </div>
@@ -581,11 +584,11 @@ async function deleteQuiz(quizId) {
     const quiz = await dataManager.getQuizById(quizId);
     if (!quiz) return;
     
-    const confirmMsg = `⚠️ Are you sure you want to delete "${quiz.title}"?\n\nThis will remove:\n- The quiz from ${quiz.assignedTo.length} students\n- All student results for this quiz\n\nThis action cannot be undone.`;
+    const confirmMsg = '⚠️ ' + _t('confirm_delete_quiz', { title: quiz.title, count: quiz.assignedTo.length });
     
     if (confirm(confirmMsg)) {
         await dataManager.deleteQuiz(quizId);
-        alert('✅ Quiz deleted successfully!');
+        alert('✅ ' + _t('alert_quiz_deleted'));
         loadAllQuizzes();
     }
 }
@@ -608,9 +611,9 @@ async function loadQuizResultsSelector() {
     
     container.innerHTML = `
         <div class="results-quiz-selector">
-            <label for="quizResultsSelector">Select a Quiz to View Results:</label>
+            <label for="quizResultsSelector">${_t('select_quiz_view_results')}</label>
             <select id="quizResultsSelector" onchange="loadQuizResults(this.value)">
-                <option value="">-- Select Quiz --</option>
+                <option value="">${_t('select_quiz')}</option>
                 ${quizzes.map(quiz => `
                     <option value="${quiz.id}">${quiz.title}</option>
                 `).join('')}
@@ -631,7 +634,7 @@ async function loadQuizResults(quizId) {
     const displayContainer = document.getElementById('quizResultsDisplay');
     
     if (!quiz) {
-        displayContainer.innerHTML = '<p>Quiz not found</p>';
+        displayContainer.innerHTML = '<p>' + _t('alert_quiz_not_found') + '</p>';
         return;
     }
     
@@ -640,27 +643,27 @@ async function loadQuizResults(quizId) {
         <div class="analytics-cards">
             <div class="analytics-card">
                 <span class="analytics-value">${stats.totalAttempts}</span>
-                <span class="analytics-label">Total Attempts</span>
+                <span class="analytics-label">${_t('total_attempts')}</span>
             </div>
             <div class="analytics-card">
                 <span class="analytics-value">${stats.completionRate}%</span>
-                <span class="analytics-label">Completion Rate</span>
+                <span class="analytics-label">${_t('completion_rate')}</span>
             </div>
             <div class="analytics-card">
                 <span class="analytics-value">${stats.averagePercentage}%</span>
-                <span class="analytics-label">Average Score</span>
+                <span class="analytics-label">${_t('avg_score')}</span>
             </div>
             <div class="analytics-card">
                 <span class="analytics-value">${stats.passedCount}/${stats.totalAttempts}</span>
-                <span class="analytics-label">Pass Rate</span>
+                <span class="analytics-label">${_t('pass_rate')}</span>
             </div>
             <div class="analytics-card">
                 <span class="analytics-value">${stats.highestScore}</span>
-                <span class="analytics-label">Highest Score</span>
+                <span class="analytics-label">${_t('highest_score')}</span>
             </div>
             <div class="analytics-card">
                 <span class="analytics-value">${stats.lowestScore}</span>
-                <span class="analytics-label">Lowest Score</span>
+                <span class="analytics-label">${_t('lowest_score')}</span>
             </div>
         </div>
     `;
@@ -673,13 +676,13 @@ async function loadQuizResults(quizId) {
                 <table class="results-table">
                     <thead>
                         <tr>
-                            <th>Student Name</th>
-                            <th>Score</th>
-                            <th>Percentage</th>
-                            <th>Status</th>
-                            <th>Time Taken</th>
-                            <th>Submitted At</th>
-                            <th>Actions</th>
+                            <th>${_t('student_name')}</th>
+                            <th>${_t('score')}</th>
+                            <th>${_t('percentage')}</th>
+                            <th>${_t('status')}</th>
+                            <th>${_t('time_taken')}</th>
+                            <th>${_t('submitted_at')}</th>
+                            <th>${_t('actions')}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -698,7 +701,7 @@ async function loadQuizResults(quizId) {
                                     <td class="${scoreClass}">${result.percentage}%</td>
                                     <td>
                                         <span class="status-badge ${result.passed ? 'status-passed' : 'status-failed'}">
-                                            ${result.passed ? '✅ Passed' : '❌ Failed'}
+                                            ${result.passed ? '✅ ' + _t('passed') : '❌ ' + _t('failed')}
                                         </span>
                                     </td>
                                     <td>${minutes}m ${seconds}s</td>
@@ -706,13 +709,13 @@ async function loadQuizResults(quizId) {
                                     <td>
                                         ${student ? `
                                             <button class="btn-quiz-action btn-small" onclick="window.location.href='/pages/teacher-student-detail.html?studentId=${student.id}';">
-                                                <i class="fas fa-user"></i> Profile
+                                                <i class="fas fa-user"></i> ${_t('profile')}
                                             </button>
                                             <button class="btn-quiz-action btn-small" onclick="window.location.href='/pages/teacher-dashboard.html?studentId=${student.id}#manage-tasks';">
-                                                <i class="fas fa-tasks"></i> Tasks
+                                                <i class="fas fa-tasks"></i> ${_t('tasks')}
                                             </button>
                                             <button class="btn-quiz-action btn-small" onclick="window.location.href='/pages/teacher-chat.html?studentId=${student.id}';">
-                                                <i class="fas fa-comments"></i> Chat
+                                                <i class="fas fa-comments"></i> ${_t('chat')}
                                             </button>
                                         ` : ''}
                                     </td>
@@ -724,7 +727,7 @@ async function loadQuizResults(quizId) {
             </div>
         `;
     } else {
-        tableHTML = '<div class="empty-state"><p>No students have taken this quiz yet.</p></div>';
+        tableHTML = '<div class="empty-state"><p>' + _t('no_results_taken_yet') + '</p></div>';
     }
     
     displayContainer.innerHTML = analyticsHTML + tableHTML;

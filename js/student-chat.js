@@ -23,7 +23,7 @@ async function initializeChat() {
     currentStudentId = sessionStorage.getItem('currentStudentId');
 
     if (!currentStudentId) {
-        alert('Please select your profile first!');
+        alert(typeof window.t === 'function' ? window.t('select_profile_first') : 'Please select your profile first!');
         window.location.href = '/pages/student-list.html';
         return;
     }
@@ -38,10 +38,11 @@ async function loadMessages() {
     const messages = await dataManager.getMessagesForStudent(currentStudentId);
 
     if (messages.length === 0) {
+        const noMsg = typeof window.t === 'function' ? window.t('no_messages_yet') : 'No messages yet. Start the conversation!';
         messagesArea.innerHTML = `
             <div class="no-messages">
                 <i class="fas fa-comments"></i>
-                <p>No messages yet. Start the conversation with your teacher!</p>
+                <p>${noMsg}</p>
             </div>
         `;
         return;
@@ -125,9 +126,9 @@ function formatDate(timestamp) {
     yesterday.setDate(yesterday.getDate() - 1);
 
     if (date.toDateString() === today.toDateString()) {
-        return 'Today';
+        return typeof window.t === 'function' ? window.t('today') : 'Today';
     } else if (date.toDateString() === yesterday.toDateString()) {
-        return 'Yesterday';
+        return typeof window.t === 'function' ? window.t('yesterday') : 'Yesterday';
     } else {
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }

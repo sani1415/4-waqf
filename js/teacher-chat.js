@@ -25,7 +25,7 @@ async function initializeChat() {
     currentStudentId = urlParams.get('studentId');
 
     if (!currentStudentId) {
-        alert('No student selected!');
+        alert(typeof window.t === 'function' ? window.t('no_student_selected') : 'No student selected!');
         window.location.href = '/pages/teacher-messages.html';
         return;
     }
@@ -33,7 +33,7 @@ async function initializeChat() {
     currentStudent = await dataManager.getStudentById(parseInt(currentStudentId));
 
     if (!currentStudent) {
-        alert('Student not found!');
+        alert(typeof window.t === 'function' ? window.t('student_not_found') : 'Student not found!');
         window.location.href = '/pages/teacher-messages.html';
         return;
     }
@@ -49,7 +49,7 @@ function loadStudentInfo() {
     
     document.getElementById('chatAvatar').textContent = initial;
     document.getElementById('studentName').textContent = currentStudent.name;
-    document.getElementById('studentStatus').textContent = currentStudent.email || 'Student';
+    document.getElementById('studentStatus').textContent = currentStudent.email || (typeof window.t === 'function' ? window.t('student') : 'Student');
 }
 
 // Load Messages
@@ -58,10 +58,11 @@ async function loadMessages() {
     const messages = await dataManager.getMessagesForStudent(currentStudentId);
 
     if (messages.length === 0) {
+        const noMsg = typeof window.t === 'function' ? window.t('no_messages_yet') : 'No messages yet. Start the conversation!';
         messagesArea.innerHTML = `
             <div class="no-messages">
                 <i class="fas fa-comments"></i>
-                <p>No messages yet. Start the conversation!</p>
+                <p>${noMsg}</p>
             </div>
         `;
         return;
@@ -145,9 +146,9 @@ function formatDate(timestamp) {
     yesterday.setDate(yesterday.getDate() - 1);
 
     if (date.toDateString() === today.toDateString()) {
-        return 'Today';
+        return typeof window.t === 'function' ? window.t('today') : 'Today';
     } else if (date.toDateString() === yesterday.toDateString()) {
-        return 'Yesterday';
+        return typeof window.t === 'function' ? window.t('yesterday') : 'Yesterday';
     } else {
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }

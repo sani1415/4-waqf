@@ -83,7 +83,9 @@
       if (key) el.placeholder = t(key);
     });
     document.querySelectorAll('.lang-btn[data-lang]').forEach(function (btn) {
-      btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
+      var lang = btn.getAttribute('data-lang');
+      btn.classList.toggle('active', lang === currentLang);
+      btn.title = lang === 'en' ? t('lang_english') : t('lang_bengali');
     });
   }
 
