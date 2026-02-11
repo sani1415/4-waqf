@@ -108,25 +108,30 @@
                 <input type="radio" name="student-tab" id="tab-tasks">
                 <input type="radio" name="student-tab" id="tab-exams">
                 <input type="radio" name="student-tab" id="tab-messages">
+                <input type="radio" name="student-tab" id="tab-records">
 
-                <!-- Tab Labels -->
-                <div class="tab-labels-student">
-                    <label for="tab-today">
+                <!-- Tab Labels (desktop - shown on larger screens) -->
+                <div class="tab-labels-student tab-labels-desktop">
+                    <label for="tab-today" class="student-tab-label">
                         <i class="fas fa-calendar-day"></i>
                         <span data-i18n="today">Today</span>
                     </label>
-                    <label for="tab-tasks">
+                    <label for="tab-tasks" class="student-tab-label">
                         <i class="fas fa-clipboard-list"></i>
                         <span data-i18n="tasks">Tasks</span>
                     </label>
-                    <label for="tab-exams">
+                    <label for="tab-exams" class="student-tab-label">
                         <i class="fas fa-graduation-cap"></i>
                         <span data-i18n="nav_exams">Exams</span>
                     </label>
-                    <label for="tab-messages">
+                    <label for="tab-messages" class="student-tab-label">
                         <i class="fas fa-comments"></i>
                         <span data-i18n="messages">Messages</span>
                         <span id="msgUnreadDot" class="tab-unread-dot" style="display: none;"></span>
+                    </label>
+                    <label for="tab-records" class="student-tab-label">
+                        <i class="fas fa-history"></i>
+                        <span data-i18n="tab_records">Records</span>
                     </label>
                 </div>
 
@@ -213,9 +218,46 @@
                         </div>
                     </div>
                     <!-- END MESSAGES TAB -->
+
+                    <!-- RECORDS TAB -->
+                    <div class="panel-student panel-records">
+                        <div class="records-tab-area" id="recordsTabArea">
+                            <!-- Records will be loaded by JS -->
+                        </div>
+                    </div>
+                    <!-- END RECORDS TAB -->
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation (like teacher - visible on screens ≤768px) -->
+    <div class="student-bottom-nav-wrapper bottom-nav-wrapper">
+        <div class="bottom-nav-fade bottom-nav-fade-left" id="studentNavFadeLeft" aria-hidden="true"><i class="fas fa-chevron-left"></i></div>
+        <nav class="bottom-nav" id="studentBottomNav" aria-label="Student navigation">
+            <label for="tab-today" class="bottom-nav-item active" data-tab="tab-today" id="studentNavToday">
+                <i class="fas fa-calendar-day"></i>
+                <span data-i18n="today">Today</span>
+            </label>
+            <label for="tab-tasks" class="bottom-nav-item" data-tab="tab-tasks">
+                <i class="fas fa-clipboard-list"></i>
+                <span data-i18n="tasks">Tasks</span>
+            </label>
+            <label for="tab-exams" class="bottom-nav-item" data-tab="tab-exams">
+                <i class="fas fa-graduation-cap"></i>
+                <span data-i18n="nav_exams">Exams</span>
+            </label>
+            <label for="tab-messages" class="bottom-nav-item" data-tab="tab-messages">
+                <i class="fas fa-comments"></i>
+                <span data-i18n="messages">Messages</span>
+                <span id="msgUnreadDotNav" class="nav-unread-dot" style="display: none;"></span>
+            </label>
+            <label for="tab-records" class="bottom-nav-item" data-tab="tab-records">
+                <i class="fas fa-history"></i>
+                <span data-i18n="tab_records">Records</span>
+            </label>
+        </nav>
+        <div class="bottom-nav-fade bottom-nav-fade-right" id="studentNavFadeRight" aria-hidden="true"><i class="fas fa-chevron-right"></i></div>
     </div>
 
     <!-- Firebase SDK -->
@@ -232,5 +274,6 @@
     <!-- Data Manager & App Logic -->
     <script src="../js/data-manager.js"></script>
     <script src="../js/student-dashboard.js"></script>
+    <script src="../js/student-bottom-nav.js"></script>
 </body>
 </html>

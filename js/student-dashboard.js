@@ -45,20 +45,30 @@ function setupTabListeners() {
         });
     }
     
+    // Listen for records tab activation to load records
+    const recordsTab = document.getElementById('tab-records');
+    if (recordsTab) {
+        recordsTab.addEventListener('change', function() {
+            if (this.checked) loadRecordsTab();
+        });
+    }
+    
     // Setup message send functionality
     setupMessageSendTab();
 }
 
-// Update Unread Badge (only on messages tab dot now)
+// Update Unread Badge (desktop tab + bottom nav)
 async function updateUnreadBadge() {
     if (!currentStudent) return;
     
     const unreadCount = await dataManager.getUnreadCount(currentStudent.id, 'student');
-    const tabDot = document.getElementById('msgUnreadDot');
+    const show = unreadCount > 0 ? 'block' : 'none';
     
-    if (tabDot) {
-        tabDot.style.display = unreadCount > 0 ? 'block' : 'none';
-    }
+    const tabDot = document.getElementById('msgUnreadDot');
+    if (tabDot) tabDot.style.display = show;
+    
+    const navDot = document.getElementById('msgUnreadDotNav');
+    if (navDot) navDot.style.display = show;
 }
 
 // Initialize Student Dashboard
@@ -480,6 +490,90 @@ function setupMessageSendTab() {
             sendMsg();
         }
     });
+}
+
+/* ===================================
+   RECORDS TAB FUNCTIONS
+   =================================== */
+
+// Load Records Tab - Exam history and daily task history
+async function loadRecordsTab() {
+    const area = document.getElementById('recordsTabArea');
+    if (!area || !currentStudent) return;
+
+    area.innerHTML = '<div class="skeleton-list" style="padding: 2rem;"><div class="skeleton skeleton-text" style="width: 80%; margin-bottom: 1rem;"></div><div class="skeleton skeleton-text" style="width: 90%;"></div><div class="skeleton skeleton-text" style="width: 70%; margin-top: 1rem;"></div></div>';
+
+    const studentId = currentStudent.id;
+    const _t = typeof window.t === 'function' ? window.t : (k) => k;
+
+    // 1. Load exam history
+    const allResults = await dataManager.getResultsForStudent(studentId);
+    const sortedResults = (allResults || []).sort((a, b) => 
+        new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0)
+    );
+
+    let examHtml = '';
+    if (sortedResults.length === 0) {
+        examHtml = `<div class="records-empty"><i class="fas fa-clipboard-list"></i><p>${_t('no_exam_records')}</p></div>`;
+    } else {
+        examHtml = `<div class="records-section">
+            <div class="records-section-title"><i class="fas fa-graduation-cap"></i> <span>${_t('exam_history')}</span></div>
+            <div class="records-exam-list">`;
+        for (const result of sortedResults) {
+            const quiz = await dataManager.getQuizById(result.quizId);
+            const quizTitle = quiz ? quiz.title : _t('unknown_quiz');
+            const date = result.submittedAt ? new Date(result.submittedAt).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '—';
+            const time = result.submittedAt ? new Date(result.submittedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '';
+            const pct = result.percentage != null ? result.percentage.toFixed(1) : '—';
+            const passed = result.passed === true;
+            const pending = result.status === 'pending_review';
+            const timeTaken = result.timeTaken != null ? `${Math.floor(result.timeTaken / 60)}m ${result.timeTaken % 60}s` : '';
+            examHtml += `
+                <div class="record-exam-item ${pending ? 'pending' : ''}">
+                    <div class="record-exam-main">
+                        <span class="record-exam-title">${quizTitle}</span>
+                        <span class="record-exam-date">${date}${time ? ' • ' + time : ''}</span>
+                    </div>
+                    <div class="record-exam-details">
+                        ${pending ? `<span class="record-badge pending">${_t('pending_review')}</span>` : ''}
+                        ${!pending && pct !== '—' ? `<span class="record-score ${passed ? 'passed' : 'failed'}">${pct}%</span>` : ''}
+                        ${passed && !pending ? `<span class="record-badge passed"><i class="fas fa-check-circle"></i> ${_t('passed')}</span>` : ''}
+                        ${!passed && !pending && result.passed === false ? `<span class="record-badge failed"><i class="fas fa-times-circle"></i> ${_t('failed')}</span>` : ''}
+                        ${timeTaken ? `<span class="record-time"><i class="fas fa-clock"></i> ${timeTaken}</span>` : ''}
+                    </div>
+                </div>`;
+        }
+        examHtml += '</div></div>';
+    }
+
+    // 2. Load daily task history (last 7 days)
+    const dailyTasks = await dataManager.getDailyTasksForStudent(studentId);
+    let dailyHtml = '';
+    if (dailyTasks.length === 0) {
+        dailyHtml = `<div class="records-empty records-empty-small"><i class="fas fa-calendar-check"></i><p>${_t('no_daily_records')}</p></div>`;
+    } else {
+        dailyHtml = `<div class="records-section">
+            <div class="records-section-title"><i class="fas fa-calendar-day"></i> <span>${_t('daily_completion_history')}</span></div>
+            <div class="records-daily-grid">`;
+        const dayLabels = [_t('sun'), _t('mon'), _t('tue'), _t('wed'), _t('thu'), _t('fri'), _t('sat')];
+        for (const task of dailyTasks) {
+            const history = await dataManager.getDailyTaskCompletionHistory(task.id, studentId, 7);
+            const completedDates = history.filter(h => h.completed).map(h => h.date);
+            dailyHtml += `<div class="record-daily-task">
+                <div class="record-daily-title">${task.title}</div>
+                <div class="record-daily-days">`;
+            history.forEach((h, i) => {
+                const d = new Date(h.date);
+                const dayLabel = dayLabels[d.getDay()].substring(0, 2);
+                const shortDate = d.getDate();
+                dailyHtml += `<span class="record-day ${h.completed ? 'completed' : ''}" title="${h.date}">${dayLabel} ${shortDate}</span>`;
+            });
+            dailyHtml += `</div></div>`;
+        }
+        dailyHtml += '</div></div>';
+    }
+
+    area.innerHTML = `<div class="records-container">${examHtml}${dailyHtml}</div>`;
 }
 
 // Mark Messages as Read
