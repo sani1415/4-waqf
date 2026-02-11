@@ -2,6 +2,8 @@
 
 .detail-container {
     padding: 2rem;
+    overflow-x: hidden;
+    max-width: 100%;
 }
 
 /* ===================================
@@ -73,6 +75,8 @@
 .panels-student-detail {
     padding: 1.5rem 2rem;
     min-height: 400px;
+    overflow-x: hidden;
+    max-width: 100%;
 }
 
 .panel-student-detail {
@@ -1296,10 +1300,12 @@
 
 .task-grid-wrap {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     margin-bottom: 1.5rem;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: white;
+    max-width: 100%;
 }
 
 .task-grid {

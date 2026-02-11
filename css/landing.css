@@ -1,23 +1,39 @@
 /* Landing Page Styles */
 .landing-container {
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 2rem;
+    padding-top: calc(2rem + env(safe-area-inset-top, 0px));
+    padding-right: calc(2rem + env(safe-area-inset-right, 0px));
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(2rem + env(safe-area-inset-left, 0px));
     animation: fadeIn 0.8s ease;
     position: relative;
+    box-sizing: border-box;
 }
 
+/* Language switcher: small, centered under the logo */
 .landing-container .lang-switcher {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
+    display: inline-flex;
+    align-items: center;
+    margin-top: 0.5rem;
+    margin-bottom: 1.25rem;
+    padding: 0.2rem 0.3rem;
     background: white;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
 }
+
+.landing-container .lang-switcher .lang-btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+}
+
 .landing-container .lang-btn.active {
     background: linear-gradient(135deg, rgba(123, 158, 189, 0.12) 0%, rgba(184, 165, 214, 0.08) 100%);
     color: var(--primary-soft);
@@ -29,7 +45,7 @@
 }
 
 .logo-area {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .logo-area i {
@@ -200,61 +216,101 @@
     font-size: 0.95rem;
 }
 
-/* Responsive Design */
+/* Responsive: compact so Teacher + Student cards fit on one screen without scroll */
 @media (max-width: 768px) {
     .landing-container {
-        padding: 0.75rem 1rem;
-        padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+        padding: 0.5rem 0.75rem;
+        padding-top: calc(0.5rem + env(safe-area-inset-top, 0px));
+        padding-right: calc(0.75rem + env(safe-area-inset-right, 0px));
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+        padding-left: calc(0.75rem + env(safe-area-inset-left, 0px));
+        justify-content: flex-start;
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+
+    .landing-container .lang-switcher {
+        margin-top: 0.35rem;
+        margin-bottom: 0.6rem;
+        padding: 0.15rem 0.25rem;
+    }
+
+    .landing-container .lang-switcher .lang-btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.7rem;
     }
 
     .welcome-section {
-        margin-bottom: 2rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .logo-area {
+        margin-bottom: 0.35rem;
+    }
+
+    .logo-area i {
+        font-size: 2.25rem;
     }
 
     .main-title {
-        font-size: 1.75rem;
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
     }
 
     .subtitle {
-        font-size: 1rem;
+        font-size: 0.8rem;
     }
-    
+
     .selection-cards {
         grid-template-columns: 1fr;
-        gap: 1rem;
-        max-width: 400px;
+        gap: 0.6rem;
+        max-width: 320px;
         width: 100%;
     }
 
     .role-card {
-        padding: 1rem 0.75rem;
+        padding: 0.75rem 1rem;
         min-height: 44px;
+        text-align: center;
     }
 
-    .card-icon {
-        width: 48px;
-        height: 48px;
-        margin-bottom: 0.75rem;
+    .role-card .card-icon {
+        width: 44px;
+        height: 44px;
+        margin: 0 auto 0.5rem;
     }
 
-    .card-icon i {
-        font-size: 1.75rem;
+    .role-card .card-icon i {
+        font-size: 1.35rem;
     }
 
     .role-card h2 {
-        font-size: 1.1rem;
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
     }
 
     .role-card p {
-        font-size: 0.85rem;
+        font-size: 0.72rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
     }
-    
-    .logo-area i {
-        font-size: 3.5rem;
+
+    .role-card .card-arrow {
+        width: 28px;
+        height: 28px;
+        margin: 0 auto;
+    }
+
+    .role-card .card-arrow i {
+        font-size: 0.85rem;
     }
 
     .footer-note {
-        margin-top: 2rem;
+        margin-top: 0.5rem;
+    }
+
+    .footer-note p {
+        font-size: 0.75rem;
     }
 }
 

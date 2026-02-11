@@ -64,7 +64,7 @@
             <button class="menu-toggle" id="menuToggle">
                 <i class="fas fa-bars"></i>
             </button>
-            <h1 class="page-title" data-i18n="teacher_dashboard">Teacher Dashboard</h1>
+            <h1 class="page-title" id="pageTitle" data-i18n="nav_dashboard">Dashboard</h1>
             <div class="top-bar-right">
                 <div class="lang-switcher lang-switcher-compact" aria-label="Language">
                     <button type="button" class="lang-btn" data-lang="en" onclick="setLang('en')" title="English">EN</button>
@@ -251,7 +251,7 @@
                 </button>
             </div>
             <div id="studentsList" class="students-grid">
-                <!-- Students will be dynamically added here -->
+                <div class="loading-spinner" style="grid-column: 1 / -1;"><i class="fas fa-circle-notch fa-spin"></i><span data-i18n="loading">Loading...</span></div>
             </div>
         </section>
 

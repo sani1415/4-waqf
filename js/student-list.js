@@ -15,10 +15,21 @@ function initializePage() {
     setupSearch();
 }
 
+// Loading spinner HTML
+function getLoadingSpinnerHtml() {
+    const loadingText = typeof window.t === 'function' ? window.t('loading') : 'Loading...';
+    return `<div class="loading-spinner" style="grid-column: 1 / -1;"><i class="fas fa-circle-notch fa-spin"></i><span>${loadingText}</span></div>`;
+}
+
 // Load Student List
 async function loadStudentList() {
     const container = document.getElementById('studentCards');
     const noStudentsMsg = document.getElementById('noStudentsMessage');
+    if (container) {
+        container.style.display = 'grid';
+        container.innerHTML = getLoadingSpinnerHtml();
+        noStudentsMsg.style.display = 'none';
+    }
     const students = await dataManager.getStudents();
 
     if (students.length === 0) {

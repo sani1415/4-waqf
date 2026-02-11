@@ -200,8 +200,25 @@ function toggleOverlay(show = true) {
     overlay.style.display = show ? 'block' : 'none';
 }
 
+// Section title i18n keys for top bar
+const SECTION_TITLE_KEYS = {
+    'dashboard': 'nav_dashboard',
+    'manage-tasks': 'nav_manage_tasks',
+    'students': 'nav_students',
+    'daily-overview': 'nav_daily_overview',
+    'analytics': 'nav_analytics'
+};
+
 // Switch Between Sections
 async function switchSection(sectionName, clickedElement) {
+    // Update top bar title to match current section
+    const titleEl = document.getElementById('pageTitle');
+    if (titleEl) {
+        const key = SECTION_TITLE_KEYS[sectionName];
+        titleEl.setAttribute('data-i18n', key || 'nav_dashboard');
+        titleEl.textContent = typeof window.t === 'function' ? window.t(key || 'nav_dashboard') : 'Dashboard';
+    }
+
     // Update sidebar nav items
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
@@ -558,9 +575,18 @@ async function handleCreateTask(e) {
     await switchManageTaskTabProgrammatic('view');
 }
 
+// Loading spinner HTML
+function getLoadingSpinnerHtml() {
+    const loadingText = typeof window.t === 'function' ? window.t('loading') : 'Loading...';
+    return `<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span>${loadingText}</span></div>`;
+}
+
 // Load Students List
 async function loadStudentsList() {
     const container = document.getElementById('studentsList');
+    if (container) {
+        container.innerHTML = getLoadingSpinnerHtml();
+    }
     const students = await dataManager.getStudents();
 
     // Update student count badge
@@ -1035,7 +1061,7 @@ async function buildOverviewTableDashboard(studentPerformance, dailyTasks) {
             const isCompleted = await dataManager.isDailyTaskCompletedForDate(task.id, student.id, getDateStringOverview(selectedDateOverview));
             const statusIcon = isCompleted ? '✅' : '❌';
             const statusClass = isCompleted ? 'completed' : 'pending';
-            const safeTitle = (task.title || '').replace(/"/g, '&quot;');
+            const safeTitle = (task.title || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
             taskCells.push(`<td data-task-title="${safeTitle}"><span class="task-status ${statusClass}">${statusIcon}</span></td>`);
         }
         

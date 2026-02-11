@@ -502,90 +502,180 @@
 }
 
 @media (max-width: 768px) {
-    .overview-container {
-        padding: 0.5rem 0.75rem;
+    .overview-container,
+    .overview-container-inline {
+        padding: 0.35rem 0.5rem;
         padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
         overflow-x: hidden;
     }
-    
-    /* Compact date selector - native-app style */
+
+    /* Date selector: single compact row, minimal padding */
     .date-selector-section {
-        padding: 0.5rem 0.75rem !important;
-        margin-bottom: 0.75rem !important;
+        padding: 0.4rem 0.5rem !important;
+        margin-bottom: 0.4rem !important;
+        border-radius: 8px;
     }
-    
+
     .date-selector-header h3 {
-        font-size: 0.9rem !important;
-        margin-bottom: 0.5rem !important;
-    }
-    
-    .date-selector-controls {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.5rem !important;
-    }
-    
-    .date-btn {
-        padding: 0.5rem 0.75rem !important;
         font-size: 0.8rem !important;
-        width: 100%;
+        margin-bottom: 0.35rem !important;
     }
-    
+
+    .date-selector-header i {
+        font-size: 0.85rem;
+    }
+
+    .date-selector-controls {
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        gap: 0.35rem !important;
+        align-items: center;
+    }
+
+    .date-btn {
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.75rem !important;
+        width: auto;
+        flex: 1;
+        min-width: 0;
+        justify-content: center;
+    }
+
+    .date-btn span {
+        white-space: nowrap;
+    }
+
     .date-btn i {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
     }
-    
+
     .date-picker,
     .selected-date-display {
-        width: 100%;
-        padding: 0.5rem 0.75rem !important;
-        font-size: 0.85rem !important;
+        flex: 1;
+        min-width: 0;
+        padding: 0.4rem 0.5rem !important;
+        font-size: 0.8rem !important;
     }
-    
-    /* Compact best students */
+
+    /* Best students: horizontal scroll strip, minimal height */
     .best-students-section {
-        padding: 0.5rem 0.75rem !important;
-        margin-bottom: 0.75rem !important;
+        padding: 0.4rem 0.5rem !important;
+        margin-bottom: 0.4rem !important;
+        border-radius: 8px;
     }
-    
+
     .best-students-header h3 {
-        font-size: 0.9rem !important;
-        margin-bottom: 0.75rem !important;
+        font-size: 0.8rem !important;
+        margin-bottom: 0.4rem !important;
     }
-    
-    .best-student-card {
-        padding: 0.6rem 0.75rem !important;
+
+    .best-students-header i {
+        font-size: 0.9rem;
     }
-    
-    .best-student-card h4 {
-        font-size: 0.9rem !important;
-    }
-    
-    .best-student-card p {
-        font-size: 0.75rem !important;
-    }
-    
+
     .best-students-grid {
-        grid-template-columns: 1fr;
-        gap: 0.5rem !important;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 0.4rem !important;
+        padding-bottom: 0.25rem;
+        -webkit-overflow-scrolling: touch;
     }
-    
+
+    .best-students-grid::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .best-student-card {
+        flex: 0 0 auto;
+        min-width: 100px;
+        padding: 0.4rem 0.5rem !important;
+        border-radius: 8px;
+    }
+
+    .best-student-rank {
+        font-size: 1.1rem;
+    }
+
+    .best-student-card h4 {
+        font-size: 0.75rem !important;
+        line-height: 1.2;
+    }
+
+    .best-student-card p {
+        font-size: 0.65rem !important;
+    }
+
+    .best-student-percentage {
+        font-size: 0.9rem;
+    }
+
+    /* Table section: same width as top cards, tight padding */
+    .overview-table-section {
+        padding: 0.4rem 0.5rem !important;
+        border-radius: 8px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
     .table-header {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 0.4rem !important;
+        gap: 0.35rem;
     }
-    
+
+    .table-header h3 {
+        font-size: 0.8rem !important;
+    }
+
+    .table-header h3 i {
+        font-size: 0.75rem;
+    }
+
     .table-stats {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: wrap;
         gap: 0.5rem;
+        font-size: 0.7rem;
     }
-    
-    /* Mobile: Card-like layout for overview table instead of horizontal scroll */
+
+    .table-stats .stat-item {
+        font-size: 0.7rem;
+    }
+
+    .table-stats .stat-item strong {
+        font-size: 0.8rem;
+    }
+
+    /* Legend: one line, minimal */
+    .table-legend {
+        gap: 0.75rem;
+        padding: 0.35rem 0.5rem;
+        margin-top: 0.35rem;
+        border-radius: 6px;
+    }
+
+    .legend-item {
+        font-size: 0.7rem;
+    }
+
+    .legend-icon {
+        font-size: 0.9rem;
+    }
+
+    /* Mobile: compact flow – full width in line with top cards, no empty strip on right */
     .table-container {
         overflow-x: visible;
         border: none;
+        margin-bottom: 0.35rem;
+        width: 100% !important;
+        max-width: 100%;
+        box-sizing: border-box;
     }
-    
+
     .overview-table,
     .overview-table thead,
     .overview-table tbody,
@@ -594,12 +684,19 @@
     .overview-table td {
         display: block;
     }
-    
+
     .overview-table thead {
         display: none;
     }
-    
-    /* Reset sticky positioning on mobile */
+
+    .overview-table,
+    .overview-table tbody {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
     .sticky-col,
     .student-col,
     .info-col,
@@ -611,92 +708,156 @@
         min-width: auto;
         max-width: none;
     }
-    
+
     .overview-table tbody tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.35rem 0.5rem;
+        width: 100% !important;
+        max-width: 100%;
+        box-sizing: border-box;
         background: white;
         border: 1px solid #E2E8F0;
         border-radius: 8px;
-        padding: 0.6rem 0.75rem;
-        margin-bottom: 0.5rem;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        padding: 0.45rem 0.5rem;
+        margin-bottom: 0.4rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
-    
+
     .overview-table tbody tr.top-performer {
         border-color: #FCD34D;
         background: #FFFBEB;
     }
-    
+
     .overview-table tbody td {
-        padding: 0.35rem 0;
+        padding: 0;
         border: none;
-        border-bottom: 1px solid #F1F5F9;
         text-align: left !important;
     }
-    
-    .overview-table tbody td:last-child {
-        border-bottom: none;
-    }
-    
-    /* Student cell = card header */
+
     .overview-table tbody td.student-col {
-        padding-bottom: 0.75rem;
-        margin-bottom: 0.5rem;
-        border-bottom: 2px solid #E2E8F0;
+        flex: 1 1 35%;
+        min-width: 0;
+        max-width: 55%;
+        order: 1;
     }
-    
-    /* Info cell */
+
+    .overview-table tbody td.student-col .student-cell {
+        gap: 0.4rem;
+    }
+
+    .overview-table tbody td.info-col {
+        flex: 0 0 auto;
+        order: 2;
+        min-width: 0;
+    }
+
+    .overview-table tbody td.info-col .info-cell {
+        flex-direction: row;
+        gap: 0.2rem;
+        flex-wrap: wrap;
+    }
+
+    .overview-table tbody td.info-col .info-badge {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 70px;
+    }
+
     .overview-table tbody td.info-col::before {
-        content: 'Info';
-        display: block;
-        font-size: 0.7rem;
-        font-weight: 600;
-        color: var(--text-secondary);
-        text-transform: uppercase;
-        margin-bottom: 0.25rem;
+        display: none;
     }
-    
-    /* Task cells - label from data attribute */
+
+    .overview-table tbody td[data-task-title] {
+        flex: 0 0 auto;
+        order: 3;
+        display: inline-flex !important;
+        align-items: center;
+        gap: 0.2rem;
+        padding: 0.15rem 0.4rem !important;
+        background: #F1F5F9;
+        border-radius: 6px;
+        border: 1px solid #E2E8F0;
+    }
+
     .overview-table tbody td[data-task-title]::before {
         content: attr(data-task-title);
-        display: block;
-        font-size: 0.75rem;
+        display: inline !important;
+        font-size: 0.58rem;
         font-weight: 600;
         color: var(--text-secondary);
-        margin-bottom: 0.25rem;
+        margin: 0;
+        max-width: 52px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-    
-    /* Completion cell */
-    .overview-table tbody td.completion-col::before {
-        content: 'Completion';
-        display: block;
-        font-size: 0.7rem;
-        font-weight: 600;
-        color: var(--text-secondary);
-        text-transform: uppercase;
-        margin-bottom: 0.25rem;
+
+    .overview-table tbody td[data-task-title] .task-status {
+        font-size: 0.85rem;
+        flex-shrink: 0;
     }
-    
+
     .overview-table tbody td.completion-col {
+        flex: 0 0 auto;
+        order: 4;
+        padding: 0 0 0 0.25rem !important;
+        margin-left: auto;
         font-weight: 700;
-        font-size: 1.1rem;
     }
-    
+
+    .overview-table tbody td.completion-col::before {
+        display: none;
+    }
+
+    .overview-table tbody td.completion-col .completion-cell {
+        font-size: 0.9rem;
+    }
+
     .student-avatar-small {
-        width: 28px;
-        height: 28px;
-        font-size: 0.75rem;
+        width: 26px;
+        height: 26px;
+        font-size: 0.7rem;
     }
-    
-    .task-status {
-        font-size: 1rem;
-    }
-    
-    .table-stats {
+
+    .student-name-info h4 {
         font-size: 0.8rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-    
+
+    .student-name-info p {
+        font-size: 0.65rem;
+    }
+
+    .overview-table-section .info-badge {
+        padding: 0.12rem 0.3rem;
+        font-size: 0.6rem;
+    }
+
     .table-header h3 {
-        font-size: 0.9rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* Empty state: less padding */
+    .empty-overview {
+        padding: 1.5rem 1rem;
+    }
+
+    .empty-overview i {
+        font-size: 2.5rem;
+    }
+
+    .empty-overview h3 {
+        font-size: 0.95rem;
+    }
+
+    .no-best-students {
+        padding: 0.75rem;
+        font-size: 0.8rem;
     }
 }
 

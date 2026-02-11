@@ -1319,6 +1319,177 @@ body:has(.exam-tabs) textarea#quizDescription {
     }
 }
 
+/* Very narrow screens: all tabs – single-column forms, compact layouts */
+@media (max-width: 480px) {
+    /* Create tab: single-column form rows */
+    body:has(.exam-tabs) .form-row,
+    .form-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    body:has(.exam-tabs) .form-row.form-row-3,
+    .form-row.form-row-3 {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Tab buttons: allow wrap if needed, icons a bit smaller */
+    .exam-tabs,
+    .quiz-tabs {
+        flex-wrap: wrap;
+        gap: 0.2rem;
+    }
+
+    .quiz-tab-btn {
+        padding: 0.3rem 0.2rem !important;
+        font-size: 0.65rem !important;
+        min-width: 60px;
+    }
+
+    .quiz-tab-btn i {
+        font-size: 0.65rem !important;
+    }
+
+    /* All tab content: tighter padding */
+    .quiz-tab-content {
+        padding: 0.5rem 0.4rem !important;
+    }
+
+    .quiz-tab-content > h2 {
+        font-size: 0.88rem !important;
+        margin-bottom: 0.3rem !important;
+    }
+
+    .tab-description {
+        font-size: 0.75rem !important;
+        margin-bottom: 0.35rem !important;
+    }
+
+    /* Create tab: section header stack, Add Question full width */
+    .section-header,
+    .section-header-questions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.35rem;
+    }
+
+    .btn-add-question {
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.8rem !important;
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Create tab: options grid already 1fr at 768px; ensure True/False stack */
+    .true-false-options {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .radio-option {
+        padding: 0.5rem 0.6rem !important;
+    }
+
+    /* View All Quizzes tab: compact quiz cards */
+    .quizzes-grid {
+        gap: 0.4rem !important;
+    }
+
+    .quiz-card,
+    .quiz-meta-card {
+        padding: 0.5rem 0.6rem !important;
+    }
+
+    .quiz-card h3,
+    .quiz-meta-card h3,
+    .quiz-title {
+        font-size: 0.88rem !important;
+    }
+
+    .quiz-meta {
+        grid-template-columns: 1fr !important;
+        gap: 0.4rem !important;
+        padding: 0.5rem !important;
+    }
+
+    .quiz-actions {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .btn-quiz-action {
+        width: 100%;
+    }
+
+    /* Results tab: analytics cards, results table scroll */
+    .results-quiz-selector select {
+        max-width: 100%;
+    }
+
+    .analytics-cards {
+        grid-template-columns: 1fr !important;
+        gap: 0.4rem !important;
+    }
+
+    .analytics-card {
+        padding: 0.5rem 0.6rem !important;
+    }
+
+    .analytics-value {
+        font-size: 1.5rem;
+    }
+
+    .results-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .results-table {
+        font-size: 0.8rem;
+        min-width: 320px;
+    }
+
+    .results-table th,
+    .results-table td {
+        padding: 0.4rem 0.35rem !important;
+    }
+
+    /* Pending tab: compact cards, actions stack */
+    .pending-review-card {
+        padding: 0.5rem 0.55rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .pending-review-title {
+        font-size: 0.85rem !important;
+    }
+
+    .pending-review-info {
+        font-size: 0.7rem !important;
+        gap: 0.35rem !important;
+    }
+
+    .pending-review-actions {
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .pending-review-actions .btn-quiz-action {
+        width: 100%;
+    }
+
+    .empty-state {
+        padding: 1rem 0.75rem !important;
+    }
+
+    .empty-state i {
+        font-size: 2rem !important;
+    }
+
+    .empty-state h3 {
+        font-size: 0.88rem !important;
+    }
+}
+
 /* Animation */
 @keyframes slideIn {
     from {

@@ -133,6 +133,8 @@ body {
     position: sticky;
     top: 0;
     z-index: 50;
+    gap: 0.75rem;
+    min-width: 0; /* Allow flex children to shrink */
 }
 
 .menu-toggle {
@@ -142,17 +144,25 @@ body {
     font-size: 1.5rem;
     color: var(--text-primary);
     cursor: pointer;
+    flex-shrink: 0;
 }
 
 .page-title {
     font-size: 1.75rem;
     color: var(--text-primary);
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin: 0;
 }
 
 .top-bar-right {
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex-shrink: 0; /* Keep lang + user-info visible */
 }
 
 .user-info {

@@ -19,14 +19,19 @@ function initializePage() {
 // Prevent blink: only re-render when chat list data actually changed
 let lastChatsSignature = null;
 
+// Loading spinner HTML
+function getLoadingSpinnerHtml() {
+    const loadingText = typeof window.t === 'function' ? window.t('loading') : 'Loading...';
+    return `<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span>${loadingText}</span></div>`;
+}
+
 // Load Chats List
 async function loadChatsList() {
     const container = document.getElementById('chatsList');
     const noChats = document.getElementById('noChats');
     
-    // Show loading skeleton on first load (only if empty)
-    if (container && !container.querySelector('.chat-item') && !container.querySelector('.skeleton-chat')) {
-        container.innerHTML = getChatsSkeletonHtml();
+    if (container) {
+        container.innerHTML = getLoadingSpinnerHtml();
         container.style.display = 'block';
         noChats.style.display = 'none';
     }
@@ -44,7 +49,8 @@ async function loadChatsList() {
     const signature = chats.map(c =>
         `${c.student.id}|${c.lastMessage?.timestamp ?? ''}|${c.unreadCount}`
     ).join(';');
-    if (lastChatsSignature === signature) {
+    // Only skip when we already rendered the list (avoid leaving spinner visible)
+    if (lastChatsSignature === signature && container.querySelector('.chat-item')) {
         return;
     }
     lastChatsSignature = signature;

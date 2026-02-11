@@ -204,7 +204,7 @@ async function buildOverviewTable(studentPerformance, dailyTasks) {
             const isCompleted = await isDailyTaskCompletedForDate(task.id, student.id, getDateString(selectedDate));
             const statusIcon = isCompleted ? '✅' : '❌';
             const statusClass = isCompleted ? 'completed' : 'pending';
-            const safeTitle = (task.title || '').replace(/"/g, '&quot;');
+            const safeTitle = (task.title || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
             taskCells.push(`<td data-task-title="${safeTitle}"><span class="task-status ${statusClass}">${statusIcon}</span></td>`);
         }
 
