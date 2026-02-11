@@ -47,60 +47,6 @@
                 </div>
             </div>
 
-            <!-- Stat Cards Row -->
-            <div class="stat-cards-row">
-                <!-- Daily Tasks Card -->
-                <div class="stat-card stat-card-daily">
-                    <div class="stat-card-header">
-                        <i class="fas fa-calendar-day"></i>
-                        <span data-i18n="tab_daily">Daily Tasks</span>
-                    </div>
-                    <div class="stat-card-percentage" id="dailyPercentageCard">0%</div>
-                    <div class="stat-card-progress">
-                        <div class="stat-card-progress-fill daily-fill" id="dailyProgressCard" style="width: 0%"></div>
-                    </div>
-                    <div class="stat-card-detail">
-                        <i class="fas fa-check"></i>
-                        <span><strong id="dailyCompletedCard">0</strong>/<span id="dailyTotalCard">0</span></span>
-                        <span class="stat-label" data-i18n="todays_completion">Today's completion</span>
-                    </div>
-                </div>
-
-                <!-- One-time Tasks Card -->
-                <div class="stat-card stat-card-onetime">
-                    <div class="stat-card-header">
-                        <i class="fas fa-tasks"></i>
-                        <span data-i18n="category_onetime">One-time Tasks</span>
-                    </div>
-                    <div class="stat-card-percentage" id="onetimePercentageCard">0%</div>
-                    <div class="stat-card-progress">
-                        <div class="stat-card-progress-fill onetime-fill" id="onetimeProgressCard" style="width: 0%"></div>
-                    </div>
-                    <div class="stat-card-detail">
-                        <i class="fas fa-check-double"></i>
-                        <span><strong id="onetimeCompletedCard">0</strong>/<span id="onetimeTotalCard">0</span></span>
-                        <span class="stat-label" data-i18n="overall_completion">Overall completion</span>
-                    </div>
-                </div>
-
-                <!-- Exams Card -->
-                <div class="stat-card stat-card-exam">
-                    <div class="stat-card-header">
-                        <i class="fas fa-graduation-cap"></i>
-                        <span data-i18n="nav_exams">Exams</span>
-                    </div>
-                    <div class="stat-card-percentage" id="examPercentageCard">0%</div>
-                    <div class="stat-card-progress">
-                        <div class="stat-card-progress-fill exam-fill" id="examProgressCard" style="width: 0%"></div>
-                    </div>
-                    <div class="stat-card-detail">
-                        <i class="fas fa-trophy"></i>
-                        <span><strong id="examPassedCard">0</strong>/<span id="examTotalCard">0</span></span>
-                        <span class="stat-label" data-i18n="passed_quizzes">Passed quizzes</span>
-                    </div>
-                </div>
-            </div>
-
             <!-- CSS-only Tabbed Interface -->
             <div class="tab-wrap-student">
                 <!-- Tab Radio Inputs (hidden) -->
@@ -109,6 +55,7 @@
                 <input type="radio" name="student-tab" id="tab-exams">
                 <input type="radio" name="student-tab" id="tab-messages">
                 <input type="radio" name="student-tab" id="tab-records">
+                <input type="radio" name="student-tab" id="tab-profile">
 
                 <!-- Tab Labels (desktop - shown on larger screens) -->
                 <div class="tab-labels-student tab-labels-desktop">
@@ -133,12 +80,77 @@
                         <i class="fas fa-history"></i>
                         <span data-i18n="tab_records">Records</span>
                     </label>
+                    <label for="tab-profile" class="student-tab-label">
+                        <i class="fas fa-user"></i>
+                        <span data-i18n="profile">Profile</span>
+                    </label>
                 </div>
 
                 <!-- Tab Panels -->
                 <div class="panels-student">
                     <!-- TODAY TAB -->
                     <div class="panel-student panel-today">
+                        <!-- Stat Cards (only on Today / Home) -->
+                        <div class="stat-cards-row">
+                            <div class="stat-card stat-card-daily">
+                                <div class="stat-card-header">
+                                    <i class="fas fa-calendar-day"></i>
+                                    <span data-i18n="tab_daily">Daily Tasks</span>
+                                </div>
+                                <div class="stat-card-percentage" id="dailyPercentageCard">0%</div>
+                                <div class="stat-card-progress">
+                                    <div class="stat-card-progress-fill daily-fill" id="dailyProgressCard" style="width: 0%"></div>
+                                </div>
+                                <div class="stat-card-detail">
+                                    <i class="fas fa-check"></i>
+                                    <span><strong id="dailyCompletedCard">0</strong>/<span id="dailyTotalCard">0</span></span>
+                                    <span class="stat-label" data-i18n="todays_completion">Today's completion</span>
+                                </div>
+                            </div>
+                            <div class="stat-card stat-card-onetime">
+                                <div class="stat-card-header">
+                                    <i class="fas fa-tasks"></i>
+                                    <span data-i18n="category_onetime">One-time Tasks</span>
+                                </div>
+                                <div class="stat-card-percentage" id="onetimePercentageCard">0%</div>
+                                <div class="stat-card-progress">
+                                    <div class="stat-card-progress-fill onetime-fill" id="onetimeProgressCard" style="width: 0%"></div>
+                                </div>
+                                <div class="stat-card-detail">
+                                    <i class="fas fa-check-double"></i>
+                                    <span><strong id="onetimeCompletedCard">0</strong>/<span id="onetimeTotalCard">0</span></span>
+                                    <span class="stat-label" data-i18n="overall_completion">Overall completion</span>
+                                </div>
+                            </div>
+                            <div class="stat-card stat-card-exam">
+                                <div class="stat-card-header">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <span data-i18n="nav_exams">Exams</span>
+                                </div>
+                                <div class="stat-card-percentage" id="examPercentageCard">0%</div>
+                                <div class="stat-card-progress">
+                                    <div class="stat-card-progress-fill exam-fill" id="examProgressCard" style="width: 0%"></div>
+                                </div>
+                                <div class="stat-card-detail">
+                                    <i class="fas fa-trophy"></i>
+                                    <span><strong id="examPassedCard">0</strong>/<span id="examTotalCard">0</span></span>
+                                    <span class="stat-label" data-i18n="passed_quizzes">Passed quizzes</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 30-Day Completion History -->
+                        <div class="completion-history-section" id="completionHistorySection">
+                            <div class="section-title comp-history-title">
+                                <i class="fas fa-chart-line"></i>
+                                <span data-i18n="last_30_days_completion">Last 30 Days</span>
+                                <span class="comp-history-avg" id="compHistoryAvgPct"></span>
+                            </div>
+                            <div class="completion-history-scroll" id="completionHistoryScroll">
+                                <!-- Filled by JS -->
+                            </div>
+                        </div>
+
                         <div class="tasks-section daily-tasks-section">
                             <div class="section-title">
                                 <i class="fas fa-calendar-day"></i>
@@ -186,7 +198,7 @@
                                 <i class="fas fa-clipboard-check"></i>
                                 <span data-i18n="available_quizzes">Available Quizzes</span>
                             </div>
-                            <div id="availableQuizzesList" class="quizzes-grid-student">
+                            <div id="availableQuizzesList" class="quizzes-list-student">
                                 <!-- Available quizzes will be dynamically added here -->
                             </div>
                         </div>
@@ -197,7 +209,7 @@
                                 <i class="fas fa-trophy"></i>
                                 <span data-i18n="completed_quizzes">Completed Quizzes</span>
                             </div>
-                            <div id="completedQuizzesList" class="quizzes-grid-student">
+                            <div id="completedQuizzesList" class="quizzes-list-student">
                                 <!-- Completed quizzes will be dynamically added here -->
                             </div>
                         </div>
@@ -226,6 +238,70 @@
                         </div>
                     </div>
                     <!-- END RECORDS TAB -->
+
+                    <!-- PROFILE TAB -->
+                    <div class="panel-student panel-profile">
+                        <div class="student-profile-section">
+                            <h3 class="profile-section-title">
+                                <i class="fas fa-user-circle"></i> <span data-i18n="student_information">Student Information</span>
+                            </h3>
+                            <div class="profile-info-grid profile-info-student">
+                                <div class="profile-info-card">
+                                    <h4><i class="fas fa-id-card"></i> <span data-i18n="basic_details">Basic Details</span></h4>
+                                    <div class="profile-info-row">
+                                        <span class="profile-info-label" data-i18n="student_id">Student ID</span>
+                                        <span class="profile-info-value" id="profileStudentId">-</span>
+                                    </div>
+                                    <div class="profile-info-row">
+                                        <span class="profile-info-label" data-i18n="date_of_birth">Date of Birth</span>
+                                        <span class="profile-info-value" id="profileDateOfBirth">-</span>
+                                    </div>
+                                    <div class="profile-info-row">
+                                        <span class="profile-info-label" data-i18n="grade">Grade</span>
+                                        <span class="profile-info-value" id="profileGrade">-</span>
+                                    </div>
+                                    <div class="profile-info-row">
+                                        <span class="profile-info-label" data-i18n="section">Section</span>
+                                        <span class="profile-info-value" id="profileSection">-</span>
+                                    </div>
+                                </div>
+                                <div class="profile-info-card">
+                                    <h4><i class="fas fa-address-book"></i> <span data-i18n="contact_details">Contact Details</span></h4>
+                                    <div class="profile-info-row">
+                                        <span class="profile-info-label" data-i18n="phone">Phone</span>
+                                        <span class="profile-info-value" id="profilePhone">-</span>
+                                    </div>
+                                    <div class="profile-info-row">
+                                        <span class="profile-info-label" data-i18n="email">Email</span>
+                                        <span class="profile-info-value" id="profileEmail">-</span>
+                                    </div>
+                                </div>
+                                <div class="profile-info-card">
+                                    <h4><i class="fas fa-users"></i> <span data-i18n="parent_guardian_info">Parent/Guardian</span></h4>
+                                    <div class="profile-info-row">
+                                        <span class="profile-info-label" data-i18n="name">Name</span>
+                                        <span class="profile-info-value" id="profileParentName">-</span>
+                                    </div>
+                                    <div class="profile-info-row">
+                                        <span class="profile-info-label" data-i18n="phone">Phone</span>
+                                        <span class="profile-info-value" id="profileParentPhone">-</span>
+                                    </div>
+                                    <div class="profile-info-row">
+                                        <span class="profile-info-label" data-i18n="email">Email</span>
+                                        <span class="profile-info-value" id="profileParentEmail">-</span>
+                                    </div>
+                                </div>
+                                <div class="profile-info-card">
+                                    <h4><i class="fas fa-calendar-check"></i> <span data-i18n="enrollment_details">Enrollment</span></h4>
+                                    <div class="profile-info-row">
+                                        <span class="profile-info-label" data-i18n="enrollment_date">Enrollment Date</span>
+                                        <span class="profile-info-value" id="profileEnrollmentDate">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END PROFILE TAB -->
                 </div>
             </div>
         </div>
@@ -256,8 +332,28 @@
                 <i class="fas fa-history"></i>
                 <span data-i18n="tab_records">Records</span>
             </label>
+            <label for="tab-profile" class="bottom-nav-item" data-tab="tab-profile">
+                <i class="fas fa-user"></i>
+                <span data-i18n="profile">Profile</span>
+            </label>
         </nav>
         <div class="bottom-nav-fade bottom-nav-fade-right" id="studentNavFadeRight" aria-hidden="true"><i class="fas fa-chevron-right"></i></div>
+    </div>
+
+    <!-- Modal: 30-Day Date Details -->
+    <div class="day-details-overlay" id="dayDetailsOverlay" role="dialog" aria-modal="true" aria-labelledby="dayDetailsTitle" style="display: none;">
+        <div class="day-details-modal">
+            <div class="day-details-header">
+                <h2 id="dayDetailsTitle">Date Details</h2>
+                <button type="button" class="day-details-close" id="dayDetailsClose" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="day-details-body">
+                <div class="day-details-summary" id="dayDetailsSummary"></div>
+                <ul class="day-details-tasks" id="dayDetailsTasks"></ul>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase SDK -->

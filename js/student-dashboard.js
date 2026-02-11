@@ -113,6 +113,21 @@ function loadStudentProfile() {
     if (sidebarName) sidebarName.textContent = currentStudent.name;
     if (sidebarRole) sidebarRole.textContent = currentStudent.email || 'Student';
     if (headerName) headerName.textContent = `Welcome, ${currentStudent.name.split(' ')[0]}!`;
+
+    // Populate Profile tab
+    const fmt = (v) => (v && String(v).trim()) ? v : '-';
+    const fmtDate = (d) => d ? new Date(d).toLocaleDateString() : '-';
+    const setProfile = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setProfile('profileStudentId', fmt(currentStudent.studentId));
+    setProfile('profileDateOfBirth', fmtDate(currentStudent.dateOfBirth));
+    setProfile('profileGrade', fmt(currentStudent.grade));
+    setProfile('profileSection', fmt(currentStudent.section));
+    setProfile('profilePhone', fmt(currentStudent.phone));
+    setProfile('profileEmail', fmt(currentStudent.email));
+    setProfile('profileParentName', fmt(currentStudent.parentName));
+    setProfile('profileParentPhone', fmt(currentStudent.parentPhone));
+    setProfile('profileParentEmail', fmt(currentStudent.parentEmail));
+    setProfile('profileEnrollmentDate', fmtDate(currentStudent.enrollmentDate));
 }
 
 // Load Student Stats
@@ -215,6 +230,9 @@ async function loadStudentTasks() {
     const dailyTasks = await dataManager.getDailyTasksForStudent(currentStudent.id);
     await loadDailyTaskSection('dailyTasksList', dailyTasks);
 
+    // Load 30-day completion history
+    await loadCompletionHistory30Days();
+
     // Load regular tasks
     const pendingContainer = document.getElementById('pendingTasksList');
     const completedContainer = document.getElementById('completedTasksList');
@@ -288,6 +306,96 @@ function loadTaskSection(containerId, tasks, isCompleted) {
             </div>
         `;
     }).join('');
+}
+
+// Load 30-Day Completion History
+async function loadCompletionHistory30Days() {
+    const container = document.getElementById('completionHistoryScroll');
+    if (!container || !currentStudent) return;
+
+    const history = await dataManager.getStudentDailyCompletionRateHistory(currentStudent.id, 30);
+    const _t = typeof window.t === 'function' ? window.t : (k) => k;
+
+    const section = document.getElementById('completionHistorySection');
+    if (!history || history.length === 0 || (history[0] && history[0].total === 0)) {
+        if (section) section.style.display = 'none';
+        return;
+    }
+    if (section) section.style.display = '';
+
+    // Average percentage for last 30 days - show beside heading
+    const totalPct = history.reduce((sum, h) => sum + h.percentage, 0);
+    const avgPct = history.length > 0 ? Math.round(totalPct / history.length) : 0;
+    const avgEl = document.getElementById('compHistoryAvgPct');
+    if (avgEl) {
+        avgEl.textContent = avgPct + '%';
+        avgEl.classList.remove('pct-high', 'pct-mid', 'pct-low');
+        avgEl.classList.add(avgPct >= 80 ? 'pct-high' : avgPct >= 50 ? 'pct-mid' : 'pct-low');
+    }
+
+    // Each column: date on top, percentage below (smaller) - clickable for details
+    const dayCells = history.map(h => {
+        const d = new Date(h.date + 'T12:00:00');
+        const short = d.toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' });
+        const pctClass = h.percentage >= 80 ? 'pct-high' : h.percentage >= 50 ? 'pct-mid' : 'pct-low';
+        return `
+            <div class="comp-history-cell comp-cell-day comp-cell-clickable" data-date="${h.date}" role="button" tabindex="0" title="Click for details">
+                <div class="comp-cell-date">${short}</div>
+                <div class="comp-cell-pct ${pctClass}">${h.percentage}%</div>
+            </div>`;
+    }).join('');
+
+    container.innerHTML = `
+        <div class="comp-history-grid">
+            <div class="comp-history-row">${dayCells}</div>
+        </div>`;
+
+    container.querySelectorAll('.comp-cell-clickable').forEach(cell => {
+        cell.addEventListener('click', () => showDayDetails(cell.dataset.date));
+        cell.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                showDayDetails(cell.dataset.date);
+            }
+        });
+    });
+}
+
+async function showDayDetails(dateStr) {
+    const overlay = document.getElementById('dayDetailsOverlay');
+    const titleEl = document.getElementById('dayDetailsTitle');
+    const summaryEl = document.getElementById('dayDetailsSummary');
+    const tasksEl = document.getElementById('dayDetailsTasks');
+    if (!overlay || !currentStudent) return;
+
+    const details = await dataManager.getStudentDailyCompletionDetailsForDate(currentStudent.id, dateStr);
+    const d = new Date(dateStr + 'T12:00:00');
+    const formattedDate = d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    titleEl.textContent = formattedDate;
+    summaryEl.innerHTML = `<span class="day-details-pct">${details.percentage}%</span> completed: <strong>${details.completed}</strong> of <strong>${details.total}</strong> daily tasks`;
+
+    if (details.tasks.length === 0) {
+        tasksEl.innerHTML = '<li class="day-details-empty">No daily tasks assigned for this period.</li>';
+    } else {
+        tasksEl.innerHTML = details.tasks.map(t => `
+            <li class="day-details-task ${t.completed ? 'completed' : ''}">
+                <i class="fas ${t.completed ? 'fa-check-circle' : 'fa-circle'}"></i>
+                <span>${t.title}</span>
+            </li>
+        `).join('');
+    }
+
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    const closeBtn = document.getElementById('dayDetailsClose');
+    const close = () => {
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    };
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    if (closeBtn) closeBtn.onclick = close;
 }
 
 // Load Daily Task Section
@@ -606,153 +714,113 @@ async function loadStudentQuizzes() {
     await updateExamStatCard(studentId);
 }
 
-// Load available quizzes
+// Load available quizzes - compact list, expand on click for details
 function loadAvailableQuizzes(quizzes) {
     const container = document.getElementById('availableQuizzesList');
     if (!container) return;
-    
+
     if (quizzes.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">No quizzes available at the moment.</p>';
+        container.innerHTML = `<p class="quiz-list-empty">${typeof window.t === 'function' ? window.t('no_available_exams') : 'No exams available at the moment.'}</p>`;
         return;
     }
-    
+
     container.innerHTML = quizzes.map(quiz => {
         const totalMarks = quiz.questions.reduce((sum, q) => sum + q.marks, 0);
         const now = new Date();
         const deadline = quiz.deadline ? new Date(quiz.deadline) : null;
         const isOverdue = deadline && now > deadline;
-        
+
         return `
-            <div class="quiz-card-student">
-                <h3 class="quiz-card-title-student">${quiz.title}</h3>
-                ${quiz.subject ? `<span class="quiz-subject-badge">${quiz.subject}</span>` : ''}
-                ${quiz.description ? `<p class="quiz-description-student">${quiz.description}</p>` : ''}
-                
-                <div class="quiz-info-student">
-                    <div class="quiz-info-item">
-                        <i class="fas fa-question-circle"></i>
-                        <span>${quiz.questions.length} Questions</span>
+            <div class="quiz-row-student quiz-available" data-quiz-id="${quiz.id}">
+                <div class="quiz-row-header" role="button" tabindex="0">
+                    <div class="quiz-row-main">
+                        <span class="quiz-row-title">${quiz.title}</span>
+                        ${quiz.subject ? `<span class="quiz-row-badge">${quiz.subject}</span>` : ''}
+                        <span class="quiz-row-meta">${quiz.questions.length} Q • ${quiz.timeLimit} min</span>
                     </div>
-                    <div class="quiz-info-item">
-                        <i class="fas fa-star"></i>
-                        <span>${totalMarks} Marks</span>
-                    </div>
-                    <div class="quiz-info-item">
-                        <i class="fas fa-clock"></i>
-                        <span>${quiz.timeLimit} Minutes</span>
-                    </div>
-                    <div class="quiz-info-item">
-                        <i class="fas fa-percent"></i>
-                        <span>${quiz.passingPercentage}% to Pass</span>
-                    </div>
+                    <i class="fas fa-chevron-down quiz-row-chevron"></i>
                 </div>
-                
-                ${deadline ? `
-                    <div class="quiz-deadline-warning">
-                        <i class="fas fa-calendar-alt"></i>
-                        ${isOverdue ? 
-                            `<span>⚠️ Deadline passed: ${deadline.toLocaleDateString()}</span>` : 
-                            `<span>Due: ${deadline.toLocaleDateString()}</span>`
-                        }
+                <div class="quiz-row-details">
+                    ${quiz.description ? `<p class="quiz-row-desc">${quiz.description}</p>` : ''}
+                    <div class="quiz-row-info">
+                        <span><i class="fas fa-star"></i> ${totalMarks} Marks</span>
+                        <span><i class="fas fa-percent"></i> ${quiz.passingPercentage}% to Pass</span>
                     </div>
-                ` : ''}
-                
-                <a href="/pages/student-exam-take.html?quizId=${quiz.id}" class="btn-take-quiz">
-                    <i class="fas fa-play"></i> Start Exam
-                </a>
+                    ${deadline ? `
+                        <div class="quiz-deadline-warning quiz-row-deadline">
+                            <i class="fas fa-calendar-alt"></i>
+                            ${isOverdue ? `⚠️ Deadline passed: ${deadline.toLocaleDateString()}` : `Due: ${deadline.toLocaleDateString()}`}
+                        </div>
+                    ` : ''}
+                    <a href="/pages/student-exam-take.html?quizId=${quiz.id}" class="btn-take-quiz quiz-row-btn" onclick="event.stopPropagation()">
+                        <i class="fas fa-play"></i> Start Exam
+                    </a>
+                </div>
             </div>
         `;
     }).join('');
+
+    container.querySelectorAll('.quiz-row-header').forEach(el => {
+        el.addEventListener('click', () => {
+            const row = el.closest('.quiz-row-student');
+            if (row) row.classList.toggle('expanded');
+        });
+    });
 }
 
-// Load completed quizzes
+// Load completed quizzes - compact list, expand on click for details
 async function loadCompletedQuizzes(quizzes, studentId) {
     const container = document.getElementById('completedQuizzesList');
     if (!container) return;
-    
+
     if (quizzes.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">You haven\'t completed any quizzes yet.</p>';
+        container.innerHTML = `<p class="quiz-list-empty">${typeof window.t === 'function' ? window.t('no_completed_exams') : "You haven't completed any exams yet."}</p>`;
         return;
     }
-    
+
     const items = [];
     for (const quiz of quizzes) {
         const result = await dataManager.getQuizResult(quiz.id, studentId);
         if (!result) continue;
-        
-        const totalMarks = quiz.questions.reduce((sum, q) => sum + q.marks, 0);
+
         const minutes = Math.floor(result.timeTaken / 60);
         const seconds = result.timeTaken % 60;
-        
         const isPending = result.status === 'pending_review';
-        
+        const statusLabel = isPending ? '⏳ Pending Review' : (result.passed ? '✅ Passed' : '❌ Failed');
+        const statusClass = isPending ? 'pending' : (result.passed ? 'passed' : 'failed');
+
         items.push(`
-            <div class="quiz-card-student completed ${isPending ? 'pending-review' : ''}">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <h3 class="quiz-card-title-student">${quiz.title}</h3>
-                    ${isPending ? `
-                        <span style="background: #FEF3C7; color: #92400E; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">
-                            ⏳ Pending Review
-                        </span>
-                    ` : ''}
+            <div class="quiz-row-student quiz-completed ${isPending ? 'pending-review' : ''}" data-quiz-id="${quiz.id}">
+                <div class="quiz-row-header" role="button" tabindex="0">
+                    <div class="quiz-row-main">
+                        <span class="quiz-row-title">${quiz.title}</span>
+                        ${quiz.subject ? `<span class="quiz-row-badge">${quiz.subject}</span>` : ''}
+                        <span class="quiz-row-score ${statusClass}">${result.percentage}% ${statusLabel}</span>
+                    </div>
+                    <i class="fas fa-chevron-down quiz-row-chevron"></i>
                 </div>
-                ${quiz.subject ? `<span class="quiz-subject-badge">${quiz.subject}</span>` : ''}
-                
-                ${isPending ? `
-                    <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
-                        <p style="color: #92400E; margin: 0; font-size: 0.95rem;">
-                            <i class="fas fa-hourglass-half"></i> This exam is pending teacher review. 
-                            ${result.score > 0 ? 'Partial score shown below (auto-graded questions only).' : 'All questions require manual grading.'}
+                <div class="quiz-row-details">
+                    ${isPending ? `
+                        <p class="quiz-row-pending-msg">
+                            <i class="fas fa-hourglass-half"></i> This exam is pending teacher review.
+                            ${result.score > 0 ? 'Partial score shown (auto-graded questions only).' : 'All questions require manual grading.'}
                         </p>
-                    </div>
-                ` : ''}
-                
-                <div class="quiz-result-display">
-                    <div class="quiz-score">
-                        <span class="quiz-score-value">${result.percentage}%</span>
-                        <span class="quiz-score-label">
-                            ${isPending && result.score > 0 ? 'Partial: ' : ''}
-                            ${result.score} / ${result.totalMarks} marks
-                        </span>
-                    </div>
-                    
-                    ${!isPending ? `
-                        <div class="quiz-result-status ${result.passed ? 'passed' : 'failed'}">
-                            ${result.passed ? '✅ Passed' : '❌ Failed'}
-                        </div>
                     ` : ''}
-                    
-                    <div class="quiz-result-details">
-                        <div class="quiz-result-item">
-                            <span>Questions:</span>
-                            <strong>${quiz.questions.length}</strong>
+                    <div class="quiz-result-display quiz-row-result">
+                        <div class="quiz-score">
+                            <span class="quiz-score-value">${result.percentage}%</span>
+                            <span class="quiz-score-label">${result.score} / ${result.totalMarks} marks</span>
                         </div>
-                        <div class="quiz-result-item">
-                            <span>Time Taken:</span>
-                            <strong>${minutes}m ${seconds}s</strong>
+                        <div class="quiz-result-details">
+                            <div class="quiz-result-item"><span>Time Taken:</span><strong>${minutes}m ${seconds}s</strong></div>
+                            <div class="quiz-result-item"><span>Submitted:</span><strong>${new Date(result.submittedAt).toLocaleDateString()}</strong></div>
                         </div>
-                        <div class="quiz-result-item">
-                            <span>Submitted:</span>
-                            <strong>${new Date(result.submittedAt).toLocaleDateString()}</strong>
-                        </div>
-                        ${!isPending ? `
-                            <div class="quiz-result-item">
-                                <span>Passing %:</span>
-                                <strong>${quiz.passingPercentage}%</strong>
-                            </div>
-                        ` : ''}
                     </div>
-                    
                     ${result.answers && result.answers.some(a => a.teacherFeedback) ? `
-                        <div style="background: #E0F2FE; border-left: 4px solid #0284C7; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-                            <div style="font-weight: 600; color: #075985; margin-bottom: 0.5rem;">
-                                <i class="fas fa-comment-dots"></i> Teacher Feedback:
-                            </div>
+                        <div class="quiz-feedback">
+                            <strong><i class="fas fa-comment-dots"></i> Teacher Feedback:</strong>
                             ${result.answers.filter(a => a.teacherFeedback).map((a, idx) => `
-                                <div style="margin-bottom: 0.5rem;">
-                                    <strong style="color: #0369A1;">Q${idx + 1}:</strong> 
-                                    <span style="color: #0C4A6E;">${a.teacherFeedback}</span>
-                                </div>
+                                <div><strong>Q${idx + 1}:</strong> ${a.teacherFeedback}</div>
                             `).join('')}
                         </div>
                     ` : ''}
@@ -761,4 +829,11 @@ async function loadCompletedQuizzes(quizzes, studentId) {
         `);
     }
     container.innerHTML = items.join('');
+
+    container.querySelectorAll('.quiz-row-header').forEach(el => {
+        el.addEventListener('click', () => {
+            const row = el.closest('.quiz-row-student');
+            if (row) row.classList.toggle('expanded');
+        });
+    });
 }

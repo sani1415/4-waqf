@@ -840,6 +840,60 @@ class DataManager {
         return history.reverse();
     }
 
+    /** Get daily task completion rate for last N days (for 30-day history view) */
+    async getStudentDailyCompletionRateHistory(studentId, days = 30) {
+        const dailyTasks = await this.getDailyTasksForStudent(studentId);
+        const studentIdStr = String(studentId);
+        const totalTasks = dailyTasks.length;
+
+        if (totalTasks === 0) {
+            return Array.from({ length: days }, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - (days - 1 - i));
+                return { date: d.toISOString().split('T')[0], completed: 0, total: 0, percentage: 0 };
+            });
+        }
+
+        const history = [];
+        const currentDate = new Date();
+
+        for (let i = 0; i < days; i++) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            let completed = 0;
+            for (const task of dailyTasks) {
+                const completions = task.dailyCompletions && task.dailyCompletions[studentIdStr]
+                    ? task.dailyCompletions[studentIdStr]
+                    : [];
+                if (completions.includes(dateStr)) completed++;
+            }
+            const pct = totalTasks > 0 ? Math.round((completed / totalTasks) * 100) : 0;
+            history.push({ date: dateStr, completed, total: totalTasks, percentage: pct });
+            currentDate.setDate(currentDate.getDate() - 1);
+        }
+
+        return history.reverse();
+    }
+
+    /** Get detailed task completion for a specific date (for 30-day date click) */
+    async getStudentDailyCompletionDetailsForDate(studentId, dateStr) {
+        const dailyTasks = await this.getDailyTasksForStudent(studentId);
+        const studentIdStr = String(studentId);
+        const tasks = dailyTasks.map(task => {
+            const completions = task.dailyCompletions && task.dailyCompletions[studentIdStr]
+                ? task.dailyCompletions[studentIdStr]
+                : [];
+            return {
+                id: task.id,
+                title: task.title,
+                completed: completions.includes(dateStr)
+            };
+        });
+        const completed = tasks.filter(t => t.completed).length;
+        const total = tasks.length;
+        const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+        return { date: dateStr, tasks, completed, total, percentage };
+    }
+
     // Statistics
     async getStudentStats(studentId) {
         const regularTasks = await this.getRegularTasksForStudent(studentId);
