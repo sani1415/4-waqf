@@ -130,6 +130,10 @@ function loadStudentProfile() {
     setProfile('profileParentName', fmt(currentStudent.parentName));
     setProfile('profileParentPhone', fmt(currentStudent.parentPhone));
     setProfile('profileParentEmail', fmt(currentStudent.parentEmail));
+    setProfile('profileFatherWork', fmt(currentStudent.fatherWork));
+    setProfile('profileDistrict', fmt(currentStudent.district));
+    setProfile('profileUpazila', fmt(currentStudent.upazila));
+    setProfile('profileAddress', fmt(currentStudent.address));
     setProfile('profileEnrollmentDate', fmtDate(currentStudent.enrollmentDate));
 }
 

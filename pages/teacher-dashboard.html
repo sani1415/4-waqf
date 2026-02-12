@@ -246,9 +246,15 @@
         <section id="students-section" class="content-section">
             <div class="section-header">
                 <h2><span data-i18n="manage_students">Manage Students</span> <span class="student-count-badge" id="studentCountBadge">0</span></h2>
-                <button class="btn-primary" onclick="showAddStudentModal()">
-                    <i class="fas fa-user-plus"></i> <span data-i18n="add_student">Add Student</span>
-                </button>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn-primary" onclick="showAddStudentModal()">
+                        <i class="fas fa-user-plus"></i> <span data-i18n="add_student">Add Student</span>
+                    </button>
+                    <button class="btn-secondary" onclick="document.getElementById('importStudentsFile').click()">
+                        <i class="fas fa-file-upload"></i> <span data-i18n="import_students">Import from CSV</span>
+                    </button>
+                    <input type="file" id="importStudentsFile" accept=".csv,.txt" style="display:none" onchange="handleImportStudentsFile(event)">
+                </div>
             </div>
             <div id="studentsList" class="students-grid">
                 <div class="loading-spinner" style="grid-column: 1 / -1;"><i class="fas fa-circle-notch fa-spin"></i><span data-i18n="loading">Loading...</span></div>
@@ -494,10 +500,33 @@
                             <label for="parentEmail" data-i18n="parent_email">Parent Email</label>
                             <input type="email" id="parentEmail" placeholder="parent@example.com">
                         </div>
+                        <div class="form-group">
+                            <label for="fatherWork" data-i18n="father_work">Father's Work</label>
+                            <input type="text" id="fatherWork" data-i18n-placeholder="placeholder_father_work" placeholder="e.g. Business, Teacher">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Section 4: Admission / Notes -->
+                <!-- Section 4: Address -->
+                <div class="form-section">
+                    <h3 class="section-header"><i class="fas fa-map-marker-alt"></i> <span data-i18n="address">Address</span></h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="district" data-i18n="district">District (জেলা)</label>
+                            <input type="text" id="district" data-i18n-placeholder="placeholder_district" placeholder="District">
+                        </div>
+                        <div class="form-group">
+                            <label for="upazila" data-i18n="upazila">Upazila (উপজেলা)</label>
+                            <input type="text" id="upazila" data-i18n-placeholder="placeholder_upazila" placeholder="Upazila / Sub-district">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="address" data-i18n="detail_address">Detail Address</label>
+                        <input type="text" id="address" data-i18n-placeholder="placeholder_address" placeholder="Village, Road, House no, etc.">
+                    </div>
+                </div>
+
+                <!-- Section 5: Admission / Notes -->
                 <div class="form-section">
                     <h3 class="section-header"><i class="fas fa-calendar-check"></i> <span data-i18n="enrollment_details">Enrollment Details</span></h3>
                     <div class="form-group">

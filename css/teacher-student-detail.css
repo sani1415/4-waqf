@@ -1852,3 +1852,64 @@ input.modal-toggle:checked ~ .checkbox-sheet,
         width: 280px;
     }
 }
+
+/* Edit Student Modal - Floating header & actions on mobile */
+.edit-modal-header-sticky {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.edit-modal-header-sticky .close {
+    float: none;
+    flex-shrink: 0;
+    order: 2;
+}
+.edit-modal-header-sticky h2 {
+    flex: 1;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .edit-student-modal-content {
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh;
+        padding-bottom: 0;
+    }
+    .edit-student-modal-content .edit-modal-header-sticky {
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 20;
+        background: white;
+        padding: 0 0 1rem 0;
+        margin: 0 0 1rem 0;
+        border-bottom: 1px solid #E2E8F0;
+        flex-shrink: 0;
+    }
+    .edit-student-modal-content .edit-student-form {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+    }
+    .edit-student-modal-content .edit-form-body-scroll {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 1rem;
+    }
+    .edit-student-modal-content .edit-form-actions-sticky {
+        flex-shrink: 0;
+        background: white;
+        margin: 0 -1rem -1rem -1rem;
+        padding: 1rem;
+        border-top: 1px solid #E2E8F0;
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+    }
+}

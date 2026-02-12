@@ -705,6 +705,100 @@ function closeAddStudentModal() {
     document.getElementById('addStudentForm').reset();
 }
 
+// Parse CSV text into rows (handles quoted fields)
+function parseCSV(text) {
+    const rows = [];
+    const lines = text.split(/\r?\n/).filter(line => line.trim());
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const cols = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let j = 0; j < line.length; j++) {
+            const c = line[j];
+            if (c === '"') inQuotes = !inQuotes;
+            else if (c === ',' && !inQuotes) { cols.push(cur.trim()); cur = ''; }
+            else cur += c;
+        }
+        cols.push(cur.trim());
+        rows.push(cols);
+    }
+    return rows;
+}
+
+// Handle Import Students from CSV file
+async function handleImportStudentsFile(event) {
+    const input = event.target;
+    const file = input && input.files && input.files[0];
+    if (!file) return;
+    input.value = '';
+    const text = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result || '');
+        r.onerror = () => reject(new Error('Failed to read file'));
+        r.readAsText(file, 'UTF-8');
+    });
+    const rows = parseCSV(text);
+    if (rows.length < 2) {
+        alert('❌ ' + (_t('import_no_data') || 'No data found. Use the template: templates/students-import-template.csv'));
+        return;
+    }
+    const header = rows[0].map(h => (h || '').toLowerCase().replace(/\s+/g, ' ').trim());
+    const idx = (name) => {
+        const n = name.toLowerCase();
+        return header.findIndex(h => h && (h.includes(n) || n.includes(h)));
+    };
+    const getCol = (row, names) => {
+        for (const n of names) {
+            const i = idx(n);
+            if (i >= 0 && row[i] !== undefined) return (row[i] || '').trim();
+        }
+        return '';
+    };
+    let added = 0, skipped = 0, errors = [];
+    for (let r = 1; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row || row.every(c => !c)) continue;
+        const name = getCol(row, ['name']);
+        const dateOfBirth = getCol(row, ['date of birth', 'dob', 'birth']);
+        const enrollmentDate = getCol(row, ['admission date', 'enrollment date', 'enrollment', 'admission']);
+        const parentName = getCol(row, ['parent name', 'parent', 'guardian']);
+        const parentPhone = getCol(row, ['parent phone', 'guardian phone']);
+        if (!name) { skipped++; continue; }
+        if (!dateOfBirth) { errors.push(`Row ${r + 1}: ${name} - Date of Birth required`); continue; }
+        if (!parentName) { errors.push(`Row ${r + 1}: ${name} - Parent Name required`); continue; }
+        if (!parentPhone) { errors.push(`Row ${r + 1}: ${name} - Parent Phone required`); continue; }
+        const adm = enrollmentDate || dateOfBirth || new Date().toISOString().slice(0, 10);
+        const studentData = {
+            name,
+            dateOfBirth,
+            enrollmentDate: adm,
+            phone: getCol(row, ['phone', 'student phone']),
+            email: getCol(row, ['email', 'student email']),
+            parentName,
+            parentPhone,
+            parentEmail: getCol(row, ['parent email']),
+            fatherWork: getCol(row, ["father's work", 'father work', 'father occupation', 'parent work']),
+            district: getCol(row, ['district', 'jela', 'জেলা']),
+            upazila: getCol(row, ['upazila', 'upozela', 'sub district', 'উপজেলা']),
+            address: getCol(row, ['address', 'detail address', 'detailed address']),
+            pin: getCol(row, ['pin']) || '1234'
+        };
+        try {
+            await dataManager.addStudent(studentData);
+            added++;
+        } catch (e) {
+            errors.push(`Row ${r + 1}: ${name} - ${e.message || 'Error'}`);
+        }
+    }
+    await loadStudentsList();
+    updateStudentCount((await dataManager.getStudents()).length);
+    const msg = (added ? `✅ ${added} student(s) imported. ` : '') +
+        (skipped ? `⏭ ${skipped} row(s) skipped. ` : '') +
+        (errors.length ? `❌ Errors: ${errors.slice(0, 5).join('; ')}${errors.length > 5 ? '...' : ''}` : '');
+    alert(msg || (_t('import_no_data') || 'No valid rows to import.'));
+}
+
 // Handle Add Student
 async function handleAddStudent(e) {
     e.preventDefault();
@@ -721,6 +815,10 @@ async function handleAddStudent(e) {
         parentName: document.getElementById('parentName').value.trim(),
         parentPhone: document.getElementById('parentPhone').value.trim(),
         parentEmail: document.getElementById('parentEmail').value.trim(),
+        fatherWork: (document.getElementById('fatherWork') && document.getElementById('fatherWork').value) ? document.getElementById('fatherWork').value.trim() : '',
+        district: (document.getElementById('district') && document.getElementById('district').value) ? document.getElementById('district').value.trim() : '',
+        upazila: (document.getElementById('upazila') && document.getElementById('upazila').value) ? document.getElementById('upazila').value.trim() : '',
+        address: (document.getElementById('address') && document.getElementById('address').value) ? document.getElementById('address').value.trim() : '',
         enrollmentDate: document.getElementById('enrollmentDate').value
     };
 

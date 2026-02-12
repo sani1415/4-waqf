@@ -153,6 +153,10 @@ function loadStudentProfileInfo() {
     document.getElementById('profileParentName').textContent = currentStudent.parentName || '-';
     document.getElementById('profileParentPhone').textContent = currentStudent.parentPhone || '-';
     document.getElementById('profileParentEmail').textContent = currentStudent.parentEmail || '-';
+    const fwEl = document.getElementById('profileFatherWork'); if (fwEl) fwEl.textContent = currentStudent.fatherWork || '-';
+    const distEl = document.getElementById('profileDistrict'); if (distEl) distEl.textContent = currentStudent.district || '-';
+    const upaEl = document.getElementById('profileUpazila'); if (upaEl) upaEl.textContent = currentStudent.upazila || '-';
+    const addrEl = document.getElementById('profileAddress'); if (addrEl) addrEl.textContent = currentStudent.address || '-';
     document.getElementById('profileEnrollmentDate').textContent = formattedEnrollment;
     document.getElementById('profileMemberSince').textContent = memberSince;
 }
@@ -168,6 +172,10 @@ function showEditStudentModal() {
     document.getElementById('editParentName').value = currentStudent.parentName || '';
     document.getElementById('editParentPhone').value = currentStudent.parentPhone || '';
     document.getElementById('editParentEmail').value = currentStudent.parentEmail || '';
+    const editFw = document.getElementById('editFatherWork'); if (editFw) editFw.value = currentStudent.fatherWork || '';
+    const editDist = document.getElementById('editDistrict'); if (editDist) editDist.value = currentStudent.district || '';
+    const editUpa = document.getElementById('editUpazila'); if (editUpa) editUpa.value = currentStudent.upazila || '';
+    const editAddr = document.getElementById('editAddress'); if (editAddr) editAddr.value = currentStudent.address || '';
     document.getElementById('editEnrollmentDate').value = currentStudent.enrollmentDate || '';
     
     // Show modal (override checkbox-modal CSS)
@@ -251,7 +259,11 @@ async function handleUpdateStudent(e) {
         email: document.getElementById('editStudentEmail').value.trim(),
         parentName: document.getElementById('editParentName').value.trim(),
         parentPhone: document.getElementById('editParentPhone').value.trim(),
-        parentEmail: document.getElementById('editParentEmail').value.trim()
+        parentEmail: document.getElementById('editParentEmail').value.trim(),
+        fatherWork: (document.getElementById('editFatherWork') && document.getElementById('editFatherWork').value) ? document.getElementById('editFatherWork').value.trim() : '',
+        district: (document.getElementById('editDistrict') && document.getElementById('editDistrict').value) ? document.getElementById('editDistrict').value.trim() : '',
+        upazila: (document.getElementById('editUpazila') && document.getElementById('editUpazila').value) ? document.getElementById('editUpazila').value.trim() : '',
+        address: (document.getElementById('editAddress') && document.getElementById('editAddress').value) ? document.getElementById('editAddress').value.trim() : ''
     };
     
     // Validation (similar to add student)
