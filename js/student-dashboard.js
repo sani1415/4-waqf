@@ -119,8 +119,12 @@ function loadStudentProfile() {
     const setProfile = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     setProfile('profileStudentId', fmt(currentStudent.studentId));
     setProfile('profileDateOfBirth', fmtDate(currentStudent.dateOfBirth));
-    setProfile('profileGrade', fmt(currentStudent.grade));
-    setProfile('profileSection', fmt(currentStudent.section));
+    const yearNum = dataManager && typeof dataManager.getStudentYear === 'function' ? dataManager.getStudentYear(currentStudent.enrollmentDate) : 1;
+    const yearKeys = ['', 'first_year', 'second_year', 'third_year', 'fourth_year', 'fifth_year', 'sixth_year', 'seventh_year', 'eighth_year', 'ninth_year', 'tenth_year'];
+    const yearKey = yearKeys[yearNum] || ('year_' + yearNum);
+    const yearLabel = (yearKey && typeof _t === 'function' ? _t(yearKey) : null) || ('Year ' + yearNum);
+    setProfile('profileYear', yearLabel);
+    setProfile('profileAdmissionDate', fmtDate(currentStudent.enrollmentDate));
     setProfile('profilePhone', fmt(currentStudent.phone));
     setProfile('profileEmail', fmt(currentStudent.email));
     setProfile('profileParentName', fmt(currentStudent.parentName));

@@ -12,6 +12,15 @@ class DataManager {
         return String(a) === String(b);
     }
 
+    /** Get study year (1, 2, 3...) from admission/enrollment date. Used for "First Year", "Second Year" etc. */
+    getStudentYear(admissionDate) {
+        if (!admissionDate) return 1;
+        const adm = new Date(admissionDate);
+        const now = new Date();
+        const yearIndex = now.getFullYear() - adm.getFullYear() + 1;
+        return Math.max(1, yearIndex);
+    }
+
     // Initialize data manager and storage
     async initialize() {
         if (this.initialized) return;
@@ -95,8 +104,6 @@ class DataManager {
                 email: 'ahmed@example.com',
                 phone: '+1234567890',
                 dateOfBirth: '2010-05-15',
-                grade: '8th Grade',
-                section: 'A',
                 studentId: 'waqf-001',
                 pin: '1234',
                 pinSetAt: '2024-09-01T10:00:00.000Z',
@@ -115,8 +122,6 @@ class DataManager {
                 email: 'fatima@example.com',
                 phone: '+1234567891',
                 dateOfBirth: '2011-03-22',
-                grade: '7th Grade',
-                section: 'B',
                 studentId: 'waqf-002',
                 pin: '1234',
                 pinSetAt: '2024-09-01T10:00:00.000Z',
@@ -135,8 +140,6 @@ class DataManager {
                 email: 'omar@example.com',
                 phone: '+1234567892',
                 dateOfBirth: '2009-08-10',
-                grade: '9th Grade',
-                section: 'A',
                 studentId: 'waqf-003',
                 pin: '1234',
                 pinSetAt: '2024-09-01T10:00:00.000Z',
@@ -155,8 +158,6 @@ class DataManager {
                 email: 'aisha@example.com',
                 phone: '+1234567893',
                 dateOfBirth: '2010-11-30',
-                grade: '8th Grade',
-                section: 'B',
                 studentId: 'waqf-004',
                 pin: '1234',
                 pinSetAt: '2024-09-01T10:00:00.000Z',
@@ -175,8 +176,6 @@ class DataManager {
                 email: 'yusuf@example.com',
                 phone: '+1234567894',
                 dateOfBirth: '2011-01-18',
-                grade: '7th Grade',
-                section: 'A',
                 studentId: 'waqf-005',
                 pin: '1234',
                 pinSetAt: '2024-09-01T10:00:00.000Z',

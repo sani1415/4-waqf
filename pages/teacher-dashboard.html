@@ -52,8 +52,8 @@
 
         <div class="sidebar-footer">
             <a href="/index.html" class="nav-item" onclick="if(typeof logoutTeacher==='function')logoutTeacher();">
-                <i class="fas fa-arrow-left"></i>
-                <span data-i18n="nav_back_home">Back to Home</span>
+                <i class="fas fa-sign-out-alt"></i>
+                <span data-i18n="logout">Logout</span>
             </a>
         </div>
     </div>
@@ -455,30 +455,8 @@
                             <input type="date" id="dateOfBirth" required>
                         </div>
                         <div class="form-group">
-                            <label for="grade"><span data-i18n="grade">Grade</span> <span class="required" data-i18n="required">*</span></label>
-                            <select id="grade" required>
-                                <option value="" data-i18n="select_grade">Select Grade</option>
-                                <option value="1st Grade">1st Grade</option>
-                                <option value="2nd Grade">2nd Grade</option>
-                                <option value="3rd Grade">3rd Grade</option>
-                                <option value="4th Grade">4th Grade</option>
-                                <option value="5th Grade">5th Grade</option>
-                                <option value="6th Grade">6th Grade</option>
-                                <option value="7th Grade">7th Grade</option>
-                                <option value="8th Grade">8th Grade</option>
-                                <option value="9th Grade">9th Grade</option>
-                                <option value="10th Grade">10th Grade</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="section"><span data-i18n="section">Section</span> <span class="required" data-i18n="required">*</span></label>
-                            <select id="section" required>
-                                <option value="" data-i18n="select_section">Select Section</option>
-                                <option value="A" data-i18n="section_a">Section A</option>
-                                <option value="B" data-i18n="section_b">Section B</option>
-                                <option value="C" data-i18n="section_c">Section C</option>
-                                <option value="D" data-i18n="section_d">Section D</option>
-                            </select>
+                            <label for="enrollmentDate"><span data-i18n="admission_date">Admission Date</span> <span class="required" data-i18n="required">*</span></label>
+                            <input type="date" id="enrollmentDate" required>
                         </div>
                     </div>
                 </div>
@@ -519,15 +497,9 @@
                     </div>
                 </div>
 
-                <!-- Section 4: Enrollment Details -->
+                <!-- Section 4: Admission / Notes -->
                 <div class="form-section">
                     <h3 class="section-header"><i class="fas fa-calendar-check"></i> <span data-i18n="enrollment_details">Enrollment Details</span></h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="enrollmentDate"><span data-i18n="enrollment_date">Enrollment Date</span> <span class="required" data-i18n="required">*</span></label>
-                            <input type="date" id="enrollmentDate" required>
-                        </div>
-                    </div>
                     <div class="form-group">
                         <label for="initialNotes" data-i18n="initial_notes_optional">Initial Notes (Optional)</label>
                         <textarea id="initialNotes" rows="3" data-i18n-placeholder="placeholder_notes" placeholder="Any relevant information about the student..."></textarea>

@@ -6,6 +6,14 @@ function _t(key, params) {
     return typeof window.t === 'function' ? window.t(key, params) : key;
 }
 
+function getStudentYearLabel(student) {
+    if (!student || !dataManager || typeof dataManager.getStudentYear !== 'function') return 'N/A';
+    const n = dataManager.getStudentYear(student.enrollmentDate);
+    const keys = ['', 'first_year', 'second_year', 'third_year', 'fourth_year', 'fifth_year', 'sixth_year', 'seventh_year', 'eighth_year', 'ninth_year', 'tenth_year'];
+    const key = keys[n] || ('year_' + n);
+    return (key && _t(key)) || ('Year ' + n);
+}
+
 // Initialize task filter at the top level to avoid temporal dead zone issues
 let currentTaskFilter = 'all';
 
@@ -353,7 +361,7 @@ async function loadStudentsProgress() {
                     <div class="student-avatar">${initial}</div>
                     <div class="student-info">
                         <div class="student-name" title="${(student.name || '').replace(/"/g, '&quot;')}">${student.name}</div>
-                        <div class="student-grade">${student.grade || 'N/A'} • Section ${student.section || 'N/A'} • ${stats.dailyCompletedToday}/${stats.dailyTotal} tasks</div>
+                        <div class="student-grade">${getStudentYearLabel(student)} • ${stats.dailyCompletedToday}/${stats.dailyTotal} tasks</div>
                     </div>
                     <span class="completion-badge" style="background:${badgeBg};color:${badgeColor};">${dailyPercentage}%</span>
                     <div class="progress-bar-container"><div class="progress-bar" style="width:${dailyPercentage}%;background:${barBg};"></div></div>
@@ -375,7 +383,7 @@ async function loadStudentsProgress() {
                     <div class="student-avatar">${initial}</div>
                     <div class="student-info">
                         <div class="student-name" title="${(student.name || '').replace(/"/g, '&quot;')}">${student.name}</div>
-                        <div class="student-grade">${student.grade || 'N/A'} • Section ${student.section || 'N/A'} • ${stats.completed}/${stats.total} tasks</div>
+                        <div class="student-grade">${getStudentYearLabel(student)} • ${stats.completed}/${stats.total} tasks</div>
                     </div>
                     <span class="completion-badge" style="background:${badgeBg};color:${badgeColor};">${stats.percentage}%</span>
                     <div class="progress-bar-container"><div class="progress-bar" style="width:${stats.percentage}%;background:${barBg};"></div></div>
@@ -620,13 +628,13 @@ async function loadStudentsList() {
                     <div class="student-card-avatar">${initial}</div>
                     <div>
                         <h3 class="student-name">${student.name}</h3>
-                        <p class="student-meta">${student.grade || 'No grade'}${student.phone ? ` • ${student.phone}` : ''}</p>
+                        <p class="student-meta">${getStudentYearLabel(student)}${student.phone ? ` • ${student.phone}` : ''}</p>
                     </div>
                 </div>
                 
                 <!-- New: Grade and Phone badges -->
                 <div class="compact-badges">
-                    <span class="mini-badge">${student.grade || 'N/A'}</span>
+                    <span class="mini-badge">${getStudentYearLabel(student)}</span>
                     ${student.phone ? `<span class="mini-badge"><i class="fas fa-phone"></i> ${student.phone}</span>` : ''}
                 </div>
                 
@@ -708,8 +716,6 @@ async function handleAddStudent(e) {
         studentId: document.getElementById('studentId').value.trim(),
         pin: pinVal || '1234',
         dateOfBirth: document.getElementById('dateOfBirth').value,
-        grade: document.getElementById('grade').value,
-        section: document.getElementById('section').value,
         phone: document.getElementById('studentPhone').value.trim(),
         email: document.getElementById('studentEmail').value.trim(),
         parentName: document.getElementById('parentName').value.trim(),
@@ -738,16 +744,6 @@ async function handleAddStudent(e) {
     
     if (!studentData.dateOfBirth) {
         alert('❌ ' + _t('alert_dob_required'));
-        return;
-    }
-    
-    if (!studentData.grade) {
-        alert('❌ ' + _t('alert_grade_required'));
-        return;
-    }
-    
-    if (!studentData.section) {
-        alert('❌ ' + _t('alert_section_required'));
         return;
     }
     
@@ -1051,7 +1047,7 @@ function displayBestStudentsOverview(studentPerformance) {
                 <div class="best-student-rank">${medal}</div>
                 <div class="best-student-info">
                     <h4>${sp.student.name}</h4>
-                    <p>${sp.student.grade || 'N/A'} - Section ${sp.student.section || 'N/A'}</p>
+                    <p>${getStudentYearLabel(sp.student)}</p>
                 </div>
                 <div class="best-student-percentage">${sp.percentage}%</div>
             </div>
@@ -1106,7 +1102,7 @@ async function buildOverviewTableDashboard(studentPerformance, dailyTasks) {
         
         const trophyIcon = isTopPerformer ? '<span class="completion-trophy">🏆</span>' : '';
         
-        const gradeSec = `${student.grade || 'N/A'} • ${student.section || 'N/A'}`;
+        const yearLabel = getStudentYearLabel(student);
         rows.push(`
             <tr class="${isTopPerformer ? 'top-performer' : ''}">
                 <td class="sticky-col student-col">
@@ -1115,14 +1111,13 @@ async function buildOverviewTableDashboard(studentPerformance, dailyTasks) {
                         <div class="student-name-info">
                             <h4>${student.name}</h4>
                             <p class="desktop-only">${student.studentId || 'N/A'}</p>
-                            <p class="mobile-student-meta">${gradeSec}<br><strong class="completion-cell ${completionClass}">${sp.percentage}%${trophyIcon}</strong></p>
+                            <p class="mobile-student-meta">${yearLabel}<br><strong class="completion-cell ${completionClass}">${sp.percentage}%${trophyIcon}</strong></p>
                         </div>
                     </div>
                 </td>
                 <td class="sticky-col info-col">
                     <div class="info-cell">
-                        <span class="info-badge">${student.grade || 'N/A'}</span>
-                        <span class="info-badge">Section ${student.section || 'N/A'}</span>
+                        <span class="info-badge">${yearLabel}</span>
                     </div>
                 </td>
                 ${taskCells.join('')}

@@ -141,8 +141,13 @@ function loadStudentProfileInfo() {
     const pinSetByEl = document.getElementById('profilePinSetBy');
     if (pinSetByEl) pinSetByEl.textContent = (currentStudent.pinSetBy === 'teacher' ? _t('teacher') : (currentStudent.pinSetBy === 'student' ? _t('student') : '-'));
     document.getElementById('profileDateOfBirth').textContent = formattedDOB;
-    document.getElementById('profileGrade').textContent = currentStudent.grade || '-';
-    document.getElementById('profileSection').textContent = currentStudent.section || '-';
+    const yearNum = dataManager.getStudentYear(currentStudent.enrollmentDate);
+    const yearKeys = ['', 'first_year', 'second_year', 'third_year', 'fourth_year', 'fifth_year', 'sixth_year', 'seventh_year', 'eighth_year', 'ninth_year', 'tenth_year'];
+    const yearKey = yearKeys[yearNum] || ('year_' + yearNum);
+    const profileYearEl = document.getElementById('profileYear');
+    if (profileYearEl) profileYearEl.textContent = (yearKey && typeof _t === 'function' ? _t(yearKey) : null) || ('Year ' + yearNum);
+    const profileAdmissionEl = document.getElementById('profileAdmissionDate');
+    if (profileAdmissionEl) profileAdmissionEl.textContent = currentStudent.enrollmentDate ? new Date(currentStudent.enrollmentDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
     document.getElementById('profilePhone').textContent = currentStudent.phone || '-';
     document.getElementById('profileEmail').textContent = currentStudent.email || '-';
     document.getElementById('profileParentName').textContent = currentStudent.parentName || '-';
@@ -158,8 +163,6 @@ function showEditStudentModal() {
     document.getElementById('editStudentName').value = currentStudent.name || '';
     document.getElementById('editStudentId').value = currentStudent.studentId || '';
     document.getElementById('editDateOfBirth').value = currentStudent.dateOfBirth || '';
-    document.getElementById('editGrade').value = currentStudent.grade || '';
-    document.getElementById('editSection').value = currentStudent.section || '';
     document.getElementById('editStudentPhone').value = currentStudent.phone || '';
     document.getElementById('editStudentEmail').value = currentStudent.email || '';
     document.getElementById('editParentName').value = currentStudent.parentName || '';
@@ -243,19 +246,21 @@ async function handleUpdateStudent(e) {
         name: document.getElementById('editStudentName').value.trim(),
         studentId: currentStudent.studentId || document.getElementById('editStudentId').value.trim(),
         dateOfBirth: document.getElementById('editDateOfBirth').value,
-        grade: document.getElementById('editGrade').value,
-        section: document.getElementById('editSection').value,
+        enrollmentDate: document.getElementById('editEnrollmentDate').value,
         phone: document.getElementById('editStudentPhone').value.trim(),
         email: document.getElementById('editStudentEmail').value.trim(),
         parentName: document.getElementById('editParentName').value.trim(),
         parentPhone: document.getElementById('editParentPhone').value.trim(),
-        parentEmail: document.getElementById('editParentEmail').value.trim(),
-        enrollmentDate: document.getElementById('editEnrollmentDate').value
+        parentEmail: document.getElementById('editParentEmail').value.trim()
     };
     
     // Validation (similar to add student)
     if (!updatedData.name) {
         alert('❌ ' + _t('alert_student_name_required'));
+        return;
+    }
+    if (!updatedData.enrollmentDate) {
+        alert('❌ ' + _t('alert_enrollment_date_required'));
         return;
     }
     

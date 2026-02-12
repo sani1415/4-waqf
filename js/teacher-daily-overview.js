@@ -1,5 +1,14 @@
 // Teacher Daily Overview Page JavaScript
 
+function _t(key) { return typeof window.t === 'function' ? window.t(key) : key; }
+function getStudentYearLabel(student) {
+    if (!student || !dataManager || typeof dataManager.getStudentYear !== 'function') return 'N/A';
+    const n = dataManager.getStudentYear(student.enrollmentDate);
+    const keys = ['', 'first_year', 'second_year', 'third_year', 'fourth_year', 'fifth_year', 'sixth_year', 'seventh_year', 'eighth_year', 'ninth_year', 'tenth_year'];
+    const key = keys[n] || ('year_' + n);
+    return (key && _t(key)) || ('Year ' + n);
+}
+
 function getLoadingSpinnerHtml() {
     const loadingText = typeof window.t === 'function' ? window.t('loading') : 'Loading...';
     return `<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span>${loadingText}</span></div>`;
@@ -174,7 +183,7 @@ function displayBestStudents(studentPerformance) {
                 <div class="best-student-rank">${medal}</div>
                 <div class="best-student-info">
                     <h4>${sp.student.name}</h4>
-                    <p>${sp.student.grade || 'N/A'} - Section ${sp.student.section || 'N/A'}</p>
+                    <p>${getStudentYearLabel(sp.student)}</p>
                 </div>
                 <div class="best-student-percentage">${sp.percentage}%</div>
             </div>
@@ -226,7 +235,7 @@ async function buildOverviewTable(studentPerformance, dailyTasks) {
 
         const trophyIcon = isTopPerformer ? '<span class="completion-trophy">🏆</span>' : '';
 
-        const gradeSec = `${student.grade || 'N/A'} • ${student.section || 'N/A'}`;
+        const yearLabel = getStudentYearLabel(student);
         rows.push(`
             <tr class="${isTopPerformer ? 'top-performer' : ''}">
                 <td class="sticky-col student-col">
@@ -235,14 +244,13 @@ async function buildOverviewTable(studentPerformance, dailyTasks) {
                         <div class="student-name-info">
                             <h4>${student.name}</h4>
                             <p class="desktop-only">${student.studentId || 'N/A'}</p>
-                            <p class="mobile-student-meta">${gradeSec}<br><strong class="completion-cell ${completionClass}">${sp.percentage}%${trophyIcon}</strong></p>
+                            <p class="mobile-student-meta">${yearLabel}<br><strong class="completion-cell ${completionClass}">${sp.percentage}%${trophyIcon}</strong></p>
                         </div>
                     </div>
                 </td>
                 <td class="sticky-col info-col">
                     <div class="info-cell">
-                        <span class="info-badge">${student.grade || 'N/A'}</span>
-                        <span class="info-badge">Section ${student.section || 'N/A'}</span>
+                        <span class="info-badge">${yearLabel}</span>
                     </div>
                 </td>
                 ${taskCells.join('')}
