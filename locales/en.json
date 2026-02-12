@@ -1,6 +1,6 @@
 {
   "app_title": "Task Management System - Waqf",
-  "landing_welcome": "Welcome to Task Manager",
+  "landing_welcome": "মারহাবা - Task Manager",
   "landing_subtitle": "Manage and track student tasks efficiently",
   "landing_teacher": "Teacher",
   "landing_teacher_desc": "Manage tasks and monitor student progress",
@@ -282,7 +282,7 @@
   "sat": "Sat",
   "change_student": "Change Student",
   "home": "Home",
-  "welcome_student": "Welcome, Student!",
+  "welcome_student": "মারহাবা, Student!",
   "available_quizzes": "Available Exams",
   "completed_quizzes": "Completed Exams",
   "no_available_exams": "No exams available at the moment.",

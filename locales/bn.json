@@ -1,6 +1,6 @@
 {
   "app_title": "টাস্ক ম্যানেজমেন্ট সিস্টেম - ওয়াকফ",
-  "landing_welcome": "টাস্ক ম্যানেজারে স্বাগতম",
+  "landing_welcome": "মারহাবা - টাস্ক ম্যানেজার",
   "landing_subtitle": "ছাত্রদের টাস্ক দক্ষতার সাথে পরিচালনা ও ট্র্যাক করুন",
   "landing_teacher": "শিক্ষক",
   "landing_teacher_desc": "টাস্ক পরিচালনা ও ছাত্রদের অগ্রগতি মনিটর করুন",
@@ -282,7 +282,7 @@
   "sat": "শনি",
   "change_student": "ছাত্র পরিবর্তন",
   "home": "হোম",
-  "welcome_student": "স্বাগতম, ছাত্র!",
+  "welcome_student": "মারহাবা, ছাত্র!",
   "available_quizzes": "উপলব্ধ পরীক্ষা",
   "completed_quizzes": "সম্পন্ন পরীক্ষা",
   "no_available_exams": "এখন কোনো পরীক্ষা উপলব্ধ নেই।",
