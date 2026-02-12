@@ -50,6 +50,39 @@ class DataManager {
         const students = await this.getStudents();
         if (students.length === 0) {
             await this.addSampleData();
+        } else {
+            await this.migrateStudentIdsToWaqfFormat();
+        }
+    }
+
+    /** Migrate students with old STU-* IDs to waqf-XXX format */
+    async migrateStudentIdsToWaqfFormat() {
+        const students = await this.getStudents();
+        const waqfPattern = /^waqf-(\d+)$/i;
+        let changed = false;
+        let nextNum = 1;
+        const usedNums = new Set();
+        for (const s of students) {
+            const sid = (s.studentId || '').toString().trim();
+            const match = sid.match(waqfPattern);
+            if (match) {
+                usedNums.add(parseInt(match[1], 10));
+            }
+        }
+        for (const s of students) {
+            const sid = (s.studentId || '').toString().trim();
+            if (!sid || !waqfPattern.test(sid)) {
+                while (usedNums.has(nextNum)) nextNum++;
+                s.studentId = 'waqf-' + String(nextNum).padStart(3, '0');
+                usedNums.add(nextNum);
+                nextNum++;
+                s.updatedAt = new Date().toISOString();
+                changed = true;
+            }
+        }
+        if (changed) {
+            await this.storage.set('students', students);
+            console.log('✅ Migrated student IDs to waqf-XXX format');
         }
     }
 
@@ -64,7 +97,10 @@ class DataManager {
                 dateOfBirth: '2010-05-15',
                 grade: '8th Grade',
                 section: 'A',
-                studentId: 'STU-2024-001',
+                studentId: 'waqf-001',
+                pin: '1234',
+                pinSetAt: '2024-09-01T10:00:00.000Z',
+                pinSetBy: 'teacher',
                 parentName: 'Ali Hassan',
                 parentPhone: '+1234567899',
                 parentEmail: 'ali.hassan@example.com',
@@ -81,7 +117,10 @@ class DataManager {
                 dateOfBirth: '2011-03-22',
                 grade: '7th Grade',
                 section: 'B',
-                studentId: 'STU-2024-002',
+                studentId: 'waqf-002',
+                pin: '1234',
+                pinSetAt: '2024-09-01T10:00:00.000Z',
+                pinSetBy: 'teacher',
                 parentName: 'Hassan Ibrahim',
                 parentPhone: '+1234567898',
                 parentEmail: 'hassan@example.com',
@@ -98,7 +137,10 @@ class DataManager {
                 dateOfBirth: '2009-08-10',
                 grade: '9th Grade',
                 section: 'A',
-                studentId: 'STU-2024-003',
+                studentId: 'waqf-003',
+                pin: '1234',
+                pinSetAt: '2024-09-01T10:00:00.000Z',
+                pinSetBy: 'teacher',
                 parentName: 'Ibrahim Mahmoud',
                 parentPhone: '+1234567897',
                 parentEmail: 'ibrahim@example.com',
@@ -115,7 +157,10 @@ class DataManager {
                 dateOfBirth: '2010-11-30',
                 grade: '8th Grade',
                 section: 'B',
-                studentId: 'STU-2024-004',
+                studentId: 'waqf-004',
+                pin: '1234',
+                pinSetAt: '2024-09-01T10:00:00.000Z',
+                pinSetBy: 'teacher',
                 parentName: 'Mohammed Khalid',
                 parentPhone: '+1234567896',
                 parentEmail: 'mohammed@example.com',
@@ -132,7 +177,10 @@ class DataManager {
                 dateOfBirth: '2011-01-18',
                 grade: '7th Grade',
                 section: 'A',
-                studentId: 'STU-2024-005',
+                studentId: 'waqf-005',
+                pin: '1234',
+                pinSetAt: '2024-09-01T10:00:00.000Z',
+                pinSetBy: 'teacher',
                 parentName: 'Abdullah Rahman',
                 parentPhone: '+1234567895',
                 parentEmail: 'abdullah@example.com',
@@ -517,14 +565,73 @@ class DataManager {
         return students.find(s => this._eqId(s.id, id));
     }
 
+    /** Get student by login ID (studentId = waqf-001 format) */
+    async getStudentByLoginId(loginId) {
+        if (!loginId || !String(loginId).trim()) return null;
+        const students = await this.getStudents();
+        const normalized = String(loginId).trim();
+        return students.find(s => s.studentId && String(s.studentId).trim().toLowerCase() === normalized.toLowerCase());
+    }
+
+    /** Generate next studentId in waqf-XXX format */
+    async getNextStudentId() {
+        const students = await this.getStudents();
+        const prefix = 'waqf-';
+        let maxNum = 0;
+        for (const s of students) {
+            const sid = s.studentId || '';
+            const match = sid.match(new RegExp('^' + prefix.replace('-', '\\-') + '(\\d+)$', 'i'));
+            if (match) {
+                const n = parseInt(match[1], 10);
+                if (n > maxNum) maxNum = n;
+            }
+        }
+        const next = maxNum + 1;
+        return prefix + String(next).padStart(3, '0');
+    }
+
+    /** Validate student login: loginId + pin. Returns student if valid, null otherwise */
+    async validateStudentLogin(loginId, pin) {
+        const student = await this.getStudentByLoginId(loginId);
+        if (!student) return null;
+        const storedPin = (student.pin || '').toString().trim();
+        const inputPin = (pin || '').toString().trim();
+        if (!storedPin || !inputPin) return null;
+        return storedPin === inputPin ? student : null;
+    }
+
+    /** Update student PIN (by teacher or student). setBy: 'teacher' | 'student' */
+    async updateStudentPin(studentId, newPin, setBy = 'teacher') {
+        const students = await this.getStudents();
+        const idx = students.findIndex(s => this._eqId(s.id, studentId));
+        if (idx === -1) return null;
+        const pinStr = String(newPin || '').trim();
+        if (!pinStr) return null;
+        students[idx].pin = pinStr;
+        students[idx].pinSetAt = new Date().toISOString();
+        students[idx].pinSetBy = setBy === 'student' ? 'student' : 'teacher';
+        students[idx].updatedAt = new Date().toISOString();
+        await this.storage.set('students', students);
+        return students[idx];
+    }
+
     async addStudent(student) {
         const students = await this.getStudents();
+        const raw = (student.studentId || '').toString().trim();
+        const waqfMatch = raw.match(/^waqf-(\d+)$/i);
+        const studentId = waqfMatch ? raw : (await this.getNextStudentId());
+        const pin = (student.pin || '1234').toString().trim();
+        const now = new Date().toISOString();
         const newStudent = {
             id: String(Date.now()),
             ...student,
+            studentId: studentId,
+            pin: pin,
+            pinSetAt: now,
+            pinSetBy: 'teacher',
             notes: student.notes || [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            createdAt: now,
+            updatedAt: now
         };
         students.push(newStudent);
         await this.storage.set('students', students);
@@ -1389,7 +1496,7 @@ let dataManager;
         
         if (success) {
             console.log('✅ Application ready!');
-            
+            window.dataManager = dataManager;
             // Dispatch event to let UI know data is ready
             window.dispatchEvent(new Event('dataManagerReady'));
         } else {

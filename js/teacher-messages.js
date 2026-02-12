@@ -11,6 +11,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize page after dataManager is ready
 function initializePage() {
+    if (typeof isTeacherLoggedIn === 'function' && !isTeacherLoggedIn()) {
+        window.location.href = '/index.html';
+        return;
+    }
     loadChatsList();
     setupMobileMenu();
     // No auto-refresh: list loads on open; when user returns to page they get latest

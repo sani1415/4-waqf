@@ -94,7 +94,7 @@
   "student_name": "Student Name",
   "student_id": "Student ID",
   "placeholder_full_name": "Full Name",
-  "placeholder_student_id": "STU-2024-XXX",
+  "placeholder_student_id": "waqf-001",
   "date_of_birth": "Date of Birth",
   "grade": "Grade",
   "section": "Section",
@@ -369,5 +369,30 @@
 
   "confirm_unanswered_submit": "You have {{count}} unanswered question(s). Do you want to submit anyway?",
   "confirm_submit_quiz": "Are you sure you want to submit your exam? You cannot change your answers after submission.",
-  "alert_error_submitting": "Error submitting exam!"
+  "alert_error_submitting": "Error submitting exam!",
+
+  "teacher_login": "Teacher Login",
+  "student_login": "Student Login",
+  "login_id": "Login ID",
+  "pin": "PIN",
+  "placeholder_login_id": "e.g. teacher or waqf-001",
+  "placeholder_pin": "Enter your PIN",
+  "login": "Login",
+  "login_invalid_credentials": "Invalid ID or PIN",
+  "login_loading": "Please wait, loading...",
+  "login_required": "Please enter ID and PIN",
+  "login_error": "An error occurred. Please try again.",
+
+  "change_pin": "Change PIN",
+  "old_pin": "Current PIN",
+  "new_pin": "New PIN",
+  "confirm_pin": "Confirm New PIN",
+  "pin_reset": "Reset PIN",
+  "pin_changed_by": "Changed by",
+  "pin_last_changed": "PIN last changed",
+  "login_pin": "Login & PIN",
+  "alert_pin_updated": "PIN updated successfully!",
+  "alert_pin_mismatch": "New PIN and confirmation do not match.",
+  "alert_wrong_current_pin": "Current PIN is incorrect.",
+  "alert_pin_required": "Please enter a 4-6 digit PIN."
 }

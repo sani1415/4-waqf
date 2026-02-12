@@ -14,6 +14,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize page after dataManager is ready
 function initializePage() {
+    if (typeof isTeacherLoggedIn === 'function' && !isTeacherLoggedIn()) {
+        window.location.href = '/index.html';
+        return;
+    }
     initializeChat();
     setupMessageForm();
     // No auto-refresh while viewing: messages load on open; when user returns they get latest

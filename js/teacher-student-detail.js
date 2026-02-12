@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize page after dataManager is ready
 function initializePage() {
+    if (typeof isTeacherLoggedIn === 'function' && !isTeacherLoggedIn()) {
+        window.location.href = '/index.html';
+        return;
+    }
     initializeStudentDetail();
     setupMobileMenu();
 }
@@ -125,6 +129,17 @@ function loadStudentProfileInfo() {
     
     // Populate profile info
     document.getElementById('profileStudentId').textContent = currentStudent.studentId || '-';
+    const loginIdEl = document.getElementById('profileLoginId');
+    if (loginIdEl) loginIdEl.textContent = currentStudent.studentId || '-';
+    const pinSetAtEl = document.getElementById('profilePinSetAt');
+    if (pinSetAtEl) {
+        if (currentStudent.pinSetAt) {
+            const d = new Date(currentStudent.pinSetAt);
+            pinSetAtEl.textContent = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } else pinSetAtEl.textContent = '-';
+    }
+    const pinSetByEl = document.getElementById('profilePinSetBy');
+    if (pinSetByEl) pinSetByEl.textContent = (currentStudent.pinSetBy === 'teacher' ? _t('teacher') : (currentStudent.pinSetBy === 'student' ? _t('student') : '-'));
     document.getElementById('profileDateOfBirth').textContent = formattedDOB;
     document.getElementById('profileGrade').textContent = currentStudent.grade || '-';
     document.getElementById('profileSection').textContent = currentStudent.section || '-';
@@ -170,14 +185,63 @@ function closeEditStudentModal() {
     el.style.pointerEvents = '';
 }
 
+// Show Reset PIN Modal
+function showResetPinModal() {
+    const el = document.getElementById('resetPinModal');
+    if (!el) return;
+    const form = document.getElementById('resetPinForm');
+    if (form) form.reset();
+    el.style.display = 'block';
+    el.style.opacity = '1';
+    el.style.pointerEvents = 'auto';
+}
+
+// Close Reset PIN Modal
+function closeResetPinModal() {
+    const el = document.getElementById('resetPinModal');
+    if (!el) return;
+    el.style.display = 'none';
+    el.style.opacity = '';
+    el.style.pointerEvents = '';
+}
+
+// Handle Reset PIN
+async function handleResetPin(e) {
+    e.preventDefault();
+    const newPin = document.getElementById('resetPinNew').value.trim();
+    const confirmPin = document.getElementById('resetPinConfirm').value.trim();
+    if (newPin.length < 4 || newPin.length > 8) {
+        alert('❌ ' + (_t('alert_pin_required') || 'Please enter a 4-6 digit PIN.'));
+        return;
+    }
+    if (newPin !== confirmPin) {
+        alert('❌ ' + (_t('alert_pin_mismatch') || 'PINs do not match.'));
+        return;
+    }
+    const sid = currentStudent.id;
+    if (!sid) {
+        alert('❌ Student ID not found.');
+        return;
+    }
+    try {
+        await dataManager.updateStudentPin(sid, newPin, 'teacher');
+        currentStudent = await dataManager.getStudentById(currentStudent.id);
+        loadStudentProfileInfo();
+        closeResetPinModal();
+        alert('✅ ' + (_t('alert_pin_updated') || 'PIN updated successfully.'));
+    } catch (err) {
+        alert('❌ ' + (_t('login_error') || 'Failed to update PIN.'));
+    }
+}
+
 // Handle Update Student
 async function handleUpdateStudent(e) {
     e.preventDefault();
     
-    // Get updated data
+    // Get updated data (studentId is readonly - do not allow changing login format)
     const updatedData = {
         name: document.getElementById('editStudentName').value.trim(),
-        studentId: document.getElementById('editStudentId').value.trim(),
+        studentId: currentStudent.studentId || document.getElementById('editStudentId').value.trim(),
         dateOfBirth: document.getElementById('editDateOfBirth').value,
         grade: document.getElementById('editGrade').value,
         section: document.getElementById('editSection').value,

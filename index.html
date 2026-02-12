@@ -23,7 +23,7 @@
         </div>
 
         <div class="selection-cards">
-            <div class="role-card teacher-card" onclick="window.location.href='/pages/teacher-dashboard.html'">
+            <div class="role-card teacher-card" id="teacherCard">
                 <div class="card-icon">
                     <i class="fas fa-chalkboard-teacher"></i>
                 </div>
@@ -34,7 +34,7 @@
                 </div>
             </div>
 
-            <div class="role-card student-card" onclick="window.location.href='/pages/student-list.html'">
+            <div class="role-card student-card" id="studentCard">
                 <div class="card-icon">
                     <i class="fas fa-user-graduate"></i>
                 </div>
@@ -50,7 +50,42 @@
             <p data-i18n="landing_select_role">Select your role to continue</p>
         </div>
     </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="login-modal-overlay" style="display: none;">
+        <div class="login-modal">
+            <button type="button" class="login-modal-close" id="loginModalClose" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="login-modal-title" id="loginModalTitle" data-i18n="teacher_login">Teacher Login</h2>
+            <form id="loginForm">
+                <div class="login-form-group">
+                    <label for="loginId"><span data-i18n="login_id">Login ID</span></label>
+                    <input type="text" id="loginId" autocomplete="username" data-i18n-placeholder="placeholder_login_id" placeholder="e.g. teacher or waqf-001">
+                </div>
+                <div class="login-form-group">
+                    <label for="loginPin"><span data-i18n="pin">PIN</span></label>
+                    <input type="password" id="loginPin" autocomplete="current-password" maxlength="8" data-i18n-placeholder="placeholder_pin" placeholder="Enter your PIN">
+                </div>
+                <p id="loginError" class="login-error" style="display: none;"></p>
+                <button type="submit" class="login-submit-btn" id="loginSubmitBtn">
+                    <i class="fas fa-sign-in-alt"></i> <span data-i18n="login">Login</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <script src="js/i18n.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="js/storage/adapter.js"></script>
+    <script src="js/storage/localStorage.js"></script>
+    <script src="js/storage/firebase.js"></script>
+    <script src="js/storage/firebase-config.js"></script>
+    <script src="js/storage/config.js"></script>
+    <script src="js/data-manager.js"></script>
+    <script src="js/auth-config.js"></script>
+    <script src="js/landing-auth.js"></script>
 </body>
 </html>
 

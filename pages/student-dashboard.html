@@ -21,11 +21,11 @@
             </div>
 
             <div class="sidebar-footer">
-                <a href="/pages/student-list.html" class="back-btn-sidebar">
+                <a href="/index.html" class="back-btn-sidebar" onclick="if(typeof logoutStudent==='function')logoutStudent();">
                     <i class="fas fa-arrow-left"></i>
                     <span data-i18n="change_student">Change Student</span>
                 </a>
-                <a href="/index.html" class="back-btn-sidebar">
+                <a href="/index.html" class="back-btn-sidebar" onclick="if(typeof logoutStudent==='function')logoutStudent();">
                     <i class="fas fa-home"></i>
                     <span data-i18n="home">Home</span>
                 </a>
@@ -41,7 +41,7 @@
                         <button type="button" class="lang-btn" data-lang="en" onclick="setLang('en')" title="English">EN</button>
                         <button type="button" class="lang-btn" data-lang="bn" onclick="setLang('bn')" title="বাংলা">বাং</button>
                     </div>
-                    <a href="/pages/student-list.html" class="btn-secondary">
+                    <a href="/index.html" class="btn-secondary" onclick="if(typeof logoutStudent==='function')logoutStudent();">
                         <i class="fas fa-user-friends"></i> <span data-i18n="change_student">Change Student</span>
                     </a>
                 </div>
@@ -300,6 +300,29 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Change PIN Section -->
+                        <div class="student-profile-section" style="margin-top: 1.5rem;">
+                            <h3 class="profile-section-title">
+                                <i class="fas fa-key"></i> <span data-i18n="change_pin">Change PIN</span>
+                            </h3>
+                            <form id="changePinForm" class="change-pin-form" onsubmit="handleChangePin(event)">
+                                <div class="form-group">
+                                    <label for="changePinCurrent"><span data-i18n="old_pin">Current PIN</span> <span class="required" data-i18n="required">*</span></label>
+                                    <input type="password" id="changePinCurrent" required minlength="4" maxlength="8" data-i18n-placeholder="placeholder_pin" placeholder="Current PIN" autocomplete="current-password">
+                                </div>
+                                <div class="form-group">
+                                    <label for="changePinNew"><span data-i18n="new_pin">New PIN</span> <span class="required" data-i18n="required">*</span></label>
+                                    <input type="password" id="changePinNew" required minlength="4" maxlength="8" data-i18n-placeholder="placeholder_pin" placeholder="New PIN" autocomplete="new-password">
+                                </div>
+                                <div class="form-group">
+                                    <label for="changePinConfirm"><span data-i18n="confirm_pin">Confirm PIN</span> <span class="required" data-i18n="required">*</span></label>
+                                    <input type="password" id="changePinConfirm" required minlength="4" maxlength="8" data-i18n-placeholder="placeholder_pin" placeholder="Confirm PIN" autocomplete="new-password">
+                                </div>
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-save"></i> <span data-i18n="change_pin">Change PIN</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                     <!-- END PROFILE TAB -->
                 </div>
@@ -367,7 +390,8 @@
     <script src="../js/storage/firebase-config.js"></script>
     <script src="../js/storage/config.js"></script>
     
-    <!-- Data Manager & App Logic -->
+    <!-- Auth & Data Manager -->
+    <script src="../js/auth-config.js"></script>
     <script src="../js/data-manager.js"></script>
     <script src="../js/student-dashboard.js"></script>
     <script src="../js/student-bottom-nav.js"></script>

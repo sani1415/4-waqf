@@ -94,7 +94,7 @@
   "student_name": "ছাত্রের নাম",
   "student_id": "ছাত্র আইডি",
   "placeholder_full_name": "পূর্ণ নাম",
-  "placeholder_student_id": "STU-2024-XXX",
+  "placeholder_student_id": "waqf-001",
   "date_of_birth": "জন্ম তারিখ",
   "grade": "ক্লাস",
   "section": "সেকশন",
@@ -369,5 +369,30 @@
 
   "confirm_unanswered_submit": "আপনার {{count}}টি অউত্তরিত প্রশ্ন আছে। তবুও জমা দিতে চান?",
   "confirm_submit_quiz": "আপনি কি আপনার পরীক্ষা জমা দিতে নিশ্চিত? জমা দেওয়ার পর উত্তর পরিবর্তন করতে পারবেন না।",
-  "alert_error_submitting": "পরীক্ষা জমা দিতে ত্রুটি!"
+  "alert_error_submitting": "পরীক্ষা জমা দিতে ত্রুটি!",
+
+  "teacher_login": "শিক্ষক লগইন",
+  "student_login": "ছাত্র লগইন",
+  "login_id": "লগইন আইডি",
+  "pin": "পিন",
+  "placeholder_login_id": "যেমন teacher বা waqf-001",
+  "placeholder_pin": "আপনার পিন লিখুন",
+  "login": "লগইন",
+  "login_invalid_credentials": "আইডি বা পিন ভুল",
+  "login_loading": "অনুগ্রহ করে অপেক্ষা করুন...",
+  "login_required": "আইডি এবং পিন লিখুন",
+  "login_error": "একটি ত্রুটি হয়েছে। আবার চেষ্টা করুন।",
+
+  "change_pin": "পিন পরিবর্তন",
+  "old_pin": "বর্তমান পিন",
+  "new_pin": "নতুন পিন",
+  "confirm_pin": "নতুন পিন নিশ্চিত করুন",
+  "pin_reset": "পিন রিসেট",
+  "pin_changed_by": "পরিবর্তন করেছেন",
+  "pin_last_changed": "পিন শেষ পরিবর্তন",
+  "login_pin": "লগইন ও পিন",
+  "alert_pin_updated": "পিন সফলভাবে আপডেট হয়েছে!",
+  "alert_pin_mismatch": "নতুন পিন এবং নিশ্চিতকরণ মিলছে না।",
+  "alert_wrong_current_pin": "বর্তমান পিন ভুল।",
+  "alert_pin_required": "৪-৬ অঙ্কের পিন লিখুন।"
 }

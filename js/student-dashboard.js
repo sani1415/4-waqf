@@ -73,12 +73,11 @@ async function updateUnreadBadge() {
 
 // Initialize Student Dashboard
 async function initializeStudentDashboard() {
-    // Get current student ID from sessionStorage
-    const studentId = sessionStorage.getItem('currentStudentId');
+    const studentId = typeof getCurrentStudentId === 'function' ? getCurrentStudentId() : sessionStorage.getItem('currentStudentId');
+    const loggedIn = typeof isStudentLoggedIn === 'function' ? isStudentLoggedIn() : !!studentId;
 
-    if (!studentId) {
-        // Redirect to student list if no student selected
-        window.location.href = '/pages/student-list.html';
+    if (!loggedIn || !studentId) {
+        window.location.href = '/index.html';
         return;
     }
 
@@ -128,6 +127,39 @@ function loadStudentProfile() {
     setProfile('profileParentPhone', fmt(currentStudent.parentPhone));
     setProfile('profileParentEmail', fmt(currentStudent.parentEmail));
     setProfile('profileEnrollmentDate', fmtDate(currentStudent.enrollmentDate));
+}
+
+function _t(key, params) {
+    return typeof window.t === 'function' ? window.t(key, params) : key;
+}
+
+// Handle Change PIN (student self-service)
+async function handleChangePin(e) {
+    e.preventDefault();
+    const currentPin = document.getElementById('changePinCurrent').value.trim();
+    const newPin = document.getElementById('changePinNew').value.trim();
+    const confirmPin = document.getElementById('changePinConfirm').value.trim();
+    if (newPin.length < 4 || newPin.length > 8) {
+        alert('❌ ' + (_t('alert_pin_required') || 'Please enter a 4-6 digit PIN.'));
+        return;
+    }
+    if (newPin !== confirmPin) {
+        alert('❌ ' + (_t('alert_pin_mismatch') || 'PINs do not match.'));
+        return;
+    }
+    const storedPin = (currentStudent.pin || '').toString().trim();
+    if (currentPin !== storedPin) {
+        alert('❌ ' + (_t('alert_wrong_current_pin') || 'Current PIN is incorrect.'));
+        return;
+    }
+    try {
+        await dataManager.updateStudentPin(currentStudent.id, newPin, 'student');
+        currentStudent = await dataManager.getStudentById(currentStudent.id);
+        document.getElementById('changePinForm').reset();
+        alert('✅ ' + (_t('alert_pin_updated') || 'PIN updated successfully.'));
+    } catch (err) {
+        alert('❌ ' + (_t('login_error') || 'Failed to update PIN.'));
+    }
 }
 
 // Load Student Stats

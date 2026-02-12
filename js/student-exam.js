@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize page after dataManager is ready
 async function initializePage() {
+    if (typeof isStudentLoggedIn === 'function' && !isStudentLoggedIn()) {
+        window.location.href = '/index.html';
+        return;
+    }
     const urlParams = new URLSearchParams(window.location.search);
     const quizId = urlParams.get('quizId');
     const studentId = getStudentId();
@@ -44,6 +48,7 @@ async function initializePage() {
 
 // Get student ID from session
 function getStudentId() {
+    if (typeof getCurrentStudentId === 'function') return getCurrentStudentId();
     return sessionStorage.getItem('currentStudentId');
 }
 

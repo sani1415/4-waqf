@@ -66,6 +66,10 @@ async function applySectionFromHash() {
 
 // Initialize page after dataManager is ready
 function initializePage() {
+    if (typeof isTeacherLoggedIn === 'function' && !isTeacherLoggedIn()) {
+        window.location.href = '/index.html';
+        return;
+    }
     setupDataManagerHelpers(); // Set up helper functions on dataManager
     initializeTeacherDashboard();
     setupEventListeners();
@@ -675,7 +679,15 @@ function updateStudentCount(count) {
 }
 
 // Show Add Student Modal
-function showAddStudentModal() {
+async function showAddStudentModal() {
+    const sidInput = document.getElementById('studentId');
+    if (sidInput && dataManager && typeof dataManager.getNextStudentId === 'function') {
+        try {
+            sidInput.value = await dataManager.getNextStudentId();
+        } catch (e) {
+            sidInput.value = 'waqf-001';
+        }
+    }
     document.getElementById('addStudentModal').style.display = 'block';
 }
 
@@ -690,9 +702,11 @@ async function handleAddStudent(e) {
     e.preventDefault();
 
     // Get all form values
+    const pinVal = (document.getElementById('studentPin') && document.getElementById('studentPin').value) ? document.getElementById('studentPin').value.trim() : '1234';
     const studentData = {
         name: document.getElementById('studentName').value.trim(),
         studentId: document.getElementById('studentId').value.trim(),
+        pin: pinVal || '1234',
         dateOfBirth: document.getElementById('dateOfBirth').value,
         grade: document.getElementById('grade').value,
         section: document.getElementById('section').value,
@@ -715,6 +729,10 @@ async function handleAddStudent(e) {
     
     if (!studentData.studentId) {
         alert('❌ ' + _t('alert_student_id_required'));
+        return;
+    }
+    if (!studentData.pin || studentData.pin.length < 4 || studentData.pin.length > 8) {
+        alert('❌ ' + (_t('alert_pin_required') || 'Please enter a 4-6 digit PIN.'));
         return;
     }
     
