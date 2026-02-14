@@ -1948,24 +1948,22 @@
     display: flex;
     align-items: stretch;
     justify-content: flex-start;
-    gap: 0.5rem;
     padding: 0.6rem 1rem;
     background: #f8fafc;
     border-top: 1px solid rgba(123, 158, 189, 0.1);
     cursor: pointer;
-}
-
-.overview-compact-strip:hover .overview-view-all {
-    text-decoration: underline;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
 }
 
 .overview-strip-cells {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: stretch;
     gap: 0.4rem;
-    flex: 1;
-    min-width: 0;
+    min-width: min-content;
 }
 
 .overview-cell {
@@ -1973,6 +1971,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
     min-width: 36px;
     width: 36px;
     padding: 0.3rem 0.2rem;
@@ -2005,16 +2004,6 @@
 .ov-orange { background: #fdba74; color: #7c2d12; }
 .ov-sky { background: #7dd3fc; color: #0c4a6e; }
 .ov-green { background: #86efac; color: #14532d; }
-
-.overview-view-all {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.8rem;
-    color: var(--primary-soft);
-    font-weight: 500;
-}
 
 /* Overview calendar modal */
 .overview-calendar-overlay {

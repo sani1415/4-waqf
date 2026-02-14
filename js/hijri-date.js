@@ -1,4 +1,4 @@
-I Legal document political document political hey Cortana take a movie on time We need not OK/**
+/**
  * Hijri Date Formatting - Bangladesh
  * Uses Intl API with islamic-umalqura calendar.
  * Bangladesh Hijri is typically 1 day behind Saudi - we apply offset.

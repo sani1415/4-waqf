@@ -392,11 +392,10 @@ async function loadCompletionOverview() {
         avgEl.classList.add(avgPct >= 80 ? 'pct-high' : avgPct >= 50 ? 'pct-mid' : 'pct-low');
     }
 
-    // Strip: mobile=10 days, desktop=all that fit (JS renders last 10 on mobile, more on desktop via CSS)
+    // Strip: last 30 days, horizontal scroll when needed
     const dayOnlyFn = typeof formatDateDisplayDayOnly === 'function' ? formatDateDisplayDayOnly : (d) => String(d.getDate());
     const fullDateFn = typeof formatDateDisplay === 'function' ? formatDateDisplay : (d) => d.toLocaleDateString();
-    const isMobile = window.innerWidth <= 768;
-    const stripCount = isMobile ? 10 : 20;
+    const stripCount = 30;
     const stripDays = history.slice(-stripCount);
     overviewHistoryCache = history;
 
@@ -555,8 +554,6 @@ async function loadDailyTaskSection(containerId, tasks) {
     const items = [];
     for (const task of tasks) {
         const isCompletedToday = await dataManager.isDailyTaskCompletedToday(task.id, currentStudent.id);
-        const streak = await dataManager.getDailyTaskStreak(task.id, currentStudent.id);
-
         items.push(`
             <div class="task-item daily-task ${isCompletedToday ? 'completed' : ''} fade-in">
                 <div class="task-header">
@@ -569,7 +566,6 @@ async function loadDailyTaskSection(containerId, tasks) {
                     <div class="task-content">
                         <div class="task-title">
                             ${task.title}
-                            ${streak > 0 ? `<span class="streak-badge">🔥 ${streak} day${streak > 1 ? 's' : ''}</span>` : ''}
                         </div>
                         ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
                         <div class="task-meta">

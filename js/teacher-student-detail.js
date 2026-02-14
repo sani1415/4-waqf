@@ -491,16 +491,12 @@ function loadDailyTaskSection(containerId, tasks) {
 
     container.innerHTML = tasks.map(task => {
         const isCompletedToday = dataManager.isDailyTaskCompletedToday(task.id, currentStudent.id);
-        const streak = dataManager.getDailyTaskStreak(task.id, currentStudent.id);
 
         return `
             <div class="task-detail-card ${isCompletedToday ? 'completed' : ''} fade-in daily-task-card">
                 <div class="task-detail-header">
                     <div class="task-detail-title">
-                        <h3>
-                            ${task.title}
-                            ${streak > 0 ? `<span class="streak-badge-teacher">🔥 ${streak} day${streak > 1 ? 's' : ''}</span>` : ''}
-                        </h3>
+                        <h3>${task.title}</h3>
                         ${task.description ? `<div class="task-detail-description">${task.description}</div>` : ''}
                     </div>
                     <span class="task-status-badge ${isCompletedToday ? 'completed' : 'pending'}">

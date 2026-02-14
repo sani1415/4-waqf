@@ -326,16 +326,18 @@ async function loadStudentsProgress() {
     if (dailyList) {
         dailyList.innerHTML = studentsProgress.map(item => {
             const { student, stats } = item;
-            const initial = student.name.charAt(0).toUpperCase();
             const dailyPercentage = stats.dailyTotal > 0 ? Math.round((stats.dailyCompletedToday / stats.dailyTotal) * 100) : 0;
             const badgeBg = dailyPercentage >= 80 ? '#e8f5e9' : dailyPercentage >= 50 ? '#fff3e0' : '#ffebee';
             const badgeColor = dailyPercentage >= 80 ? '#2e7d32' : dailyPercentage >= 50 ? '#e65100' : '#c62828';
             const barBg = dailyPercentage >= 80 ? 'linear-gradient(90deg,#88B68D,#9DC9A3)' : 'linear-gradient(90deg,#FF9800,#FFB74D)';
+            const sid = student.studentId || student.id;
             return `
                 <div class="student-summary-row" onclick="viewStudentDetail(${student.id})" style="cursor: pointer;">
-                    <div class="student-avatar">${initial}</div>
                     <div class="student-info">
-                        <div class="student-name" title="${(student.name || '').replace(/"/g, '&quot;')}">${student.name}</div>
+                        <div class="student-name-row">
+                            <span class="student-name" title="${(student.name || '').replace(/"/g, '&quot;')}">${student.name}</span>
+                            ${sid ? `<span class="student-id-display">${sid}</span>` : ''}
+                        </div>
                         <div class="student-grade">${getStudentYearLabel(student)} • ${stats.dailyCompletedToday}/${stats.dailyTotal} tasks</div>
                     </div>
                     <span class="completion-badge" style="background:${badgeBg};color:${badgeColor};">${dailyPercentage}%</span>
@@ -349,15 +351,17 @@ async function loadStudentsProgress() {
     if (onetimeList) {
         onetimeList.innerHTML = studentsProgress.map(item => {
             const { student, stats } = item;
-            const initial = student.name.charAt(0).toUpperCase();
             const badgeBg = stats.percentage >= 80 ? '#e8f5e9' : stats.percentage >= 50 ? '#e3f2fd' : '#ffebee';
             const badgeColor = stats.percentage >= 80 ? '#2e7d32' : stats.percentage >= 50 ? '#1565c0' : '#c62828';
             const barBg = stats.percentage >= 80 ? 'linear-gradient(90deg,#88B68D,#9DC9A3)' : 'linear-gradient(90deg,#2196F3,#64B5F6)';
+            const sid = student.studentId || student.id;
             return `
                 <div class="student-summary-row" onclick="viewStudentDetail(${student.id})" style="cursor: pointer;">
-                    <div class="student-avatar">${initial}</div>
                     <div class="student-info">
-                        <div class="student-name" title="${(student.name || '').replace(/"/g, '&quot;')}">${student.name}</div>
+                        <div class="student-name-row">
+                            <span class="student-name" title="${(student.name || '').replace(/"/g, '&quot;')}">${student.name}</span>
+                            ${sid ? `<span class="student-id-display">${sid}</span>` : ''}
+                        </div>
                         <div class="student-grade">${getStudentYearLabel(student)} • ${stats.completed}/${stats.total} tasks</div>
                     </div>
                     <span class="completion-badge" style="background:${badgeBg};color:${badgeColor};">${stats.percentage}%</span>
@@ -593,18 +597,15 @@ async function loadStudentsList() {
     
     const studentsHTML = students.map((student, i) => {
         const stats = allStats[i];
-        const initial = student.name.charAt(0).toUpperCase();
-        
-        // Calculate percentages for dual progress bars
+        const sid = student.studentId || student.id;
         const dailyPercent = stats.dailyTotal > 0 ? Math.round((stats.dailyCompletedToday / stats.dailyTotal) * 100) : 0;
         const oneTimePercent = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
 
         return `
             <div class="student-card fade-in">
                 <div class="student-card-header" onclick="viewStudentDetail(${student.id})" style="cursor: pointer;">
-                    <div class="student-card-avatar">${initial}</div>
                     <div>
-                        <h3 class="student-name">${student.name}</h3>
+                        <h3 class="student-name">${student.name}${sid ? `<span class="student-id-display">${sid}</span>` : ''}</h3>
                         <p class="student-meta">${getStudentYearLabel(student)}${student.phone ? ` • ${student.phone}` : ''}</p>
                     </div>
                 </div>
