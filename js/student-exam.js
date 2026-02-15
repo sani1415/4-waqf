@@ -329,23 +329,34 @@ function updateTextAnswer(value) {
     updateProgressDots();
 }
 
-// Handle file upload
-function handleFileUpload(event, questionIndex) {
+// Handle file upload - uploads to Firebase Storage
+async function handleFileUpload(event, questionIndex) {
     const file = event.target.files[0];
     if (!file) return;
-    
-    // For now, store file name and create a data URL (in real app, would upload to server)
-    const reader = new FileReader();
-    reader.onload = function(e) {
+
+    const previewDiv = document.getElementById(`filePreview-${questionIndex}`);
+    previewDiv.innerHTML = `<div class="uploaded-file uploading"><i class="fas fa-spinner fa-spin"></i> <span>Uploading ${file.name}...</span></div>`;
+
+    try {
+        let downloadURL = null;
+        if (typeof firebase !== 'undefined' && firebase.storage) {
+            const storage = firebase.storage();
+            const quizId = currentQuiz ? String(currentQuiz.id) : 'unknown';
+            const studentId = getStudentId() || 'unknown';
+            const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+            const path = `exam-uploads/${quizId}/${studentId}/${questionIndex}_${Date.now()}_${safeName}`;
+            const ref = storage.ref(path);
+            await ref.put(file);
+            downloadURL = await ref.getDownloadURL();
+        }
+
         studentAnswers[questionIndex] = {
             fileName: file.name,
             fileType: file.type,
             fileSize: file.size,
-            fileData: e.target.result // Base64 data URL
+            downloadURL: downloadURL || null
         };
-        
-        // Show preview
-        const previewDiv = document.getElementById(`filePreview-${questionIndex}`);
+
         previewDiv.innerHTML = `
             <div class="uploaded-file">
                 <i class="fas fa-file"></i>
@@ -356,11 +367,17 @@ function handleFileUpload(event, questionIndex) {
                 </button>
             </div>
         `;
-        
-        // Update progress dots
-        updateProgressDots();
-    };
-    reader.readAsDataURL(file);
+
+        if (!downloadURL) {
+            console.warn('Firebase Storage not available - file metadata saved only. Enable Firebase Storage for full upload.');
+        }
+    } catch (err) {
+        console.error('File upload failed:', err);
+        studentAnswers[questionIndex] = null;
+        previewDiv.innerHTML = `<div class="uploaded-file error"><i class="fas fa-exclamation-triangle"></i> <span>Upload failed. Please try again.</span> <button onclick="document.getElementById('fileInput-${questionIndex}').value=''; document.getElementById('filePreview-${questionIndex}').innerHTML='';" class="btn-remove-file"><i class="fas fa-times"></i></button></div>`;
+    }
+    document.getElementById(`fileInput-${questionIndex}`).value = '';
+    updateProgressDots();
 }
 
 // Remove uploaded file

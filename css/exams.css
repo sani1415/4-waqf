@@ -480,6 +480,24 @@ body:has(.exam-tabs) textarea#quizDescription {
     color: #9C27B0;
 }
 
+.grading-file-display .btn-download-file {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: #9C27B0;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.grading-file-display .btn-download-file:hover {
+    background: #7B1FA2;
+}
+
 .grading-form {
     display: flex;
     flex-direction: column;

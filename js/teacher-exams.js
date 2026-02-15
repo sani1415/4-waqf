@@ -895,25 +895,30 @@ async function showGradingModal(resultId, questionIndex) {
     
     let answerDisplay = '';
     
+    const studentAns = answer.studentAnswer;
     if (question.type === 'short_answer' || question.type === 'essay') {
-        const wordCount = answer.answer ? answer.answer.trim().split(/\s+/).filter(w => w).length : 0;
+        const text = (studentAns && typeof studentAns === 'string') ? studentAns : '';
+        const wordCount = text.trim().split(/\s+/).filter(w => w).length;
         answerDisplay = `
             <div class="grading-student-answer">
                 <span class="grading-answer-label">Student's Answer:</span>
-                <div class="grading-answer-text">${answer.answer || '(No answer provided)'}</div>
+                <div class="grading-answer-text">${text || '(No answer provided)'}</div>
                 ${question.type === 'essay' ? `<div style="margin-top: 0.5rem; color: #64748B; font-size: 0.9rem;">Word count: ${wordCount}</div>` : ''}
             </div>
         `;
     } else if (question.type === 'file_upload') {
-        if (answer.answer && answer.answer.fileName) {
+        if (studentAns && studentAns.fileName) {
+            const fileUrl = studentAns.downloadURL || (studentAns.fileData ? studentAns.fileData : null);
+            const downloadBtn = fileUrl ? `<a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn-download-file"><i class="fas fa-download"></i> View / Download</a>` : '';
             answerDisplay = `
                 <div class="grading-student-answer">
                     <span class="grading-answer-label">Uploaded File:</span>
                     <div class="grading-file-display">
                         <i class="fas fa-file-alt"></i>
                         <div>
-                            <div style="font-weight: 600;">${answer.answer.fileName}</div>
-                            <div style="font-size: 0.9rem; color: #64748B;">${(answer.answer.fileSize / 1024).toFixed(2)} KB</div>
+                            <div style="font-weight: 600;">${studentAns.fileName}</div>
+                            <div style="font-size: 0.9rem; color: #64748B;">${(studentAns.fileSize / 1024).toFixed(2)} KB</div>
+                            ${downloadBtn}
                         </div>
                     </div>
                 </div>

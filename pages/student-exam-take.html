@@ -369,6 +369,24 @@
             color: white;
         }
 
+        .uploaded-file.uploading {
+            border-color: #FDE047;
+            background: #FEF9C3;
+        }
+
+        .uploaded-file.uploading i {
+            color: #CA8A04;
+        }
+
+        .uploaded-file.error {
+            border-color: #DC2626;
+            background: #FEE2E2;
+        }
+
+        .uploaded-file.error i {
+            color: #DC2626;
+        }
+
         .quiz-navigation {
             position: sticky;
             bottom: 2rem;
@@ -598,9 +616,10 @@
         </div>
     </div>
 
-    <!-- Firebase SDK (Uncomment when using Firebase) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
     <!-- Storage Adapters (in separate folder) -->
     <script src="../js/storage/adapter.js"></script>

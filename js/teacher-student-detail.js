@@ -393,12 +393,9 @@ async function loadStudentTasks() {
     // Load regular one-time tasks
     const tasks = await dataManager.getRegularTasksForStudent(currentStudent.id);
     
-    const pendingTasks = tasks.filter(task => 
-        !task.completedBy.includes(currentStudent.id)
-    );
-    const completedTasks = tasks.filter(task => 
-        task.completedBy.includes(currentStudent.id)
-    );
+    const isCompletedByStudent = (task) => (task.completedBy || []).some(sid => String(sid) === String(currentStudent.id));
+    const pendingTasks = tasks.filter(task => !isCompletedByStudent(task));
+    const completedTasks = tasks.filter(task => isCompletedByStudent(task));
 
     loadTaskSection('pendingTasksList', pendingTasks, false);
     loadTaskSection('completedTasksList', completedTasks, true);
@@ -427,7 +424,7 @@ function loadTaskSection(containerId, tasks, isCompleted) {
     }
 
     container.innerHTML = tasks.map(task => {
-        const isTaskCompleted = task.completedBy.includes(currentStudent.id);
+        const isTaskCompleted = (task.completedBy || []).some(sid => String(sid) === String(currentStudent.id));
         const deadlineDate = task.deadline ? (typeof formatDateDisplay === 'function' ? formatDateDisplay(task.deadline) : new Date(task.deadline).toLocaleDateString()) : null;
         const daysLeft = task.deadline ? calculateDaysLeft(task.deadline) : null;
         
@@ -1039,7 +1036,7 @@ async function populateOnetimeTasksGrid() {
         const dueDate = task.deadline ? (typeof formatDateDisplay === 'function' ? formatDateDisplay(task.deadline) : new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })) : '-';
         
         // Check if this student completed the task
-        const isCompleted = task.completedBy && task.completedBy.includes(currentStudent.id);
+        const isCompleted = (task.completedBy || []).some(sid => String(sid) === String(currentStudent.id));
         const statusColor = isCompleted ? 'var(--success-soft)' : 'var(--text-light)';
         const statusText = isCompleted ? 'Completed' : 'Pending';
         

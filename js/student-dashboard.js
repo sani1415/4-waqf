@@ -277,12 +277,9 @@ async function loadStudentTasks() {
     if (pendingContainer) pendingContainer.innerHTML = `<div class="skeleton-list">${Array.from({length: 3}).map(()=>`<div class=\"skeleton skeleton-text\" style=\"width:95%\"></div>`).join('')}</div>`;
     if (completedContainer) completedContainer.innerHTML = `<div class="skeleton-list">${Array.from({length: 2}).map(()=>`<div class=\"skeleton skeleton-text\" style=\"width:80%\"></div>`).join('')}</div>`;
     const regularTasks = await dataManager.getRegularTasksForStudent(currentStudent.id);
-    const pendingTasks = regularTasks.filter(task => 
-        !task.completedBy.includes(currentStudent.id)
-    );
-    const completedTasks = regularTasks.filter(task => 
-        task.completedBy.includes(currentStudent.id)
-    );
+    const isCompletedByMe = (task) => (task.completedBy || []).some(sid => String(sid) === String(currentStudent.id));
+    const pendingTasks = regularTasks.filter(task => !isCompletedByMe(task));
+    const completedTasks = regularTasks.filter(task => isCompletedByMe(task));
 
     loadTaskSection('pendingTasksList', pendingTasks, false);
     loadTaskSection('completedTasksList', completedTasks, true);
@@ -308,7 +305,7 @@ function loadTaskSection(containerId, tasks, isCompleted) {
     }
 
     container.innerHTML = tasks.map(task => {
-        const isTaskCompleted = task.completedBy.includes(currentStudent.id);
+        const isTaskCompleted = (task.completedBy || []).some(sid => String(sid) === String(currentStudent.id));
         const deadlineDate = task.deadline ? (typeof formatDateDisplay === 'function' ? formatDateDisplay(task.deadline) : new Date(task.deadline).toLocaleDateString()) : 'No deadline';
         const daysLeft = task.deadline ? calculateDaysLeft(task.deadline) : null;
 
