@@ -1622,9 +1622,16 @@
    MESSAGES TAB STYLING
    =================================== */
 
+/* Panel messages: flex column to fill available space */
+.tab-wrap-student input#tab-messages:checked ~ .panels-student .panel-messages {
+    display: flex !important;
+    flex-direction: column;
+    min-height: calc(100vh - 200px);
+}
+
 .messages-tab-area {
-    min-height: 300px;
-    max-height: 400px;
+    flex: 1;
+    min-height: 280px;
     overflow-y: auto;
     background: var(--bg-primary);
     border-radius: 8px;
@@ -1636,6 +1643,7 @@
 }
 
 .messages-tab-input {
+    flex-shrink: 0;
     display: flex;
     gap: 0.5rem;
 }
@@ -2537,10 +2545,9 @@
         font-size: 0.75rem;
     }
     
-    /* Messages area */
+    /* Messages area - fill available space, no max-height limit */
     .messages-tab-area {
-        min-height: 200px;
-        max-height: 280px;
+        min-height: 180px;
         padding: 0.75rem;
     }
     
