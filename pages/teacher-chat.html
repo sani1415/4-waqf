@@ -7,6 +7,7 @@
     <script src="../js/i18n.js"></script>
     <script src="../js/hijri-date.js"></script>
     <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/teacher.css">
     <link rel="stylesheet" href="../css/messaging.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -57,6 +58,43 @@
         </div>
     </div>
 
+    <!-- Mobile Bottom Navigation (same as teacher-messages, teacher-dashboard) -->
+    <div class="bottom-nav-wrapper">
+        <div class="bottom-nav-fade bottom-nav-fade-left" id="bottomNavFadeLeft" aria-hidden="true"><i class="fas fa-chevron-left"></i></div>
+        <nav class="bottom-nav" id="bottomNav" aria-label="Main navigation">
+            <a href="/pages/teacher-dashboard.html" class="bottom-nav-item" title="Dashboard">
+                <i class="fas fa-home"></i>
+                <span data-i18n="nav_dashboard">Dashboard</span>
+            </a>
+            <a href="/pages/teacher-dashboard.html#manage-tasks" class="bottom-nav-item" title="Tasks">
+                <i class="fas fa-tasks"></i>
+                <span data-i18n="stat_tasks">Tasks</span>
+            </a>
+            <a href="/pages/teacher-dashboard.html#students" class="bottom-nav-item" title="Students">
+                <i class="fas fa-users"></i>
+                <span data-i18n="nav_students">Students</span>
+            </a>
+            <a href="/pages/teacher-messages.html" class="bottom-nav-item bottom-nav-item-msg active" title="Messages">
+                <i class="fas fa-comments"></i>
+                <span data-i18n="nav_messages">Messages</span>
+                <span id="messagesUnreadBadgeNav" class="bottom-nav-badge" style="display: none;" aria-label="Unread messages">0</span>
+            </a>
+            <a href="/pages/teacher-daily-overview.html" class="bottom-nav-item" title="Overview">
+                <i class="fas fa-table"></i>
+                <span data-i18n="nav_overview">Overview</span>
+            </a>
+            <a href="/pages/teacher-exams.html" class="bottom-nav-item" title="Exams">
+                <i class="fas fa-graduation-cap"></i>
+                <span data-i18n="nav_exams">Exams</span>
+            </a>
+            <a href="#" class="bottom-nav-item bottom-nav-menu" id="bottomNavMenu" title="Menu">
+                <i class="fas fa-ellipsis-v"></i>
+                <span data-i18n="nav_menu">Menu</span>
+            </a>
+        </nav>
+        <div class="bottom-nav-fade bottom-nav-fade-right" id="bottomNavFadeRight" aria-hidden="true"><i class="fas fa-chevron-right"></i></div>
+    </div>
+
     <!-- Firebase SDK (Uncomment when using Firebase) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -71,6 +109,8 @@
     <!-- Data Manager & App Logic -->
     <script src="../js/auth-config.js"></script>
     <script src="../js/data-manager.js"></script>
+    <script src="../js/teacher-unread-badge.js"></script>
+    <script src="../js/bottom-nav-scroll.js"></script>
     <script src="../js/teacher-chat.js"></script>
 </body>
 </html>

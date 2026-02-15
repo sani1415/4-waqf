@@ -477,6 +477,11 @@ body:has(.chat-container) {
         padding-bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px));
     }
     
+    /* Chat page with bottom nav: push input above nav */
+    body:has(.chat-container):has(.bottom-nav-wrapper) .message-input-container {
+        padding-bottom: calc(0.6rem + 4.5rem + env(safe-area-inset-bottom, 0px));
+    }
+    
     .message-input-container input {
         padding: 0.5rem 0.75rem !important;
         font-size: 0.9rem !important;
