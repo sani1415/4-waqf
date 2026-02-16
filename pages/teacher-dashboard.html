@@ -141,6 +141,12 @@
                         <div id="studentsProgressListOnetime" class="progress-list progress-summary-list"></div>
                     </div>
                     <div id="view-spreadsheet" class="progress-view">
+                        <div id="spreadsheetTaskFilter" class="spreadsheet-task-filter" style="display: none;">
+                            <span class="spreadsheet-filter-label" data-i18n="show_tasks">Show:</span>
+                            <button type="button" class="spreadsheet-filter-btn active" data-filter="all"><span data-i18n="spreadsheet_filter_all">All</span></button>
+                            <button type="button" class="spreadsheet-filter-btn" data-filter="daily"><span data-i18n="tab_daily">Daily</span></button>
+                            <button type="button" class="spreadsheet-filter-btn" data-filter="onetime"><span data-i18n="tab_onetime">One-time</span></button>
+                        </div>
                         <div id="studentsProgressSpreadsheet" class="spreadsheet-wrap"></div>
                     </div>
                 </div>
@@ -300,6 +306,14 @@
                 <div class="documents-review-header">
                     <h2><i class="fas fa-file-upload"></i> <span data-i18n="documents_for_review">Documents for Review</span></h2>
                     <p class="documents-review-hint" data-i18n="documents_for_review_hint">Documents that students have marked for you to view. All in one place.</p>
+                    <div id="documentsViewToggle" class="documents-view-toggle" style="display: none;">
+                        <button type="button" class="view-toggle-btn active" data-view="grouped" title="Group by student">
+                            <i class="fas fa-users"></i> <span data-i18n="view_grouped">Grouped by Student</span>
+                        </button>
+                        <button type="button" class="view-toggle-btn" data-view="table" title="Table view">
+                            <i class="fas fa-table"></i> <span data-i18n="view_table">Table View</span>
+                        </button>
+                    </div>
                 </div>
                 <div id="documentsForReviewList" class="documents-review-list">
                     <div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span data-i18n="loading">Loading...</span></div>

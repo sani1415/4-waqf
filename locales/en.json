@@ -39,6 +39,10 @@
   "tab_daily": "Daily",
   "tab_onetime": "One-time",
   "tab_spreadsheet": "Spreadsheet",
+  "show_tasks": "Show:",
+  "spreadsheet_filter_all": "All",
+  "spreadsheet_daily_tasks": "Daily Tasks",
+  "spreadsheet_onetime_tasks": "One-time Tasks",
   "see_all": "See all",
 
   "tab_create_task": "Create Task",
@@ -442,5 +446,11 @@
   "no_documents_for_review": "No Documents for Review",
   "no_documents_for_review_hint": "Students can upload documents and mark them for you to view. They will appear here.",
   "download": "Download",
-  "no_file_url": "(No file link)"
+  "no_file_url": "(No file link)",
+  "view_grouped": "Grouped by Student",
+  "view_table": "Table View",
+  "document": "document",
+  "documents": "documents",
+  "document_column": "Document",
+  "size": "Size"
 }

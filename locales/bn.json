@@ -39,6 +39,10 @@
   "tab_daily": "দৈনিক",
   "tab_onetime": "একবার",
   "tab_spreadsheet": "স্প্রেডশীট",
+  "show_tasks": "দেখান:",
+  "spreadsheet_filter_all": "সব",
+  "spreadsheet_daily_tasks": "দৈনিক কাজ",
+  "spreadsheet_onetime_tasks": "একবারের কাজ",
   "see_all": "সব দেখুন",
 
   "tab_create_task": "কাজ তৈরি",
@@ -442,5 +446,11 @@
   "no_documents_for_review": "রিভিউর জন্য কোনো ডকুমেন্ট নেই",
   "no_documents_for_review_hint": "ছাত্ররা ডকুমেন্ট আপলোড করে আপনার দেখার জন্য চিহ্নিত করতে পারবে। সেগুলো এখানে দেখা যাবে।",
   "download": "ডাউনলোড",
-  "no_file_url": "(ফাইল লিঙ্ক নেই)"
+  "no_file_url": "(ফাইল লিঙ্ক নেই)",
+  "view_grouped": "ছাত্র অনুযায়ী গ্রুপ",
+  "view_table": "টেবিল ভিউ",
+  "document": "ডকুমেন্ট",
+  "documents": "ডকুমেন্ট",
+  "document_column": "ডকুমেন্ট",
+  "size": "আকার"
 }

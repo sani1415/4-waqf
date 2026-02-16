@@ -355,6 +355,58 @@ body {
 
 /* Spreadsheet (Excel-like) view – matches prototype */
 
+.spreadsheet-task-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.spreadsheet-filter-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.spreadsheet-filter-btn {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.spreadsheet-filter-btn:hover {
+    background: var(--bg-soft);
+    color: var(--text-primary);
+}
+
+.spreadsheet-filter-btn.active {
+    background: var(--primary-soft);
+    color: white;
+    border-color: var(--primary-soft);
+}
+
+.spreadsheet-group-header-row th {
+    background: linear-gradient(135deg, #5B7C9D 0%, #4A6B8D 100%) !important;
+    color: white;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+    text-align: center;
+}
+
+.spreadsheet-group-header.spreadsheet-group-daily {
+    border-right: 2px solid rgba(255,255,255,0.4);
+}
+
+.spreadsheet-group-header.spreadsheet-group-onetime {
+    border-left: 2px solid rgba(255,255,255,0.4);
+}
+
 .spreadsheet-wrap {
     background: white;
     border-radius: 8px;
@@ -924,6 +976,163 @@ body {
     color: var(--text-secondary);
     font-size: 0.95rem;
     margin: 0;
+}
+
+.documents-view-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.view-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.view-toggle-btn:hover {
+    background: var(--bg-soft);
+    color: var(--text-primary);
+}
+
+.view-toggle-btn.active {
+    background: var(--primary-soft);
+    color: white;
+    border-color: var(--primary-soft);
+}
+
+/* Documents grouped by student (accordion) */
+.documents-group {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    background: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.documents-group-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border: none;
+    background: var(--bg-soft);
+    cursor: pointer;
+    font-size: 1rem;
+    text-align: left;
+    color: var(--text-primary);
+    transition: background 0.2s ease;
+}
+
+.documents-group-header:hover {
+    background: rgba(123, 158, 189, 0.15);
+}
+
+.documents-group-chevron {
+    font-size: 0.85rem;
+    color: var(--primary-soft);
+    transition: transform 0.2s ease;
+}
+
+.documents-group-name {
+    font-weight: 600;
+    flex: 1;
+}
+
+.documents-group-id {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.documents-group-count {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.documents-group-body {
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.documents-group-body .document-review-item {
+    margin: 0;
+}
+
+/* Documents table view */
+.documents-table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.documents-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.documents-table th,
+.documents-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.documents-table th {
+    background: var(--bg-soft);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.documents-table th.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.documents-table th.sortable:hover {
+    background: rgba(123, 158, 189, 0.15);
+}
+
+.documents-table th .sort-icon {
+    margin-left: 0.35rem;
+    opacity: 0.6;
+}
+
+.documents-table tbody tr:hover {
+    background: var(--bg-soft);
+}
+
+.documents-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.doc-cell-student {
+    font-weight: 500;
+}
+
+.doc-cell-id {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-left: 0.25rem;
+}
+
+.btn-download-doc.btn-sm {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
 }
 
 .documents-review-list {

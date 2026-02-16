@@ -16,6 +16,8 @@ function getStudentYearLabel(student) {
 
 // Initialize task filter at the top level to avoid temporal dead zone issues
 let currentTaskFilter = 'all';
+// Spreadsheet task filter: 'all' | 'daily' | 'onetime'
+let spreadsheetTaskFilter = (typeof localStorage !== 'undefined' && localStorage.getItem('spreadsheetTaskFilter')) || 'all';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Wait for dataManager to be ready before initializing
@@ -187,6 +189,9 @@ function setupEventListeners() {
     if (addStudentForm) {
         addStudentForm.addEventListener('submit', handleAddStudent);
     }
+
+    // Documents for Review - view toggle (grouped / table)
+    setupDocumentsViewToggle();
 }
 
 // Overlay helper for mobile sidebar
@@ -390,15 +395,52 @@ async function loadStudentsProgress() {
     }
 
     // Build Spreadsheet view
+    const spreadsheetFilterEl = document.getElementById('spreadsheetTaskFilter');
     if (spreadsheetWrap && (dailyTasks.length > 0 || oneTimeTasks.length > 0)) {
-        const allTasks = [...dailyTasks, ...oneTimeTasks];
-        const taskCols = allTasks.map(t => `<th class="task-col" title="${(t.title || '').replace(/"/g, '&quot;')}">${truncateTextOverview(t.title || 'Task', 15)}</th>`).join('');
+        const filter = (typeof spreadsheetTaskFilter !== 'undefined' ? spreadsheetTaskFilter : 'all');
+        let tasksToShow = [];
+        if (filter === 'daily') tasksToShow = dailyTasks;
+        else if (filter === 'onetime') tasksToShow = oneTimeTasks;
+        else tasksToShow = [...dailyTasks, ...oneTimeTasks];
+
+        if (spreadsheetFilterEl) {
+            spreadsheetFilterEl.style.display = 'flex';
+            spreadsheetFilterEl.querySelectorAll('.spreadsheet-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-filter') === filter);
+            });
+        }
+
+        const t = typeof window.t === 'function' ? window.t : (k) => k;
+        const dailyLabel = t('spreadsheet_daily_tasks') || 'Daily Tasks';
+        const onetimeLabel = t('spreadsheet_onetime_tasks') || 'One-time Tasks';
+
+        let headerHtml = '';
+        if (filter === 'all' && dailyTasks.length > 0 && oneTimeTasks.length > 0) {
+            headerHtml = `
+                <tr class="spreadsheet-group-header-row">
+                    <th class="student-col"></th>
+                    ${dailyTasks.length > 0 ? `<th colspan="${dailyTasks.length}" class="spreadsheet-group-header spreadsheet-group-daily">${dailyLabel}</th>` : ''}
+                    ${oneTimeTasks.length > 0 ? `<th colspan="${oneTimeTasks.length}" class="spreadsheet-group-header spreadsheet-group-onetime">${onetimeLabel}</th>` : ''}
+                </tr>
+                <tr>
+                    <th class="student-col">${t('student') || 'Student'}</th>
+                    ${tasksToShow.map(tk => `<th class="task-col" title="${(tk.title || '').replace(/"/g, '&quot;')}">${truncateTextOverview(tk.title || 'Task', 15)}</th>`).join('')}
+                </tr>
+            `;
+        } else {
+            headerHtml = `
+                <tr>
+                    <th class="student-col">${t('student') || 'Student'}</th>
+                    ${tasksToShow.map(tk => `<th class="task-col" title="${(tk.title || '').replace(/"/g, '&quot;')}">${truncateTextOverview(tk.title || 'Task', 15)}</th>`).join('')}
+                </tr>
+            `;
+        }
 
         const rows = [];
         for (const item of studentsProgress) {
             const { student } = item;
             const cells = [];
-            for (const task of allTasks) {
+            for (const task of tasksToShow) {
                 const isAssigned = task.assignedTo && task.assignedTo.some(sid => String(sid) === String(student.id));
                 let icon = '<span class="cross">✗</span>';
                 if (isAssigned) {
@@ -422,18 +464,18 @@ async function loadStudentsProgress() {
         spreadsheetWrap.innerHTML = `
             <table class="spreadsheet-table">
                 <thead>
-                    <tr>
-                        <th class="student-col">Student</th>
-                        ${taskCols}
-                    </tr>
+                    ${headerHtml}
                 </thead>
                 <tbody>
                     ${rows.join('')}
                 </tbody>
             </table>
         `;
-    } else if (spreadsheetWrap) {
-        spreadsheetWrap.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No tasks assigned yet. Create tasks to see the spreadsheet view.</p>';
+    } else {
+        if (spreadsheetFilterEl) spreadsheetFilterEl.style.display = 'none';
+        if (spreadsheetWrap) {
+            spreadsheetWrap.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No tasks assigned yet. Create tasks to see the spreadsheet view.</p>';
+        }
     }
 }
 
@@ -449,6 +491,20 @@ function setupProgressTabs() {
             if (el) el.classList.add('active');
         });
     });
+
+    // Spreadsheet task filter (Daily | One-time | All) - use event delegation
+    const dashboardSection = document.getElementById('dashboard-section');
+    if (dashboardSection) {
+        dashboardSection.addEventListener('click', function(e) {
+            const btn = e.target.closest('.spreadsheet-filter-btn');
+            if (!btn) return;
+            const filter = btn.getAttribute('data-filter');
+            if (!filter || filter === spreadsheetTaskFilter) return;
+            spreadsheetTaskFilter = filter;
+            if (typeof localStorage !== 'undefined') localStorage.setItem('spreadsheetTaskFilter', filter);
+            loadStudentsProgress();
+        });
+    }
 }
 
 // Load Student Checkboxes for Task Assignment
@@ -956,13 +1012,18 @@ async function updateAnalytics() {
 }
 
 // Documents for Review - student-submitted documents marked for teacher view
+// View mode: 'grouped' (accordion) or 'table'
+let documentsReviewView = (typeof localStorage !== 'undefined' && localStorage.getItem('documentsReviewView')) || 'grouped';
+
 async function loadDocumentsForReview() {
     const listEl = document.getElementById('documentsForReviewList');
     const emptyEl = document.getElementById('documentsForReviewEmpty');
+    const toggleEl = document.getElementById('documentsViewToggle');
     if (!listEl || !emptyEl) return;
 
     listEl.innerHTML = '<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span data-i18n="loading">Loading...</span></div>';
     emptyEl.style.display = 'none';
+    if (toggleEl) toggleEl.style.display = 'none';
 
     const docs = await dataManager.getDocumentsForReview();
     emptyEl.style.display = docs.length === 0 ? 'block' : 'none';
@@ -971,6 +1032,8 @@ async function loadDocumentsForReview() {
         listEl.innerHTML = '';
         return;
     }
+
+    if (toggleEl) toggleEl.style.display = 'flex';
 
     const students = await dataManager.getStudents();
     const getStudent = (id) => students.find(s => String(s.id) === String(id)) || { name: 'Unknown', studentId: id };
@@ -993,16 +1056,13 @@ async function loadDocumentsForReview() {
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     }
 
-    listEl.innerHTML = docs.map(d => {
-        const student = getStudent(d.studentId);
-        const name = d.studentName || student.name || 'Unknown';
-        const sid = student.studentId || d.studentId;
+    function docToHtml(d, name, sid) {
         const url = d.downloadURL ? escAttr(d.downloadURL) : '';
         const viewLink = url ? `<a href="${url}" target="_blank" rel="noopener" class="document-review-name-link">${escHtml(d.fileName)}</a>` : `<span class="document-review-name">${escHtml(d.fileName)}</span>`;
         const downloadBtn = url
             ? `<button type="button" class="btn-download-doc" data-doc-url="${url}" data-doc-name="${escAttr(d.fileName || 'document')}"><i class="fas fa-download"></i> <span data-i18n="download">Download</span></button>`
             : '<span class="doc-no-url" data-i18n="no_file_url">(No file link)</span>';
-        return `
+        return { d, html: `
             <div class="document-review-item">
                 <div class="document-review-icon"><i class="fas fa-file"></i></div>
                 <div class="document-review-info">
@@ -1012,24 +1072,165 @@ async function loadDocumentsForReview() {
                 </div>
                 <div class="document-review-actions">${downloadBtn}</div>
             </div>
-        `;
-    }).join('');
+        ` };
+    }
 
-    listEl.querySelectorAll('.btn-download-doc').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const url = this.getAttribute('data-doc-url');
-            const name = this.getAttribute('data-doc-name') || 'document';
-            if (!url) return;
-            const origHtml = this.innerHTML;
-            this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>' + (typeof window.t === 'function' ? window.t('downloading') : 'Downloading') + '...</span>';
-            await downloadDocToDevice(url, name);
-            this.disabled = false;
-            this.innerHTML = origHtml;
+    function attachDownloadHandlers(container) {
+        if (!container) return;
+        container.querySelectorAll('.btn-download-doc').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const url = this.getAttribute('data-doc-url');
+                const name = this.getAttribute('data-doc-name') || 'document';
+                if (!url) return;
+                const origHtml = this.innerHTML;
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>' + (typeof window.t === 'function' ? window.t('downloading') : 'Downloading') + '...</span>';
+                await downloadDocToDevice(url, name);
+                this.disabled = false;
+                this.innerHTML = origHtml;
+            });
         });
+    }
+
+    if (documentsReviewView === 'table') {
+        const sortCol = window._documentsSortCol || 'student';
+        const sortDir = window._documentsSortDir || 'asc';
+        const t = typeof window.t === 'function' ? window.t : (k) => k;
+        const rows = docs.map(d => {
+            const student = getStudent(d.studentId);
+            const name = d.studentName || student.name || 'Unknown';
+            const sid = student.studentId || d.studentId;
+            return { d, name, sid, sortName: name.toLowerCase(), sortDate: new Date(d.uploadedAt || 0).getTime() };
+        });
+        rows.sort((a, b) => {
+            let v = 0;
+            if (sortCol === 'student') v = a.sortName.localeCompare(b.sortName);
+            else if (sortCol === 'document') v = (a.d.fileName || '').toLowerCase().localeCompare((b.d.fileName || '').toLowerCase());
+            else if (sortCol === 'date') v = a.sortDate - b.sortDate;
+            else if (sortCol === 'size') v = (a.d.fileSize || 0) - (b.d.fileSize || 0);
+            return sortDir === 'asc' ? v : -v;
+        });
+        const downloadLabel = t('download');
+        const studentLabel = t('student');
+        const documentLabel = t('document_column') || t('document') || 'Document';
+        const dateLabel = t('date') || 'Date';
+        const sizeLabel = t('size') || 'Size';
+        const actionsLabel = t('actions') || 'Actions';
+        listEl.innerHTML = `
+            <div class="documents-table-wrap">
+                <table class="documents-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-sort="student">${studentLabel} <i class="sort-icon"></i></th>
+                            <th class="sortable" data-sort="document">${documentLabel} <i class="sort-icon"></i></th>
+                            <th class="sortable" data-sort="date">${dateLabel} <i class="sort-icon"></i></th>
+                            <th class="sortable" data-sort="size">${sizeLabel} <i class="sort-icon"></i></th>
+                            <th>${actionsLabel}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows.map(r => {
+                            const { d, name, sid } = r;
+                            const url = d.downloadURL ? escAttr(d.downloadURL) : '';
+                            const viewLink = url ? `<a href="${url}" target="_blank" rel="noopener" class="document-review-name-link">${escHtml(d.fileName)}</a>` : escHtml(d.fileName);
+                            const downloadBtn = url
+                                ? `<button type="button" class="btn-download-doc btn-sm" data-doc-url="${url}" data-doc-name="${escAttr(d.fileName || 'document')}"><i class="fas fa-download"></i> ${downloadLabel}</button>`
+                                : '<span class="doc-no-url" data-i18n="no_file_url">(No file link)</span>';
+                            return `<tr>
+                                <td><span class="doc-cell-student">${escHtml(name)}</span> <span class="doc-cell-id">${escHtml(String(sid))}</span></td>
+                                <td>${viewLink}</td>
+                                <td>${formatDate(d.uploadedAt)}</td>
+                                <td>${formatSize(d.fileSize)}</td>
+                                <td>${downloadBtn}</td>
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        listEl.querySelectorAll('.sortable').forEach(th => {
+            th.addEventListener('click', function() {
+                const col = this.getAttribute('data-sort');
+                if (!col) return;
+                const nextDir = (window._documentsSortCol === col && window._documentsSortDir === 'asc') ? 'desc' : 'asc';
+                window._documentsSortCol = col;
+                window._documentsSortDir = nextDir;
+                loadDocumentsForReview();
+            });
+            const isActive = th.getAttribute('data-sort') === sortCol;
+            const icon = th.querySelector('.sort-icon');
+            if (icon) icon.className = 'sort-icon fas ' + (isActive ? (sortDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort');
+        });
+        attachDownloadHandlers(listEl);
+    } else {
+        const grouped = {};
+        for (const d of docs) {
+            const sid = String(d.studentId);
+            if (!grouped[sid]) grouped[sid] = [];
+            grouped[sid].push(d);
+        }
+        const studentIds = Object.keys(grouped).sort((a, b) => {
+            const sa = getStudent(a);
+            const sb = getStudent(b);
+            return (sa.name || '').localeCompare(sb.name || '');
+        });
+        listEl.innerHTML = studentIds.map(sid => {
+            const student = getStudent(sid);
+            const name = student.name || 'Unknown';
+            const sidDisplay = student.studentId || sid;
+            const studentDocs = grouped[sid];
+            const count = studentDocs.length;
+            const docsHtml = studentDocs.map(d => docToHtml(d, name, sidDisplay).html).join('');
+            return `
+                <div class="documents-group" data-student-id="${escAttr(sid)}">
+                    <button type="button" class="documents-group-header" aria-expanded="true">
+                        <i class="fas fa-chevron-down documents-group-chevron"></i>
+                        <span class="documents-group-name">${escHtml(name)}</span>
+                        <span class="documents-group-id">${escHtml(String(sidDisplay))}</span>
+                        <span class="documents-group-count">${count} ${count === 1 ? (typeof window.t === 'function' ? window.t('document') : 'document') : (typeof window.t === 'function' ? window.t('documents') : 'documents')}</span>
+                    </button>
+                    <div class="documents-group-body">
+                        ${docsHtml}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        listEl.querySelectorAll('.documents-group-header').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const group = this.closest('.documents-group');
+                const body = group?.querySelector('.documents-group-body');
+                const chevron = this.querySelector('.documents-group-chevron');
+                const expanded = body?.style.display !== 'none';
+                if (body) body.style.display = expanded ? 'none' : '';
+                if (chevron) chevron.style.transform = expanded ? 'rotate(-90deg)' : '';
+                this.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+            });
+        });
+        attachDownloadHandlers(listEl);
+    }
+
+    document.querySelectorAll('.view-toggle-btn').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-view') === documentsReviewView);
     });
 
     if (typeof applyI18n === 'function') applyI18n();
+}
+
+function setupDocumentsViewToggle() {
+    const container = document.getElementById('documents-for-review-section');
+    if (!container) return;
+    container.addEventListener('click', function(e) {
+        const btn = e.target.closest('.view-toggle-btn');
+        if (!btn) return;
+        const view = btn.getAttribute('data-view');
+        if (!view || view === documentsReviewView) return;
+        documentsReviewView = view;
+        if (typeof localStorage !== 'undefined') localStorage.setItem('documentsReviewView', view);
+        document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        loadDocumentsForReview();
+    });
 }
 
 // Download document file to device - uses Firebase Storage SDK when available (avoids CORS)
