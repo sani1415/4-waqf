@@ -1,0 +1,377 @@
+/* Task Sheet - Daily Tasks (no login, PIN per row) */
+.task-sheet-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #F5F7FA 0%, #E8EEF5 100%);
+}
+
+.task-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    background: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.task-sheet-header .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-soft);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.task-sheet-header .back-btn:hover {
+    text-decoration: underline;
+}
+
+.task-sheet-main {
+    padding: 1.5rem 1.25rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.sheet-title-area {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.sheet-title-area h1 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.sheet-title-area h1 i {
+    color: var(--primary-soft);
+}
+
+.sheet-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+/* Compact date bar inside sheet */
+.sheet-date-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.date-nav-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--primary-soft);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.date-nav-btn:hover {
+    background: var(--primary-soft);
+    color: white;
+}
+
+.date-display-wrap {
+    position: relative;
+    display: inline-block;
+    min-width: 100px;
+    overflow: hidden;
+}
+
+.date-display {
+    display: inline-block;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.date-picker-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+
+.date-mode-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-left: auto;
+}
+
+.date-mode-badge.editable {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.date-mode-badge.readonly {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Spreadsheet area */
+.spreadsheet-area {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: var(--shadow-sm);
+    min-height: 200px;
+    position: relative;
+    z-index: 1;
+}
+
+.sheet-loading, .sheet-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.sheet-empty i {
+    font-size: 3rem;
+    color: var(--text-light);
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.sheet-empty h3 {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.sheet-tap-hint {
+    font-size: 0.9rem;
+    color: var(--primary-soft);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+}
+
+.sheet-table-wrap {
+    overflow-x: auto;
+}
+
+.sheet-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.task-sheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.task-sheet-table th,
+.task-sheet-table td {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.task-sheet-table th {
+    background: linear-gradient(135deg, #7B9EBD 0%, #6B8CAD 100%);
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+.task-sheet-table th.student-col,
+.task-sheet-table td.student-col {
+    text-align: left;
+    min-width: 140px;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+}
+
+.task-sheet-table th.student-col {
+    background: linear-gradient(135deg, #6B8CAD 0%, #5B7C9D 100%);
+}
+
+.task-sheet-table td.student-col {
+    background: white;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.task-sheet-table tbody tr:hover td.student-col {
+    background: #f8fafc;
+}
+
+.task-sheet-table tbody tr.unlocked td.student-col {
+    background: #ecfdf5;
+}
+
+.task-sheet-table tbody tr.unlocked td.student-col::after {
+    content: ' 🔓';
+    font-size: 0.8rem;
+}
+
+.task-sheet-table .student-col .student-name {
+    font-weight: 500;
+}
+
+.task-sheet-table .student-col .student-id {
+    font-size: 0.85rem;
+    color: var(--text-light, #64748b);
+    margin-top: 0.15rem;
+}
+
+.task-sheet-table .task-cell {
+    min-width: 60px;
+}
+
+.task-sheet-table .task-cell input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.task-sheet-table .task-cell input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.task-sheet-table .task-cell .status-icon {
+    font-size: 1.1rem;
+}
+
+.task-sheet-table .task-cell .status-icon.done { color: #16a34a; }
+.task-sheet-table .task-cell .status-icon.pending { color: #dc2626; opacity: 0.6; }
+.task-sheet-table .task-cell .status-icon.na { color: #94a3b8; }
+
+.task-sheet-table .pct-col {
+    font-weight: 600;
+    min-width: 50px;
+}
+
+.task-sheet-table tbody tr:hover td {
+    background: #f8fafc;
+}
+
+.task-sheet-table tbody tr[data-editable="1"] {
+    cursor: pointer;
+}
+
+.task-sheet-table tbody tr[data-editable="1"] td {
+    pointer-events: auto;
+}
+
+/* PIN Modal */
+.pin-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 1rem;
+}
+
+.pin-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 1.75rem;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.pin-modal h2 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.pin-hint {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.pin-modal input#pinInput {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1.25rem;
+    letter-spacing: 0.5rem;
+    text-align: center;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.pin-modal input#pinInput:focus {
+    outline: none;
+    border-color: var(--primary-soft);
+}
+
+.pin-error {
+    color: #dc2626;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.pin-modal-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.pin-modal-actions .btn-cancel {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.pin-modal-actions .btn-confirm {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    border: none;
+    background: var(--primary-soft);
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.pin-modal-actions .btn-confirm:hover {
+    opacity: 0.95;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+    .task-sheet-main { padding: 1rem; }
+    .sheet-title-area h1 { font-size: 1.2rem; }
+    .date-controls { flex-direction: column; align-items: stretch; }
+}
