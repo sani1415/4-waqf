@@ -65,10 +65,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const loginAsStudent = (student: Student, pin: string): boolean => {
-    const expectedPin = (student.pin || '1234').toString().trim();
-    const inputPin = (pin || '').toString().trim();
+    // Normalize PIN: compare digits only so Firestore number/string/whitespace all work; default '1234'
+    const digitsOnly = (x: unknown) => String(x ?? '').replace(/\D/g, '');
+    const raw = student.pin;
+    const expectedDigits = digitsOnly(raw);
+    const expectedPin = expectedDigits.length > 0 ? expectedDigits : '1234';
+    const inputDigits = digitsOnly(pin);
 
-    if (!inputPin || inputPin !== expectedPin) {
+    if (!inputDigits || inputDigits !== expectedPin) {
       return false;
     }
 

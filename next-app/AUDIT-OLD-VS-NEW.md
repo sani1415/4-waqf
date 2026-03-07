@@ -389,3 +389,149 @@ Work through the table below **one by one**; fix and mark ✅.
 - **Student list (old):** No equivalent page in new app (student identity from login/task-sheet). Not ported.
 
 *Audit and full comparison applied. **§14 Full visual similarity audit** completed: design tokens, landing, teacher shell/dashboard/messages/exams/student-detail, student dashboard/chat/exam-take, task sheet — class names and key styles match; messaging bubbles and results tab fixed earlier. Remaining optional: Reset PIN / Edit note modal (teacher student detail), student-list page.*
+
+---
+
+## 15. STUDENT AREA – SCREEN BY SCREEN COMPARISON
+
+**Purpose:** Compare each student screen with the old app (student-dashboard.html, student-chat.html, student-exam-take.html) so structure, labels, and behaviour match.
+
+### 15.1 Student dashboard – shell & header
+
+| # | Item | Old App | New App | Status |
+|---|------|---------|---------|--------|
+| 15.1.1 | Welcome / header title | `#studentNameHeader`: "Marhaba, **firstName**!" (first word of name only) | Was "Marhaba, **firstName**!" (split by space) | ✅ **Fixed:** Now shows **full name**: "Marhaba, {student.name}!" |
+| 15.1.2 | Header title per tab | Today = greeting; other tabs = tab label (Tasks, Exams, etc.) | Same: activeSection controls h1 text | ✅ |
+| 15.1.3 | Sidebar name | `#studentNameSidebar`: full currentStudent.name | student?.name \|\| 'Student' | ✅ |
+| 15.1.4 | Sidebar role | student email or "Student" | Same | ✅ |
+| 15.1.5 | Lang switcher | EN / বাং in sidebar + header | Same | ✅ |
+| 15.1.6 | Date format toggle | .date-format-toggle (Hijri/Greg button) | Same; uses waqf_use_hijri, formatDateDisplay | ✅ |
+| 15.1.7 | Logout | Link to index + logout; header btn | Same (router + logout) | ✅ |
+
+### 15.2 Student dashboard – nav order & tabs
+
+| # | Item | Old App | New App | Status |
+|---|------|---------|---------|--------|
+| 15.2.1 | Tab order (sidebar + desktop labels) | Today, Tasks, Exams, Messages, Documents, Records, Profile | Same order | ✅ |
+| 15.2.2 | Tab icons | fa-calendar-day, fa-clipboard-list, fa-graduation-cap, fa-comments, fa-file-upload, fa-history, fa-user | Same | ✅ |
+| 15.2.3 | Messages unread dot | #msgUnreadDot, #msgUnreadDotNav, #msgUnreadDotSidebar | Unread badge in nav | ✅ |
+| 15.2.4 | Bottom nav (mobile) | Same 7 items, labels for tab-today etc. | Same 7 items, active by activeSection | ✅ |
+
+### 15.3 Student dashboard – Today tab
+
+| # | Item | Old App | New App | Status |
+|---|------|---------|---------|--------|
+| 15.3.1 | Stat cards row | 3 cards: Daily Tasks (%), One-time Tasks (%), Exams (passed/total) | Same: stat-card-daily, stat-card-onetime, stat-card-exam | ✅ |
+| 15.3.2 | Stat labels | tab_daily, category_onetime, nav_exams; todays_completion, overall_completion, passed_quizzes | Same i18n | ✅ |
+| 15.3.3 | Overview compact card | overview-compact-header (Overall Overview, since, avg%), strip with cells | Same: overviewSection, overviewSince, overviewAvgPct, strip cells | ✅ |
+| 15.3.4 | Today's daily tasks section | section-title + todayDate + dailyTasksList | Same: todays_daily_tasks, today-date, daily-tasks-list | ✅ |
+| 15.3.5 | Date display (Hijri/Greg) | formatDateDisplay for todayDate, overview cells | formatDateDisplay / formatDateDisplayDayOnly with useHijri | ✅ |
+
+### 15.4 Student dashboard – Tasks tab
+
+| # | Item | Old App | New App | Status |
+|---|------|---------|---------|--------|
+| 15.4.1 | Pending section | section-title "Pending Tasks", pendingTasksList | Same: pending_tasks, tasks-list | ✅ |
+| 15.4.2 | Completed section | section-title "Completed Tasks", completedTasksList | Same: completed_tasks | ✅ |
+| 15.4.3 | Task card layout | task-card, checkbox, task-content, title, description, deadline | Same | ✅ |
+
+### 15.5 Student dashboard – Exams tab
+
+| # | Item | Old App | New App | Status |
+|---|------|---------|---------|--------|
+| 15.5.1 | Available quizzes | section-title "Available Quizzes", availableQuizzesList | Same: available_quizzes, quizzes-list-student | ✅ |
+| 15.5.2 | Completed quizzes | section-title "Completed Quizzes", completedQuizzesList | Same: completed_quizzes, result cards with date/score | ✅ |
+| 15.5.3 | Take exam CTA | Button to student-exam-take | Link to /student/exams (exam list/take) | ✅ |
+
+### 15.6 Student dashboard – Messages tab
+
+| # | Item | Old App | New App | Status |
+|---|------|---------|---------|--------|
+| 15.6.1 | Messages tab area | messagesTabArea; messageInputTab, messageSendBtnTab | messages-tab-area; input disabled, "Open Chat" to full chat | ⚠️ Old: send from tab. New: redirect to full chat (simplified) |
+| 15.6.2 | Hint text | "Open full chat to read and send" (or similar) | "Open full chat to read and send messages." | ✅ |
+
+### 15.7 Student dashboard – Documents tab
+
+| # | Item | Old App | New App | Status |
+|---|------|---------|---------|--------|
+| 15.7.1 | Section title | "My Documents" | t('my_documents') | ✅ |
+| 15.7.2 | Hint | documents_hint, click_to_upload, documents_formats | Same | ✅ |
+| 15.7.3 | Upload area | document-upload-area, documentFileInput | Same; handleDocumentUpload | ✅ |
+| 15.7.4 | Empty state | documentsEmpty, no_documents_yet, upload_first_document | Same | ✅ |
+| 15.7.5 | List | documentsList, file name/size/date, download, forReview | Same (formatShortDate with Hijri) | ✅ |
+
+### 15.8 Student dashboard – Records tab
+
+| # | Item | Old App | New App | Status |
+|---|------|---------|---------|--------|
+| 15.8.1 | Exam records section | record-exam-list, record-exam-item (title, date, time, score, badge) | Same: record-exam-item, record-exam-date (formatShortDate), pending_review | ✅ |
+| 15.8.2 | Daily completion history | records-section-title "Daily completion history", record-daily-task rows with last 7 days | Same: records-daily-grid, record-day with day name + short date | ✅ |
+
+### 15.9 Student dashboard – Profile tab
+
+| # | Item | Old App | New App | Status |
+|---|------|---------|---------|--------|
+| 15.9.1 | Section title | "Student Information" (student_information) | Same | ✅ |
+| 15.9.2 | Basic details card | Student ID, DOB, Year, Admission Date | Same (with Hijri dates) | ✅ |
+| 15.9.3 | Contact card | Phone, Email | Same | ✅ |
+| 15.9.4 | Parent/Guardian card | Name, Phone, Email, Father's Work | Same (parent_guardian_info) | ✅ |
+| 15.9.5 | Address card | District, Upazila, Detail Address | Old has 3; new has same if fields present | ✅ |
+| 15.9.6 | **Change PIN** | Section "Change PIN", form (current PIN, new PIN, confirm), submit | **Not present** in new app | ⚠️ Optional: not ported (teacher can set PIN in student detail) |
+
+### 15.10 Student chat page (full page)
+
+| # | Item | Old App | New App | Status |
+|---|------|---------|---------|--------|
+| 15.10.1 | Header | Back, teacher avatar, "Teacher" / "Your Instructor", lang, date-format-toggle, home | Same: back, Teacher, your_instructor, lang, date-format div, home | ✅ |
+| 15.10.2 | Messages area | messagesArea, message bubbles (sent/received) | Same; message-sent / message-received, getMessageBody | ✅ |
+| 15.10.3 | Input | messageForm, messageInput, send button (icon + Send) | Same | ✅ |
+| 15.10.4 | Bottom nav | Same 7 items as dashboard, Messages active | Same | ✅ |
+
+### 15.11 Student exam take page
+
+| # | Item | Old App | New App | Status |
+|---|------|---------|---------|--------|
+| 15.11.1 | Quiz header | quiz-title-header, quiz-meta-header (time, pass %, etc.) | Same structure | ✅ |
+| 15.11.2 | Timer | timer-container, timer-label, timer-display; warning when low | Same | ✅ |
+| 15.11.3 | Questions | question-container, question-text, options/inputs | Same | ✅ |
+| 15.11.4 | Nav buttons | Previous, Next, Submit Quiz | t('previous'), t('next'), t('submit_quiz') | ✅ |
+
+### 15.12 Student area – summary
+
+| Topic | Match | Notes |
+|-------|--------|------|
+| Welcome message | ✅ Fixed | Now shows **full name** (was first name only). |
+| Shell, nav, tabs | ✅ | Order and labels match. |
+| Today, Tasks, Exams, Documents, Records, Profile | ✅ | Structure and i18n match; dates use Hijri/Greg. |
+| Messages tab | ⚠️ | New app redirects to full chat from tab; old allowed send from tab. |
+| Change PIN (profile) | ✅ **Added** | Change PIN section added to Profile tab (current PIN, new PIN, confirm); uses updateStudent; styling .change-pin-form in student.css. |
+| Chat & exam take | ✅ | Layout and behaviour aligned. |
+
+### 15.13 Student area – styling comparison (overall)
+
+| Screen | Old app classes / structure | New app | Status |
+|--------|-----------------------------|---------|--------|
+| Dashboard | .student-dashboard-container, .stat-cards-row, .stat-card-*, .overview-compact-card, .panel-student, .profile-info-grid | Same class names in next-app | ✅ Match |
+| Profile | .student-profile-section, .profile-section-title, .change-pin-form, .form-group | Same; .change-pin-form styles added | ✅ Match |
+| Chat | .chat-container, .messages-area, .message-input-container, .message-form | Same (messaging.css) | ✅ Match |
+| Exam list | .exams-container, .exams-header, .quiz-tabs, .quiz-tab-btn | Same (exams.css) | ✅ Match |
+| **Exam taking** | .quiz-taking-container, .quiz-header, .quiz-title-header, .timer-container, .timer-display, .question-container, .question-number-badge, .option-button, .quiz-navigation, .btn-nav .btn-prev/.btn-next/.btn-submit, .progress-dots | **Updated:** Taking view now uses quiz-taking-container, quiz-header, timer-container (with .timer-warning when &lt;5 min), question-number-badge, option-button + option-letter, short-answer-textarea/essay-textarea, quiz-navigation + nav-buttons + btn-nav. Full student exam-taking CSS added to exams.css to match old app. | ✅ Fixed |
+
+---
+
+## 16. COURSE PASS – ALL REMAINING SCREENS
+
+**Purpose:** One pass over every screen to confirm structure and styling align with the old app. Any small fixes applied.
+
+| Screen | Route | Check | Status |
+|--------|--------|--------|--------|
+| **Landing** | `/` | landing-container, welcome-section, logo-area, main-title, subtitle, selection-cards, role-card (teacher-card, student-card, spreadsheet-card), card-icon, card-arrow, footer-note; login-modal-overlay, login-modal, login-modal-close, login-modal-title, login-form-group, login-error, login-submit-btn | ✅ Classes match old index.html |
+| **Teacher dashboard** | `/teacher/dashboard` | content-section, section-header, dashboard-section, manage-tasks-section, students-section, daily-overview-section, documents-for-review-section, analytics-section; progress-section-header, best-students-section; bottom-nav, bottom-nav-item | ✅ Sections and IDs match |
+| **Teacher student detail** | `/teacher/student` | detail-container, student-detail-header, profile-info-section, tab-wrap-student-detail, panel-profile, panel-tasks, panel-exams, panel-notes, panel-message; task-date-header, task-grid, quiz-navigation | ✅ Already audited |
+| **Teacher messages** | `/teacher/messages` | messaging-container, chat-list, message-area, message-input-wrap; formatDateDisplay for dates | ✅ Already audited |
+| **Teacher exams** | `/teacher/exams` | exam-tabs, quiz-tab-content, Create/All/Results/Pending; formatDateDisplay, formatDateTimeDisplay | ✅ Already audited |
+| **Student dashboard** | `/student/dashboard` | student-dashboard-container, student-header, panel-today, panel-tasks, panel-exams, panel-messages, panel-documents, panel-records, panel-profile; stat-cards-row, overview-compact-card, change-pin-form | ✅ Already audited; Change PIN added |
+| **Student chat** | `/student/chat` | chat-container, chat-header, chat-header-info, messages-area, message-form, message-input-container; message-sent, message-received, getMessageBody | ✅ Classes match |
+| **Student exams (list)** | `/student/exams` | exams-container, exams-header, quiz-tabs, quiz-tab-btn, exams-content, available-exams, completed-exams, records-section; quiz-card, record-card; loading-state, empty-state | ✅ Structure match; record-date now uses formatDateDisplay (Hijri/Greg) |
+| **Student exam (taking)** | `/student/exams` (when quiz selected) | quiz-taking-container, quiz-header, timer-container, question-container, quiz-navigation, btn-nav | ✅ Fixed in §15.13 |
+| **Task sheet** | `/task-sheet` | task-sheet-container, task-sheet-header, sheet-date-bar, date-display, sheet-table-wrap, task-sheet-table, student-row, task-cell, pin-modal-overlay, pin-modal | ✅ Classes match; date uses formatDateDisplay |

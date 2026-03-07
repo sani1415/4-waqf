@@ -7,6 +7,7 @@ import { useStudents, useMessages } from '@/hooks/useFirestore';
 import { useTranslation } from '@/hooks/useTranslation';
 import TeacherSidebar from '@/components/teacher/TeacherSidebar';
 import TeacherTopBar from '@/components/teacher/TeacherTopBar';
+import { formatDateDisplay, getUseHijri } from '@/lib/date-format';
 import '@/styles/teacher.css';
 import '@/styles/messaging.css';
 export default function TeacherMessages() {
@@ -100,6 +101,13 @@ export default function TeacherMessages() {
     });
   };
 
+  const [dateFormatKey, setDateFormatKey] = useState(0);
+  useEffect(() => {
+    const onFormatChange = () => setDateFormatKey((k) => k + 1);
+    window.addEventListener('waqf-date-format-changed', onFormatChange);
+    return () => window.removeEventListener('waqf-date-format-changed', onFormatChange);
+  }, []);
+  const useHijri = getUseHijri();
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
     const today = new Date();
@@ -112,10 +120,7 @@ export default function TeacherMessages() {
     if (date.toDateString() === yesterday.toDateString()) {
       return t('yesterday');
     }
-    return date.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
+    return formatDateDisplay(date, { month: 'short', day: 'numeric', locale: lang === 'bn' ? 'bn' : 'en' }, useHijri);
   };
 
   /** Match old app: for list item last-message time – today = time, yesterday = Yesterday, <7 days = weekday, else = date */
@@ -129,9 +134,9 @@ export default function TeacherMessages() {
     }
     if (diffDays === 1) return t('yesterday');
     if (diffDays < 7) {
-      return date.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { weekday: 'short' });
+      return formatDateDisplay(date, { weekday: 'short', locale: lang === 'bn' ? 'bn' : 'en' }, useHijri);
     }
-    return date.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { month: 'short', day: 'numeric' });
+    return formatDateDisplay(date, { month: 'short', day: 'numeric', locale: lang === 'bn' ? 'bn' : 'en' }, useHijri);
   };
 
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);

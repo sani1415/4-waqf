@@ -1734,6 +1734,44 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
     word-break: break-word;
 }
 
+/* Change PIN form (match old app student-dashboard Profile tab) */
+.change-pin-form {
+    max-width: 400px;
+}
+
+.change-pin-form .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.change-pin-form .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.change-pin-form .form-group label .required {
+    color: var(--error, #DC2626);
+}
+
+.change-pin-form .form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.change-pin-form .form-group input:focus {
+    outline: none;
+    border-color: var(--primary-soft);
+    box-shadow: 0 0 0 2px rgba(123, 158, 189, 0.2);
+}
+
+.change-pin-form .btn-primary {
+    margin-top: 0.5rem;
+}
+
 @media (max-width: 768px) {
     .student-profile-section {
         padding: 1rem;

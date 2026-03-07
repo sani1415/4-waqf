@@ -40,13 +40,17 @@ function formatFileSize(bytes?: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatShortDate(iso?: string) {
+import {
+  formatDateDisplay,
+  formatDateDisplayDayOnly,
+  formatDateDisplayShort,
+  getUseHijri,
+  setUseHijri as setUseHijriPreference
+} from '@/lib/date-format';
+
+function formatShortDate(iso?: string, useHijri?: boolean) {
   if (!iso) return '';
-  return new Date(iso).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return formatDateDisplayShort(iso, useHijri) || new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function getLastDays(days: number) {
@@ -62,7 +66,7 @@ export default function StudentDashboard() {
   const { isLoggedIn, role, studentId, currentStudent, logout, isLoading: authLoading } = useAuth();
   const { t, lang, changeLang } = useTranslation();
 
-  const { data: students } = useStudents();
+  const { data: students, updateItem: updateStudent } = useStudents();
   const { data: tasks, loading: tasksLoading, updateItem: updateTask } = useTasks();
   const { data: messages, loading: messagesLoading } = useMessages();
 
@@ -83,18 +87,19 @@ export default function StudentDashboard() {
   const [activeSection, setActiveSection] = useState('today');
   const [useHijri, setUseHijri] = useState(false);
   const [uploadingDocument, setUploadingDocument] = useState(false);
+  const [changePinCurrent, setChangePinCurrent] = useState('');
+  const [changePinNew, setChangePinNew] = useState('');
+  const [changePinConfirm, setChangePinConfirm] = useState('');
+  const [changePinSubmitting, setChangePinSubmitting] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem('useHijri');
-    if (stored === 'true') {
-      setUseHijri(true);
-    }
+    setUseHijri(getUseHijri());
   }, []);
 
   const toggleDateFormat = () => {
     const next = !useHijri;
     setUseHijri(next);
-    localStorage.setItem('useHijri', String(next));
+    setUseHijriPreference(next);
   };
 
   const student = currentStudent || students.find((s: any) => s.id === studentId);
@@ -219,6 +224,43 @@ export default function StudentDashboard() {
     await deleteSubmittedDocument(docId);
   };
 
+  const handleChangePin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!studentId || !student) return;
+    const currentPin = changePinCurrent.trim();
+    const newPin = changePinNew.trim();
+    const confirmPin = changePinConfirm.trim();
+    if (newPin.length < 4 || newPin.length > 8) {
+      alert(t('alert_pin_required') || 'Please enter a 4–8 digit PIN.');
+      return;
+    }
+    if (newPin !== confirmPin) {
+      alert(t('alert_pin_mismatch') || 'New PIN and confirmation do not match.');
+      return;
+    }
+    const storedPin = (student.pin ?? '').toString().trim() || '1234';
+    if (currentPin !== storedPin) {
+      alert(t('alert_wrong_current_pin') || 'Current PIN is incorrect.');
+      return;
+    }
+    setChangePinSubmitting(true);
+    try {
+      await updateStudent(student.id, {
+        pin: newPin,
+        pinSetAt: new Date().toISOString(),
+        pinSetBy: 'student'
+      });
+      setChangePinCurrent('');
+      setChangePinNew('');
+      setChangePinConfirm('');
+      alert(t('alert_pin_updated') || 'PIN updated successfully!');
+    } catch {
+      alert(t('login_error') || 'Failed to update PIN.');
+    } finally {
+      setChangePinSubmitting(false);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     router.push('/');
@@ -263,7 +305,7 @@ export default function StudentDashboard() {
             <i className="fas fa-bars"></i>
           </button>
           <h1 id="studentNameHeader">
-            {activeSection === 'today' && `${t('marhaba')}, ${student?.name?.split(' ')[0] || 'Student'}!`}
+            {activeSection === 'today' && `${t('marhaba')}, ${student?.name?.trim() || 'Student'}!`}
             {activeSection === 'tasks' && t('student_nav_tasks')}
             {activeSection === 'exams' && t('student_nav_exams')}
             {activeSection === 'messages' && t('messages')}
@@ -443,7 +485,7 @@ export default function StudentDashboard() {
                   <i className="fas fa-chart-line"></i>
                   <span>{t('overall_overview')}</span>
                   <span className="overview-since" id="overviewSince">
-                    {student?.enrollmentDate ? `${t('since')} ${new Date(student.enrollmentDate).toLocaleDateString()}` : ''}
+                    {student?.enrollmentDate ? `${t('since')} ${formatDateDisplay(student.enrollmentDate, {}, useHijri)}` : ''}
                   </span>
                   <span className="overview-avg" id="overviewAvgPct">{averageCompletion}% {t('avg')}</span>
                 </div>
@@ -460,9 +502,9 @@ export default function StudentDashboard() {
                         <button
                           key={dateStr}
                           className={`overview-cell ${colorClass} ${isToday ? 'today' : ''}`}
-                          title={date.toLocaleDateString()}
+                          title={formatDateDisplay(date, {}, useHijri)}
                         >
-                          <span className="overview-cell-date">{dayNum}</span>
+                          <span className="overview-cell-date">{formatDateDisplayDayOnly(date, useHijri)}</span>
                           <span className="overview-cell-pct">{pct}%</span>
                         </button>
                       );
@@ -475,7 +517,7 @@ export default function StudentDashboard() {
                 <div className="section-title">
                   <i className="fas fa-calendar-day"></i>
                   <span>{t('todays_daily_tasks')}</span>
-                  <span className="today-date" id="todayDate">{new Date().toLocaleDateString()}</span>
+                  <span className="today-date" id="todayDate">{formatDateDisplay(new Date(), { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }, useHijri)}</span>
                 </div>
                 <div className="tasks-list daily-tasks-list">
                   {loading ? (
@@ -618,7 +660,7 @@ export default function StudentDashboard() {
                         <div key={result.id} className={`quiz-card-student result ${result.passed ? 'passed' : 'failed'}`}>
                           <div className="quiz-card-student-info">
                             <h4>{quiz?.title || t('unknown_quiz')}</h4>
-                            <span className="result-date">{new Date(result.submittedAt).toLocaleDateString()}</span>
+                            <span className="result-date">{formatDateDisplay(result.submittedAt, {}, useHijri)}</span>
                           </div>
                           <div className="quiz-score-badge">
                             <span className="percentage">{result.percentage}%</span>
@@ -724,7 +766,7 @@ export default function StudentDashboard() {
                             )}
                           </span>
                           <span className="document-item-meta">
-                            {formatFileSize(doc.fileSize)} - {formatShortDate(doc.uploadedAt)}
+                            {formatFileSize(doc.fileSize)} - {formatShortDate(doc.uploadedAt, useHijri)}
                           </span>
                         </div>
                         <label className="document-item-toggle">
@@ -779,7 +821,7 @@ export default function StudentDashboard() {
                             <div key={result.id} className="record-exam-item">
                               <div className="record-exam-main">
                                 <span className="record-exam-title">{quiz?.title || t('unknown_quiz')}</span>
-                                <span className="record-exam-date">{formatShortDate(result.submittedAt)}</span>
+                                <span className="record-exam-date">{formatShortDate(result.submittedAt, useHijri)}</span>
                               </div>
                               <div className="record-exam-details">
                                 {timeTaken != null && (
@@ -817,10 +859,10 @@ export default function StudentDashboard() {
                               const completed = task.completedBy?.[studentId!]?.date === dateString;
                               const labelDate = new Date(dateString + 'T12:00:00');
                               const dayName = labelDate.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { weekday: 'short' }).substring(0, 2);
-                              const short = `${labelDate.getMonth() + 1}/${labelDate.getDate()}`;
+                              const short = formatDateDisplayShort(labelDate, useHijri);
 
                               return (
-                                <span key={`${task.id}-${dateString}`} className={`record-day ${completed ? 'completed' : ''}`} title={labelDate.toLocaleDateString()}>
+                                <span key={`${task.id}-${dateString}`} className={`record-day ${completed ? 'completed' : ''}`} title={formatDateDisplay(labelDate, {}, useHijri)}>
                                   {dayName} {short}
                                 </span>
                               );
@@ -841,6 +883,7 @@ export default function StudentDashboard() {
                 <i className="fas fa-user-circle"></i> <span>{t('student_information')}</span>
               </h3>
               {student && (
+                <>
                 <div className="profile-info-grid profile-info-student">
                   <div className="profile-info-card">
                     <h4><i className="fas fa-id-card"></i> <span>{t('basic_details')}</span></h4>
@@ -850,7 +893,7 @@ export default function StudentDashboard() {
                     </div>
                     <div className="profile-info-row">
                       <span className="profile-info-label">{t('date_of_birth')}</span>
-                      <span className="profile-info-value">{student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : '-'}</span>
+                      <span className="profile-info-value">{student.dateOfBirth ? formatDateDisplay(student.dateOfBirth, {}, useHijri) : '-'}</span>
                     </div>
                     <div className="profile-info-row">
                       <span className="profile-info-label">{t('year')}</span>
@@ -862,7 +905,7 @@ export default function StudentDashboard() {
                     </div>
                     <div className="profile-info-row">
                       <span className="profile-info-label">{t('admission_date')}</span>
-                      <span className="profile-info-value">{student.enrollmentDate ? new Date(student.enrollmentDate).toLocaleDateString() : '-'}</span>
+                      <span className="profile-info-value">{student.enrollmentDate ? formatDateDisplay(student.enrollmentDate, {}, useHijri) : '-'}</span>
                     </div>
                   </div>
                   <div className="profile-info-card">
@@ -911,6 +954,67 @@ export default function StudentDashboard() {
                     </div>
                   </div>
                 </div>
+
+                {/* Change PIN Section – match old app */}
+                <div className="student-profile-section" style={{ marginTop: '1.5rem' }}>
+                  <h3 className="profile-section-title">
+                    <i className="fas fa-key"></i> <span>{t('change_pin')}</span>
+                  </h3>
+                  <form className="change-pin-form" onSubmit={handleChangePin}>
+                    <div className="form-group">
+                      <label htmlFor="changePinCurrent">
+                        <span>{t('old_pin')}</span> <span className="required">*</span>
+                      </label>
+                      <input
+                        type="password"
+                        id="changePinCurrent"
+                        minLength={4}
+                        maxLength={8}
+                        value={changePinCurrent}
+                        onChange={(e) => setChangePinCurrent(e.target.value)}
+                        placeholder={t('placeholder_pin')}
+                        autoComplete="current-password"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="changePinNew">
+                        <span>{t('new_pin')}</span> <span className="required">*</span>
+                      </label>
+                      <input
+                        type="password"
+                        id="changePinNew"
+                        minLength={4}
+                        maxLength={8}
+                        value={changePinNew}
+                        onChange={(e) => setChangePinNew(e.target.value)}
+                        placeholder={t('placeholder_pin')}
+                        autoComplete="new-password"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="changePinConfirm">
+                        <span>{t('confirm_pin')}</span> <span className="required">*</span>
+                      </label>
+                      <input
+                        type="password"
+                        id="changePinConfirm"
+                        minLength={4}
+                        maxLength={8}
+                        value={changePinConfirm}
+                        onChange={(e) => setChangePinConfirm(e.target.value)}
+                        placeholder={t('placeholder_pin')}
+                        autoComplete="new-password"
+                        required
+                      />
+                    </div>
+                    <button type="submit" className="btn-primary" disabled={changePinSubmitting}>
+                      <i className="fas fa-save"></i> <span>{t('change_pin')}</span>
+                    </button>
+                  </form>
+                </div>
+                </>
               )}
             </section>
           )}

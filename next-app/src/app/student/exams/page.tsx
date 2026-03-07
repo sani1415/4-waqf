@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useQuizzes, useQuizResults } from '@/hooks/useFirestore';
 import { useTranslation } from '@/hooks/useTranslation';
+import { formatDateDisplay, getUseHijri } from '@/lib/date-format';
 import '@/styles/student.css';
 import '@/styles/exams.css';
 export default function StudentExams() {
@@ -162,24 +163,33 @@ export default function StudentExams() {
     return null;
   }
 
-  // Taking Exam View
+  // Taking Exam View (structure and classes match old app student-exam-take.html)
   if (selectedQuiz) {
     const questions = selectedQuiz.questions || [];
     const currentQuestion = questions[currentQuestionIndex];
     const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
     return (
-      <div className="exam-taking-container">
-        <header className="exam-header">
-          <h1>{selectedQuiz.title}</h1>
-          <div className="timer-container">
-            <span className="timer-label">{t('time_remaining')}</span>
-            <div className={`timer ${timeRemaining < 300 ? 'warning' : ''}`}>
-              <i className="fas fa-clock"></i>
-              <span className="timer-display">{formatTime(timeRemaining)}</span>
-            </div>
+      <div className="quiz-taking-container exam-taking-container">
+        <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 101, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div className="lang-switcher lang-switcher-compact" aria-label="Language">
+            <button type="button" className={`lang-btn ${lang === 'en' ? 'active' : ''}`} onClick={() => changeLang('en')} title="English">EN</button>
+            <button type="button" className={`lang-btn ${lang === 'bn' ? 'active' : ''}`} onClick={() => changeLang('bn')} title="বাংলা">বাং</button>
           </div>
-        </header>
+        </div>
+
+        <div className="quiz-header">
+          <h1 className="quiz-title-header">{selectedQuiz.title}</h1>
+          <div className="quiz-meta-header">
+            <span><i className="fas fa-clock"></i> {selectedQuiz.timeLimit || 30} {t('minutes') || 'min'}</span>
+            <span><i className="fas fa-percent"></i> Pass: {selectedQuiz.passPercentage ?? 60}%</span>
+          </div>
+        </div>
+
+        <div className={`timer-container ${timeRemaining < 300 ? 'timer-warning' : ''}`}>
+          <div className="timer-label">{t('time_remaining')}</div>
+          <div className="timer-display">{formatTime(timeRemaining)}</div>
+        </div>
 
         <div className="exam-progress">
           <div className="progress-bar">
@@ -191,18 +201,19 @@ export default function StudentExams() {
         {currentQuestion && (
           <div className="question-container">
             <div className="question-text">
-              <span className="question-number">Q{currentQuestionIndex + 1}.</span>
+              <span className="question-number-badge">Q{currentQuestionIndex + 1}</span>
               <p>{currentQuestion.text}</p>
-              <span className="question-marks">({currentQuestion.marks || 1} marks)</span>
+              <span className="question-marks">({currentQuestion.marks || 1} {t('marks') || 'marks'})</span>
             </div>
 
             <div className="answer-section">
               {currentQuestion.type === 'multiple_choice' && (
-                <div className="options-grid">
+                <div className="options-container options-grid">
                   {(currentQuestion.options || []).map((option: string, index: number) => (
                     <button
                       key={index}
-                      className={`option-btn ${answers[currentQuestion.id] === option ? 'selected' : ''}`}
+                      type="button"
+                      className={`option-button option-btn ${answers[currentQuestion.id] === option ? 'selected' : ''}`}
                       onClick={() => setAnswer(currentQuestion.id, option)}
                     >
                       <span className="option-letter">{String.fromCharCode(65 + index)}</span>
@@ -213,15 +224,17 @@ export default function StudentExams() {
               )}
 
               {currentQuestion.type === 'true_false' && (
-                <div className="options-grid tf-options">
+                <div className="options-container options-grid tf-options">
                   <button
-                    className={`option-btn ${answers[currentQuestion.id] === 'true' ? 'selected' : ''}`}
+                    type="button"
+                    className={`option-button option-btn ${answers[currentQuestion.id] === 'true' ? 'selected' : ''}`}
                     onClick={() => setAnswer(currentQuestion.id, 'true')}
                   >
                     <i className="fas fa-check"></i> True
                   </button>
                   <button
-                    className={`option-btn ${answers[currentQuestion.id] === 'false' ? 'selected' : ''}`}
+                    type="button"
+                    className={`option-button option-btn ${answers[currentQuestion.id] === 'false' ? 'selected' : ''}`}
                     onClick={() => setAnswer(currentQuestion.id, 'false')}
                   >
                     <i className="fas fa-times"></i> False
@@ -241,7 +254,7 @@ export default function StudentExams() {
 
               {currentQuestion.type === 'short_answer' && (
                 <textarea
-                  className="short-answer-input"
+                  className="short-answer-textarea short-answer-input"
                   value={answers[currentQuestion.id] || ''}
                   onChange={(e) => setAnswer(currentQuestion.id, e.target.value)}
                   placeholder="Write your answer..."
@@ -251,7 +264,7 @@ export default function StudentExams() {
 
               {currentQuestion.type === 'essay' && (
                 <textarea
-                  className="essay-input"
+                  className="essay-textarea essay-input"
                   value={answers[currentQuestion.id] || ''}
                   onChange={(e) => setAnswer(currentQuestion.id, e.target.value)}
                   placeholder="Write your essay..."
@@ -262,43 +275,52 @@ export default function StudentExams() {
           </div>
         )}
 
-        <div className="exam-navigation">
-          <button
-            className="btn-secondary btn-prev"
-            onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
-            disabled={currentQuestionIndex === 0}
-          >
-            <i className="fas fa-arrow-left"></i> {t('previous')}
-          </button>
-          
-          {currentQuestionIndex < questions.length - 1 ? (
+        <div className="quiz-navigation exam-navigation">
+          <div>
+            <div className="question-indicator">
+              <span>{t('question_of')} {currentQuestionIndex + 1} of {questions.length}</span>
+            </div>
+            <div className="progress-dots question-nav-dots">
+              {questions.map((_: any, index: number) => (
+                <button
+                  key={index}
+                  type="button"
+                  className={`progress-dot nav-dot ${index === currentQuestionIndex ? 'current active' : ''} ${answers[questions[index]?.id] ? 'answered' : ''}`}
+                  onClick={() => setCurrentQuestionIndex(index)}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="nav-buttons">
             <button
-              className="btn-primary btn-next"
-              onClick={() => setCurrentQuestionIndex(currentQuestionIndex + 1)}
+              type="button"
+              className="btn-nav btn-prev"
+              onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
+              disabled={currentQuestionIndex === 0}
             >
-              {t('next')} <i className="fas fa-arrow-right"></i>
+              <i className="fas fa-arrow-left"></i> {t('previous')}
             </button>
-          ) : (
-            <button
-              className="btn-success btn-submit"
-              onClick={handleSubmitExam}
-              disabled={isSubmitting}
-            >
-              <i className="fas fa-paper-plane"></i> {isSubmitting ? '...' : t('submit_quiz')}
-            </button>
-          )}
-        </div>
-
-        <div className="question-nav-dots">
-          {questions.map((_: any, index: number) => (
-            <button
-              key={index}
-              className={`nav-dot ${index === currentQuestionIndex ? 'active' : ''} ${answers[questions[index]?.id] ? 'answered' : ''}`}
-              onClick={() => setCurrentQuestionIndex(index)}
-            >
-              {index + 1}
-            </button>
-          ))}
+            {currentQuestionIndex < questions.length - 1 ? (
+              <button
+                type="button"
+                className="btn-nav btn-next"
+                onClick={() => setCurrentQuestionIndex(currentQuestionIndex + 1)}
+              >
+                {t('next')} <i className="fas fa-arrow-right"></i>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn-nav btn-submit"
+                onClick={handleSubmitExam}
+                disabled={isSubmitting}
+              >
+                <i className="fas fa-check"></i> {isSubmitting ? '...' : t('submit_quiz')}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -414,7 +436,7 @@ export default function StudentExams() {
             {completedQuizzes.length === 0 ? (
               <div className="empty-state">
                 <i className="fas fa-clipboard-check"></i>
-                <h3>{t('no_completed_tasks')}</h3>
+                <h3>{t('no_completed_exams')}</h3>
               </div>
             ) : (
               <div className="quizzes-list">
@@ -466,7 +488,7 @@ export default function StudentExams() {
                         <div className="record-info">
                           <h4>{quiz?.title || t('unknown_quiz')}</h4>
                           <span className="record-date">
-                            {new Date(result.submittedAt).toLocaleDateString()}
+                            {formatDateDisplay(result.submittedAt, {}, getUseHijri())}
                           </span>
                         </div>
                         <div className="record-score">

@@ -4,6 +4,7 @@
   "private": true,
   "description": "Waqf task manager",
   "scripts": {
+    "dev": "npm run dev --prefix next-app",
     "serve": "python -m http.server 8000",
     "serve:8080": "python -m http.server 8080",
     "build:next": "cd next-app && npm run build",

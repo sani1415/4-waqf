@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useQuizzes, useQuizResults, useStudents, useMessages } from '@/hooks/useFirestore';
 import { useTranslation } from '@/hooks/useTranslation';
 import TeacherPageShell from '@/components/teacher/TeacherPageShell';
+import { formatDateDisplay, formatDateTimeDisplay, getUseHijri } from '@/lib/date-format';
 import '@/styles/teacher.css';
 import '@/styles/exams.css';
 interface Question {
@@ -22,7 +23,14 @@ export default function TeacherExams() {
   const router = useRouter();
   const { isLoggedIn, role, isLoading: authLoading } = useAuth();
   const { t, lang, changeLang } = useTranslation();
-  
+  const [dateFormatKey, setDateFormatKey] = useState(0);
+  useEffect(() => {
+    const onFormatChange = () => setDateFormatKey((k) => k + 1);
+    window.addEventListener('waqf-date-format-changed', onFormatChange);
+    return () => window.removeEventListener('waqf-date-format-changed', onFormatChange);
+  }, []);
+  const useHijri = getUseHijri();
+
   const { data: quizzes, loading: quizzesLoading, addItem: addQuiz, deleteItem: deleteQuiz } = useQuizzes();
   const { data: quizResults } = useQuizResults();
   const { data: students } = useStudents();
@@ -356,7 +364,7 @@ export default function TeacherExams() {
                         {quiz.deadline && (
                           <div className="quiz-meta-item">
                             <i className="fas fa-calendar"></i>
-                            <span>{new Date(quiz.deadline).toLocaleDateString()}</span>
+                            <span>{formatDateDisplay(quiz.deadline, {}, useHijri)}</span>
                           </div>
                         )}
                         <div className="quiz-meta-item">
@@ -750,7 +758,7 @@ export default function TeacherExams() {
                                       </span>
                                     </td>
                                     <td>{minutes}m {seconds}s</td>
-                                    <td>{result.submittedAt ? new Date(result.submittedAt).toLocaleString() : '-'}</td>
+                                    <td>{result.submittedAt ? formatDateTimeDisplay(result.submittedAt, lang, useHijri) : '-'}</td>
                                     <td>
                                       <a href={`/teacher/student?section=students&studentId=${result.studentId}`} className="btn-quiz-action btn-small"><i className="fas fa-user"></i> {t('profile')}</a>
                                       <a href={`/teacher/dashboard?studentId=${result.studentId}#manage-tasks`} className="btn-quiz-action btn-small"><i className="fas fa-tasks"></i> {t('tasks')}</a>
@@ -799,7 +807,7 @@ export default function TeacherExams() {
                           <div className="pending-review-title">{quiz?.title || t('unknown_quiz')}</div>
                           <div className="pending-review-info">
                             <span><i className="fas fa-user"></i> {getStudentName(studentId)}</span>
-                            <span><i className="fas fa-calendar"></i> {t('submitted_at')}: {result.submittedAt ? new Date(result.submittedAt).toLocaleDateString() : '-'}</span>
+                            <span><i className="fas fa-calendar"></i> {t('submitted_at')}: {result.submittedAt ? formatDateDisplay(result.submittedAt, {}, useHijri) : '-'}</span>
                             <span><i className="fas fa-clipboard-list"></i> {ungradedCount} {t('questions')} {t('pending')}</span>
                           </div>
                         </div>

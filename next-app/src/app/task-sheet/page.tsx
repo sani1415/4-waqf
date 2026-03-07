@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStudents, useTasks } from '@/hooks/useFirestore';
 import { useTranslation } from '@/hooks/useTranslation';
+import { formatDateDisplay, getUseHijri } from '@/lib/date-format';
 import '@/styles/task-sheet.css';
 
 export default function TaskSheet() {
@@ -102,15 +103,18 @@ export default function TaskSheet() {
     ? dailyTasks.filter((t: any) => t.assignedTo?.includes(selectedStudent.id))
     : [];
 
-  // Format date for display
+  const useHijri = getUseHijri();
+  // Format date for display (Hijri/Gregorian per preference)
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+    const date = new Date(dateStr + 'T12:00:00');
     if (dateStr === today) return t('today');
-    return date.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric'
-    });
+    return formatDateDisplay(date, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      locale: lang === 'bn' ? 'bn' : 'en'
+    }, useHijri);
   };
 
   return (

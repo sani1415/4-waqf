@@ -60,6 +60,7 @@ export default function LandingPage() {
   const router = useRouter();
   const { loginAsTeacher, loginAsStudent, isLoggedIn, role } = useAuth();
   const { data: students, loading: studentsLoading } = useStudents();
+  const studentsReady = !studentsLoading;
   
   const [lang, setLang] = useState<'en' | 'bn'>('en');
   const [showModal, setShowModal] = useState(false);
@@ -130,11 +131,14 @@ export default function LandingPage() {
           setLoginError(t('login_invalid_credentials'));
         }
       } else {
-        // Find student by studentId
+        // Find student by studentId or by name (trim both so DB spacing doesn't break match)
+        const idOrName = loginId.trim().toLowerCase();
         const student = students.find(
-          (s: Student) => s.studentId?.toLowerCase() === loginId.trim().toLowerCase()
+          (s: Student) =>
+            (s.studentId && s.studentId.trim().toLowerCase() === idOrName) ||
+            (s.name && s.name.trim().toLowerCase() === idOrName)
         );
-        
+
         if (student && loginAsStudent(student, loginPin)) {
           router.push('/student/dashboard');
         } else {
@@ -246,6 +250,11 @@ export default function LandingPage() {
               {loginRole === 'teacher' ? t('teacher_login') : t('student_login')}
             </h2>
             <form onSubmit={handleLogin}>
+              {loginRole === 'student' && !studentsReady && (
+                <p className="login-loading-hint" style={{ marginBottom: '0.75rem', color: 'var(--text-muted, #666)' }}>
+                  <i className="fas fa-spinner fa-spin" aria-hidden /> {t('login_loading')}
+                </p>
+              )}
               <div className="login-form-group">
                 <label htmlFor="loginId">
                   <span>{t('login_id')}</span>
@@ -256,7 +265,8 @@ export default function LandingPage() {
                   value={loginId}
                   onChange={(e) => setLoginId(e.target.value)}
                   autoComplete="username" 
-                  placeholder={t('placeholder_login_id')}
+                  placeholder={loginRole === 'student' ? (lang === 'bn' ? 'যেমন আপনার নাম বা waqf-001' : 'e.g. your name or waqf-001') : t('placeholder_login_id')}
+                  disabled={loginRole === 'student' && !studentsReady}
                 />
               </div>
               <div className="login-form-group">
@@ -271,6 +281,7 @@ export default function LandingPage() {
                   autoComplete="current-password" 
                   maxLength={8} 
                   placeholder={t('placeholder_pin')}
+                  disabled={loginRole === 'student' && !studentsReady}
                 />
               </div>
               {loginError && (
@@ -281,7 +292,7 @@ export default function LandingPage() {
               <button 
                 type="submit" 
                 className="login-submit-btn"
-                disabled={isSubmitting}
+                disabled={isSubmitting || (loginRole === 'student' && !studentsReady)}
               >
                 <i className="fas fa-sign-in-alt"></i> 
                 <span>{isSubmitting ? t('login_loading') : t('login')}</span>

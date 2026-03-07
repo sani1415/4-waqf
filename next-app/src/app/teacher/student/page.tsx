@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useStudents, useTasks, useMessages, useQuizResults, useQuizzes } from '@/hooks/useFirestore';
 import { useTranslation } from '@/hooks/useTranslation';
 import TeacherPageShell from '@/components/teacher/TeacherPageShell';
+import { formatDateDisplay, formatDateDisplayDayOnly, getUseHijri } from '@/lib/date-format';
 import '@/styles/teacher.css';
 import '@/styles/teacher-student-detail.css';
 interface TeacherNote {
@@ -46,6 +47,13 @@ function StudentDetailContent() {
 
   // Get the student
   const student = students.find((s: any) => s.id === studentId);
+  const [dateFormatKey, setDateFormatKey] = useState(0);
+  useEffect(() => {
+    const onFormatChange = () => setDateFormatKey((k) => k + 1);
+    window.addEventListener('waqf-date-format-changed', onFormatChange);
+    return () => window.removeEventListener('waqf-date-format-changed', onFormatChange);
+  }, []);
+  const useHijri = getUseHijri();
 
   // Redirect if not logged in as teacher
   useEffect(() => {
@@ -101,9 +109,16 @@ function StudentDetailContent() {
   // Save profile changes
   const handleSaveProfile = async () => {
     if (!student) return;
-    
+    const pinVal = (editForm.pin ?? '').toString().trim();
+    if (pinVal.length > 0 && (pinVal.length < 4 || pinVal.length > 8)) {
+      alert(t('alert_pin_required') || 'Please enter a 4–8 digit PIN.');
+      return;
+    }
+    const payload = { ...editForm };
+    if (payload.pin === '' || payload.pin === undefined) payload.pin = student.pin || '1234';
+    else payload.pin = pinVal;
     try {
-      await updateStudent(studentId, editForm);
+      await updateStudent(studentId, payload);
       setIsEditing(false);
       alert(t('alert_profile_updated'));
     } catch (error) {
@@ -307,6 +322,16 @@ function StudentDetailContent() {
                           onChange={(e) => setEditForm({ ...editForm, studentId: e.target.value })}
                         />
                       </div>
+                      <div className="form-group">
+                        <label>{t('pin')}</label>
+                        <input
+                          type="password"
+                          maxLength={8}
+                          value={editForm.pin || ''}
+                          onChange={(e) => setEditForm({ ...editForm, pin: e.target.value })}
+                          placeholder="4–8 digits"
+                        />
+                      </div>
                     </div>
                     <div className="form-row">
                       <div className="form-group">
@@ -385,8 +410,12 @@ function StudentDetailContent() {
                         <span className="info-value">{student.studentId}</span>
                       </div>
                       <div className="info-row">
+                        <span className="info-label">{t('pin')}:</span>
+                        <span className="info-value">{student.pin ? '••••••' : t('default_pin') || 'Default (1234)'}</span>
+                      </div>
+                      <div className="info-row">
                         <span className="info-label">{t('date_of_birth')}:</span>
-                        <span className="info-value">{student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : '-'}</span>
+                        <span className="info-value">{student.dateOfBirth ? formatDateDisplay(student.dateOfBirth, {}, useHijri) : '-'}</span>
                       </div>
                       <div className="info-row">
                         <span className="info-label">{t('year')}:</span>
@@ -411,12 +440,12 @@ function StudentDetailContent() {
                       )}
                       <div className="info-row">
                         <span className="info-label">{t('admission_date')}:</span>
-                        <span className="info-value">{student.enrollmentDate ? new Date(student.enrollmentDate).toLocaleDateString() : '-'}</span>
+                        <span className="info-value">{student.enrollmentDate ? formatDateDisplay(student.enrollmentDate, {}, useHijri) : '-'}</span>
                       </div>
                       {student.enrollmentDate && (
                         <div className="info-row">
                           <span className="info-label">{t('enrolled')}:</span>
-                          <span className="info-value">{new Date(student.enrollmentDate).toLocaleDateString()}</span>
+                          <span className="info-value">{formatDateDisplay(student.enrollmentDate, {}, useHijri)}</span>
                         </div>
                       )}
                     </div>
@@ -553,7 +582,7 @@ function StudentDetailContent() {
                       const d = new Date(tasksTabSelectedDate + 'T12:00:00');
                       const today = new Date();
                       const isToday = tasksTabSelectedDate === today.toISOString().split('T')[0];
-                      return d.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) + (isToday ? ` (${t('today')})` : '');
+                      return formatDateDisplay(d, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }, useHijri) + (isToday ? ` (${t('today')})` : '');
                     })()}
                   </span>
                   <i className="fas fa-chevron-down"></i>
@@ -593,7 +622,7 @@ function StudentDetailContent() {
                           const isToday = date.toDateString() === today.toDateString();
                           return (
                             <th key={date.toISOString()} className={isToday ? 'day-today' : ''}>
-                              {date.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { weekday: 'short' })} {date.getDate()}
+                              {formatDateDisplay(date, { weekday: 'short' }, useHijri)} {formatDateDisplayDayOnly(date, useHijri)}
                             </th>
                           );
                         });
@@ -668,13 +697,13 @@ function StudentDetailContent() {
                           ? (completedEntry as { date?: string }).date
                           : isCompleted ? (task.completedBy?.[studentId] as any)?.completedAt : null;
                         const assignedStr = task.createdAt
-                          ? new Date(task.createdAt).toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { month: 'short', day: 'numeric' })
+                          ? formatDateDisplay(task.createdAt, { month: 'short', day: 'numeric' }, useHijri)
                           : '—';
                         const dueStr = task.deadline
-                          ? new Date(task.deadline).toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { month: 'short', day: 'numeric' })
+                          ? formatDateDisplay(task.deadline, { month: 'short', day: 'numeric' }, useHijri)
                           : '—';
                         const completedStr = isCompleted
-                          ? (completedDate ? `✓ ${new Date(completedDate).toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { month: 'short', day: 'numeric' })}` : '✓')
+                          ? (completedDate ? `✓ ${formatDateDisplay(completedDate, { month: 'short', day: 'numeric' }, useHijri)}` : '✓')
                           : '—';
                         return (
                           <tr key={task.id}>
@@ -716,7 +745,7 @@ function StudentDetailContent() {
                       <div className="result-info">
                         <h4>{getQuizName(result.quizId)}</h4>
                         <span className="result-date">
-                          {new Date(result.submittedAt).toLocaleDateString()}
+                          {formatDateDisplay(result.submittedAt, {}, useHijri)}
                         </span>
                       </div>
                       <div className="result-score">
@@ -760,7 +789,7 @@ function StudentDetailContent() {
                       <div key={note.id} className="note-card">
                         <div className="note-header">
                           <span className={`category-badge ${note.category || 'general'}`}>{t(`note_category_${(note.category || 'general').replace('-', '_')}`)}</span>
-                          <span className="note-date">{new Date(note.createdAt).toLocaleDateString()}</span>
+                          <span className="note-date">{formatDateDisplay(note.createdAt, {}, useHijri)}</span>
                           <button type="button" className="btn-icon danger" onClick={() => handleDeleteNote(note.id)} title={t('delete')}>
                             <i className="fas fa-trash"></i>
                           </button>
