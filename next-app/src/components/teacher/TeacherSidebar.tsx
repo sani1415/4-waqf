@@ -106,9 +106,9 @@ export default function TeacherSidebar({
             type="button" 
             className={`lang-btn ${lang === 'bn' ? 'active' : ''}`}
             onClick={() => onLangChange('bn')}
-            title="বাংলা"
+            title={t('lang_bengali')}
           >
-            বাং
+            {t('lang_short_bn')}
           </button>
         </div>
         <a 

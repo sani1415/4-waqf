@@ -1,90 +1,119 @@
-# Waqf Task Manager - Next.js Version
+# Waqf Task Manager (Next.js)
 
-This is the Next.js migration of the Waqf Task Management System.
+Next.js App Router migration of the Waqf Task Management System.
 
-## Getting Started
+## Quick Start
 
-1. **Install dependencies** (if not done):
-   ```bash
-   cd next-app
-   npm install
-   ```
+1. Install dependencies:
 
-2. **Run development server**:
-   ```bash
-   npm run dev
-   ```
+```bash
+cd next-app
+npm install
+```
 
-3. **Open in browser**: http://localhost:3000
+2. Start development server:
+
+```bash
+npm run dev
+```
+
+3. Open:
+
+- http://localhost:3000
+
+## Scripts
+
+```bash
+npm run dev     # start dev server
+npm run build   # production build + static export (out/)
+npm run start   # serve production build
+npm run lint    # lint (configure eslint first if prompted)
+```
+
+## Current Routes
+
+- `/`
+- `/task-sheet`
+- `/teacher/dashboard`
+- `/teacher/messages`
+- `/teacher/exams`
+- `/teacher/student?id=<studentDocId>`
+- `/student/dashboard`
+- `/student/chat`
+- `/student/exams`
 
 ## Project Structure
 
-```
+```text
 next-app/
-├── src/
-│   ├── app/                    # Next.js App Router pages
-│   │   ├── page.tsx           # Landing page (/)
-│   │   ├── layout.tsx         # Root layout
-│   │   ├── teacher/           # Teacher routes
-│   │   │   ├── dashboard/     # /teacher/dashboard
-│   │   │   ├── messages/      # /teacher/messages
-│   │   │   └── exams/         # /teacher/exams
-│   │   ├── student/           # Student routes
-│   │   │   ├── dashboard/     # /student/dashboard
-│   │   │   └── chat/          # /student/chat
-│   │   └── task-sheet/        # /task-sheet
-│   ├── components/            # Reusable components
-│   │   ├── teacher/           # Teacher-specific components
-│   │   ├── student/           # Student-specific components
-│   │   └── shared/            # Shared components
-│   ├── hooks/                 # Custom React hooks
-│   │   ├── useFirestore.ts    # Firebase data hooks
-│   │   └── useTranslation.ts  # i18n hook
-│   ├── lib/                   # Utilities and configurations
-│   │   ├── firebase.ts        # Firebase initialization
-│   │   ├── auth-context.tsx   # Authentication context
-│   │   └── types.ts           # TypeScript types
-│   ├── messages/              # Translation files
-│   │   ├── en.json
-│   │   └── bn.json
-│   └── styles/                # CSS files (copied from original)
-├── package.json
-├── tsconfig.json
-└── next.config.js
+|- src/
+|  |- app/
+|  |  |- page.tsx
+|  |  |- layout.tsx
+|  |  |- task-sheet/page.tsx
+|  |  |- teacher/
+|  |  |  |- dashboard/page.tsx
+|  |  |  |- messages/page.tsx
+|  |  |  |- exams/page.tsx
+|  |  |  `- student/page.tsx
+|  |  `- student/
+|  |     |- dashboard/page.tsx
+|  |     |- chat/page.tsx
+|  |     `- exams/page.tsx
+|  |- components/
+|  |- hooks/
+|  |  |- useFirestore.ts
+|  |  `- useTranslation.ts
+|  |- lib/
+|  |  |- firebase.ts
+|  |  |- auth-context.tsx
+|  |  `- types.ts
+|  |- messages/
+|  |  |- en.json
+|  |  `- bn.json
+|  `- styles/
+|- next.config.js
+|- tsconfig.json
+`- package.json
 ```
 
-## Features Migrated
+## Authentication
 
-- [x] Landing page with role selection
-- [x] Teacher login & authentication
-- [x] Student login & authentication  
-- [x] Teacher Dashboard with stats
-- [x] Student Dashboard with tasks
-- [x] Teacher Messages (chat with students)
-- [x] Student Chat (chat with teacher)
-- [x] Task Sheet (quick task marking)
-- [x] Bilingual support (English/Bengali)
-- [x] Firebase Firestore integration
-- [x] Real-time data sync
+- Teacher login:
+  - ID: `teacher`
+  - PIN: `5678`
+- Student login:
+  - ID: student `studentId`
+  - PIN: value in student record (`pin`, fallback `1234` if missing)
 
-## Key Improvements
+## Data / Firebase
 
-1. **Component-based architecture**: Each UI element is a reusable component
-2. **Type safety**: Full TypeScript support
-3. **Cleaner state management**: React hooks instead of global variables
-4. **Better code organization**: Clear separation of concerns
-5. **Faster development**: Hot reload, better error messages
+- Firestore collections used:
+  - `students`
+  - `tasks`
+  - `messages`
+  - `quizzes`
+  - `quizResults`
+  - `submittedDocuments`
+- Firebase Storage is used for student document uploads.
 
-## Testing Credentials
+## Static Export
 
-- **Teacher**: ID: `teacher`, PIN: `1234`
-- **Student**: Use any student ID from your database with their PIN
+This app is configured with:
 
-## Deployment
+- `output: 'export'`
+- `trailingSlash: true`
 
-For static export (Firebase Hosting):
-```bash
-npm run build
-```
+Build output is generated in:
 
-The output will be in the `out/` directory.
+- `next-app/out/`
+
+## Notes
+
+- Teacher dashboard now includes:
+  - task create/edit/delete
+  - student add/delete
+  - documents-for-review (grouped/table + mark reviewed)
+- Student dashboard now includes:
+  - document upload/list/review-toggle/remove
+  - records tab (exam history + daily completion history)

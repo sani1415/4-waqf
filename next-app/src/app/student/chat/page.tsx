@@ -5,32 +5,17 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useMessages } from '@/hooks/useFirestore';
 import { useTranslation } from '@/hooks/useTranslation';
+import '@/styles/student.css';
 import '@/styles/messaging.css';
-
 export default function StudentChat() {
   const router = useRouter();
-  const { isLoggedIn, role, studentId, currentStudent, logout, isLoading: authLoading } = useAuth();
+  const { isLoggedIn, role, studentId, isLoading: authLoading } = useAuth();
   const { t, lang, changeLang } = useTranslation();
   
   const { data: messages, addItem: addMessage, updateItem: updateMessage } = useMessages();
   
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [useHijri, setUseHijri] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('useHijri');
-    if (stored === 'true') {
-      setUseHijri(true);
-    }
-  }, []);
-
-  const toggleDateFormat = () => {
-    const newValue = !useHijri;
-    setUseHijri(newValue);
-    localStorage.setItem('useHijri', String(newValue));
-  };
-
   // Redirect if not logged in as student
   useEffect(() => {
     if (!authLoading && (!isLoggedIn || role !== 'student')) {
@@ -73,12 +58,6 @@ export default function StudentChat() {
 
     setNewMessage('');
   };
-
-  const handleLogout = () => {
-    logout();
-    router.push('/');
-  };
-
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString(lang === 'bn' ? 'bn-BD' : 'en-US', {
@@ -125,22 +104,12 @@ export default function StudentChat() {
               type="button"
               className={`lang-btn ${lang === 'bn' ? 'active' : ''}`}
               onClick={() => changeLang('bn')}
-              title="বাংলা"
+              title={t('lang_bengali')}
             >
-              বাং
+              {t('lang_short_bn')}
             </button>
           </div>
-          <div className="date-format-toggle">
-            <button 
-              type="button"
-              className={`date-format-btn ${useHijri ? 'active' : ''}`}
-              onClick={toggleDateFormat}
-              title="Toggle date format: Hijri (Islamic) / Gregorian"
-              aria-label="Toggle date format"
-            >
-              📅 {useHijri ? 'Hijri' : 'Greg'}
-            </button>
-          </div>
+          <div className="date-format-toggle"></div>
           <button className="info-button" onClick={() => router.push('/student/dashboard')}>
             <i className="fas fa-home"></i>
           </button>
@@ -155,17 +124,18 @@ export default function StudentChat() {
               <span>{t('send_message_to_teacher')}</span>
             </div>
           ) : (
-            myMessages.map((msg: any) => (
-              <div
-                key={msg.id}
-                className={`message ${msg.sender === 'student' ? 'sent' : 'received'}`}
-              >
-                <div className="message-content">
-                  <p>{msg.text}</p>
+            myMessages.map((msg: any) => {
+              const isFromStudent = String(msg.sender || '').toLowerCase() === 'student';
+              return (
+                <div
+                  key={msg.id}
+                  className={`message-bubble ${isFromStudent ? 'message-sent' : 'message-received'}`}
+                >
+                  <p className="message-text">{(msg.text ?? msg.message ?? '').toString()}</p>
                   <span className="message-time">{formatTime(msg.timestamp)}</span>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
           <div ref={messagesEndRef} />
         </div>
@@ -183,7 +153,7 @@ export default function StudentChat() {
               required
             />
             <button type="submit" className="send-button" disabled={!newMessage.trim()}>
-              <i className="fas fa-paper-plane"></i>
+              <i className="fas fa-paper-plane"></i> <span>{t('send')}</span>
             </button>
           </form>
         </div>
@@ -191,7 +161,8 @@ export default function StudentChat() {
 
       {/* Mobile Bottom Navigation */}
       <div className="student-bottom-nav-wrapper bottom-nav-wrapper">
-        <nav className="bottom-nav" aria-label="Student navigation">
+        <div className="bottom-nav-fade bottom-nav-fade-left" id="studentNavFadeLeft" aria-hidden="true"><i className="fas fa-chevron-left"></i></div>
+        <nav className="bottom-nav" id="studentBottomNav" aria-label="Student navigation">
           <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/dashboard'); }} title="Today">
             <i className="fas fa-calendar-day"></i>
             <span>{t('today')}</span>
@@ -202,7 +173,7 @@ export default function StudentChat() {
           </a>
           <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/exams'); }} title="Exams">
             <i className="fas fa-graduation-cap"></i>
-            <span>{t('exams')}</span>
+            <span>{t('nav_exams')}</span>
           </a>
           <a href="#" className="bottom-nav-item active" title="Messages">
             <i className="fas fa-comments"></i>
@@ -217,7 +188,15 @@ export default function StudentChat() {
             <span>{t('profile')}</span>
           </a>
         </nav>
+        <div className="bottom-nav-fade bottom-nav-fade-right" id="studentNavFadeRight" aria-hidden="true"><i className="fas fa-chevron-right"></i></div>
       </div>
     </>
   );
 }
+
+
+
+
+
+
+

@@ -27,14 +27,14 @@ const navItems: NavItem[] = [
   { id: 'today', icon: 'fa-calendar-day', label: 'today', section: 'today' },
   { id: 'tasks', icon: 'fa-clipboard-list', label: 'tasks', section: 'tasks' },
   { id: 'exams', icon: 'fa-graduation-cap', label: 'nav_exams', section: 'exams' },
-  { id: 'messages', icon: 'fa-comments', label: 'messages', href: '/student/chat' },
+  { id: 'messages', icon: 'fa-comments', label: 'messages', section: 'messages' },
   { id: 'documents', icon: 'fa-file-upload', label: 'nav_documents', section: 'documents' },
   { id: 'records', icon: 'fa-history', label: 'tab_records', section: 'records' },
   { id: 'profile', icon: 'fa-user', label: 'profile', section: 'profile' },
 ];
 
 export default function StudentSidebar({
-  activeSection = 'tasks',
+  activeSection = 'today',
   onSectionChange,
   unreadMessages = 0,
   t,
@@ -90,7 +90,7 @@ export default function StudentSidebar({
             <i className={`fas ${item.icon}`}></i>
             <span>{t(item.label)}</span>
             {item.id === 'messages' && unreadMessages > 0 && (
-              <span className="nav-unread-dot-sidebar"></span>
+              <span id="msgUnreadDotSidebar" className="nav-unread-dot-sidebar"></span>
             )}
           </a>
         ))}
@@ -110,9 +110,9 @@ export default function StudentSidebar({
             type="button" 
             className={`lang-btn ${lang === 'bn' ? 'active' : ''}`}
             onClick={() => onLangChange('bn')}
-            title="বাংলা"
+            title={t('lang_bengali')}
           >
-            বাং
+            {t('lang_short_bn')}
           </button>
         </div>
         <a 
@@ -130,3 +130,5 @@ export default function StudentSidebar({
     </div>
   );
 }
+
+

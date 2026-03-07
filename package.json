@@ -6,11 +6,8 @@
   "scripts": {
     "serve": "python -m http.server 8000",
     "serve:8080": "python -m http.server 8080",
-    "copy-public": "node scripts/copy-to-public.js",
-    "deploy": "npm run copy-public && firebase deploy --only hosting"
-  },
-  "dependencies": {
-    "@dataconnect/generated": "file:src/dataconnect-generated"
+    "build:next": "cd next-app && npm run build",
+    "deploy": "firebase deploy --only hosting"
   },
   "devDependencies": {
     "firebase": "^12.8.0"

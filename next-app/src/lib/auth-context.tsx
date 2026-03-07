@@ -49,24 +49,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [authState]);
 
   const loginAsTeacher = (id: string, pin: string): boolean => {
-    // TEMPORARILY DISABLED FOR TESTING - accept any credentials
-    // const idMatch = id.trim().toLowerCase() === TEACHER_CREDENTIALS.id.toLowerCase();
-    // const pinMatch = pin.trim() === TEACHER_CREDENTIALS.pin;
-    // if (idMatch && pinMatch) {
+    const idMatch = id.trim().toLowerCase() === TEACHER_CREDENTIALS.id.toLowerCase();
+    const pinMatch = pin.trim() === TEACHER_CREDENTIALS.pin;
+
+    if (!idMatch || !pinMatch) {
+      return false;
+    }
+
     setAuthState({
       role: 'teacher',
       isLoggedIn: true
     });
+    setCurrentStudent(null);
     return true;
-    // }
-    // return false;
   };
 
   const loginAsStudent = (student: Student, pin: string): boolean => {
-    // TEMPORARILY DISABLED FOR TESTING - accept any PIN
-    // const storedPin = (student.pin || '').toString().trim();
-    // const inputPin = (pin || '').toString().trim();
-    // if (storedPin && inputPin && storedPin === inputPin) {
+    const expectedPin = (student.pin || '1234').toString().trim();
+    const inputPin = (pin || '').toString().trim();
+
+    if (!inputPin || inputPin !== expectedPin) {
+      return false;
+    }
+
     setAuthState({
       role: 'student',
       studentId: student.id,
@@ -74,8 +79,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     setCurrentStudent(student);
     return true;
-    // }
-    // return false;
   };
 
   const logout = () => {

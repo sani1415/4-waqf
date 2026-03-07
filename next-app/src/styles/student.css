@@ -247,6 +247,7 @@
 }
 
 .student-nav-item:hover,
+.student-nav-item.active,
 body:has(#tab-today:checked) .student-sidebar label[for="tab-today"],
 body:has(#tab-tasks:checked) .student-sidebar label[for="tab-tasks"],
 body:has(#tab-exams:checked) .student-sidebar label[for="tab-exams"],
@@ -259,6 +260,7 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"] {
 }
 
 .student-nav-item:hover::before,
+.student-nav-item.active::before,
 body:has(#tab-today:checked) .student-sidebar label[for="tab-today"]::before,
 body:has(#tab-tasks:checked) .student-sidebar label[for="tab-tasks"]::before,
 body:has(#tab-exams:checked) .student-sidebar label[for="tab-exams"]::before,
@@ -1089,6 +1091,46 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+}
+
+.quiz-card-student .quiz-card-student-info {
+    flex: 1;
+    min-width: 0;
+}
+.quiz-card-student .quiz-card-student-info h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+}
+.quiz-card-student .quiz-card-student-info .quiz-subject,
+.quiz-card-student .quiz-card-student-info span {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-right: 0.5rem;
+}
+.quiz-card-student .quiz-score-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.quiz-card-student .quiz-score-badge .percentage {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+.quiz-card-student .quiz-score-badge .raw {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+.quiz-card-student.result.passed .quiz-score-badge .percentage { color: var(--success-soft); }
+.quiz-card-student.result.failed .quiz-score-badge .percentage { color: var(--danger-soft, #c62828); }
+.quiz-card-student .result-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+.quizzes-list-student .quiz-card-student {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .quiz-list-empty {
@@ -3069,4 +3111,6 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
         font-size: 0.7rem;
     }
 }
+
+
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStudents, useTasks } from '@/hooks/useFirestore';
 import { useTranslation } from '@/hooks/useTranslation';
-import '@/styles/spreadsheet.css';
+import '@/styles/task-sheet.css';
 
 export default function TaskSheet() {
   const router = useRouter();
@@ -174,7 +174,7 @@ export default function TaskSheet() {
               <i className="fas fa-chevron-right"></i>
             </button>
             <span className={`date-mode-badge ${isEditable ? '' : 'readonly'}`}>
-              <span>{isEditable ? t('editable') : t('readonly')}</span>
+              <span>{isEditable ? t('editable') : t('view_only')}</span>
             </span>
           </div>
 

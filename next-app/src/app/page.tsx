@@ -9,7 +9,7 @@ import { Student } from '@/lib/types';
 // Translation hook (simplified version - we'll enhance later)
 const translations: Record<string, Record<string, string>> = {
   en: {
-    landing_welcome: 'মারহাবা - Task Manager',
+    landing_welcome: 'Welcome to Task Manager',
     landing_subtitle: 'Manage and track student tasks efficiently',
     landing_teacher: 'Teacher',
     landing_teacher_desc: 'Manage tasks and monitor student progress',

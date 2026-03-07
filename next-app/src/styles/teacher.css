@@ -1,8 +1,29 @@
-/* Teacher Dashboard Styles */
-body {
+/* Teacher Dashboard Styles - full viewport like old app */
+html:has(.teacher-dashboard) {
+    height: 100%;
+}
+body:has(.teacher-dashboard) {
     display: flex;
     margin: 0;
     padding: 0;
+    min-height: 100vh;
+    height: 100%;
+}
+.teacher-dashboard {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    height: 100%;
+    flex: 1;
+    min-height: 0;
+}
+.teacher-dashboard .app-container {
+    display: flex;
+    width: 100%;
+    min-height: 100%;
+    height: 100%;
+    flex: 1;
+    min-height: 0;
 }
 
 /* Hide connection icon on teacher dashboard (per design) */
@@ -117,14 +138,22 @@ body {
 
 /* Overflow containment handled in common.css for body.teacher-page / body.teacher-dashboard */
 
-/* Main Content */
+/* Main Content - fill viewport and allow content to scroll */
 .main-content {
     flex: 1;
     margin-left: 260px;
     min-height: 100vh;
+    height: 100%;
     background: var(--bg-primary);
     overflow-x: hidden; /* Prevent spreadsheet from expanding page */
     min-width: 0; /* Allow shrinking in flex layout */
+    display: flex;
+    flex-direction: column;
+}
+.content-area {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .top-bar {
@@ -421,6 +450,25 @@ body {
     max-width: 100%;
 }
 
+/* Spreadsheet first column: name, id, year (match old app) */
+.overview-table td:first-child {
+    text-align: left;
+}
+.overview-table td:first-child .student-name {
+    font-weight: 600;
+    display: block;
+}
+.overview-table td:first-child .student-id-display {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: block;
+}
+.overview-table td:first-child .student-year-meta {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    display: block;
+}
+
 /* Contain spreadsheet horizontal overflow so it doesn't expand page */
 .students-progress {
     overflow-x: hidden;
@@ -701,6 +749,12 @@ body {
     color: var(--text-secondary);
     min-width: 40px;
     font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.mini-label i {
+    opacity: 0.9;
 }
 
 .mini-progress-bar {

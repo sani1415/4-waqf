@@ -1087,6 +1087,31 @@
     gap: 1rem;
 }
 
+.add-note-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: flex-start;
+    margin-top: 0.75rem;
+}
+.add-note-inline select {
+    min-width: 140px;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+.add-note-inline textarea {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    resize: vertical;
+}
+.add-note-inline button {
+    flex-shrink: 0;
+}
+
 .note-card {
     background: #F8FAFC;
     border-radius: 12px;
@@ -1790,6 +1815,31 @@ input.modal-toggle:checked ~ .checkbox-sheet,
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    gap: 0.5rem;
+}
+
+.message-item {
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+    max-width: 85%;
+    word-wrap: break-word;
+}
+
+.message-item.sent {
+    align-self: flex-end;
+    background: linear-gradient(135deg, var(--primary-soft), var(--primary-light));
+    color: white;
+}
+
+.message-item.sent .text {
+    color: white;
+}
+
+.message-item.received {
+    align-self: flex-start;
+    background: white;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
 }
 
 .message-input-wrap {

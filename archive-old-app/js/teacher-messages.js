@@ -4,9 +4,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // Wait for dataManager to be ready before initializing
     if (typeof dataManager !== 'undefined' && dataManager.initialized) {
         initializePage();
-    } else {
-        window.addEventListener('dataManagerReady', initializePage);
+        return;
     }
+    window.addEventListener('dataManagerReady', function onReady() {
+        window.removeEventListener('dataManagerReady', onReady);
+        initializePage();
+    });
+    // If dataManager never becomes ready (e.g. Firebase/network failure), show error after 8s
+    setTimeout(function() {
+        var container = document.getElementById('chatsList');
+        if (!container) return;
+        if (typeof dataManager === 'undefined' || !dataManager.initialized) {
+            var loadingText = typeof window.t === 'function' ? window.t('loading') : 'Loading...';
+            if (container.querySelector('.loading-spinner') && container.innerHTML.indexOf(loadingText) !== -1) {
+                var errMsg = (typeof window.t === 'function' && window.t('error_loading') !== 'error_loading') ? window.t('error_loading') : 'Could not load. Check connection and refresh.';
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>' + errMsg + '</h3><p><a href="' + window.location.pathname + '">Refresh</a></p></div>';
+                container.style.display = 'block';
+                document.getElementById('noChats').style.display = 'none';
+            }
+        }
+    }, 8000);
 });
 
 // Initialize page after dataManager is ready
@@ -89,8 +106,9 @@ async function loadChatsList() {
             lastMessageTime = formatTime(lastMessage.timestamp);
         }
 
+        var sid = String(student.id).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         return `
-            <div class="chat-item fade-in" onclick="openChat(${student.id})">
+            <div class="chat-item fade-in" onclick="openChat('${sid}')">
                 <div class="chat-item-avatar">${initial}</div>
                 <div class="chat-item-content">
                     <div class="chat-item-header">
@@ -102,13 +120,13 @@ async function loadChatsList() {
                         ${unreadCount > 0 ? `<span class="unread-badge">${unreadCount}</span>` : ''}
                     </div>
                     <div class="chat-item-actions">
-                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='/pages/teacher-student-detail.html?studentId=${student.id}';">
+                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='/pages/teacher-student-detail.html?studentId=${encodeURIComponent(student.id)}';">
                             <i class="fas fa-user"></i> ${typeof window.t === 'function' ? window.t('profile') : 'Profile'}
                         </button>
-                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='/pages/teacher-dashboard.html?studentId=${student.id}#manage-tasks';">
+                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='/pages/teacher-dashboard.html?studentId=${encodeURIComponent(student.id)}#manage-tasks';">
                             <i class="fas fa-tasks"></i> ${typeof window.t === 'function' ? window.t('tasks') : 'Tasks'}
                         </button>
-                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='/pages/teacher-chat.html?studentId=${student.id}';">
+                        <button class="chat-action-btn" onclick="event.stopPropagation(); window.location.href='/pages/teacher-chat.html?studentId=${encodeURIComponent(student.id)}';">
                             <i class="fas fa-comments"></i> ${typeof window.t === 'function' ? window.t('chat') : 'Chat'}
                         </button>
                     </div>

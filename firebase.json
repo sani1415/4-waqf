@@ -1,16 +1,9 @@
 {
   "emulators": {
-    "dataconnect": {
-      "dataDir": "dataconnect/.dataconnect/pgliteData",
-      "port": 9399
-    },
     "ui": {
       "enabled": false
     },
     "singleProjectMode": true
-  },
-  "dataconnect": {
-    "source": "dataconnect"
   },
   "firestore": {
     "database": "(default)",
@@ -33,13 +26,13 @@
     }
   ],
   "hosting": {
-    "public": "public",
+    "public": "next-app/out",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ],
-    "predeploy": ["npm run copy-public"]
+    "predeploy": ["npm run build:next"]
   },
   "storage": {
     "rules": "storage.rules"

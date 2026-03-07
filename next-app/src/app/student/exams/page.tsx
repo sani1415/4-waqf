@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useQuizzes, useQuizResults } from '@/hooks/useFirestore';
 import { useTranslation } from '@/hooks/useTranslation';
+import '@/styles/student.css';
 import '@/styles/exams.css';
-
 export default function StudentExams() {
   const router = useRouter();
   const { isLoggedIn, role, studentId, logout, isLoading: authLoading } = useAuth();
@@ -172,9 +172,12 @@ export default function StudentExams() {
       <div className="exam-taking-container">
         <header className="exam-header">
           <h1>{selectedQuiz.title}</h1>
-          <div className={`timer ${timeRemaining < 300 ? 'warning' : ''}`}>
-            <i className="fas fa-clock"></i>
-            <span>{formatTime(timeRemaining)}</span>
+          <div className="timer-container">
+            <span className="timer-label">{t('time_remaining')}</span>
+            <div className={`timer ${timeRemaining < 300 ? 'warning' : ''}`}>
+              <i className="fas fa-clock"></i>
+              <span className="timer-display">{formatTime(timeRemaining)}</span>
+            </div>
           </div>
         </header>
 
@@ -182,7 +185,7 @@ export default function StudentExams() {
           <div className="progress-bar">
             <div className="progress-fill" style={{ width: `${progress}%` }}></div>
           </div>
-          <span>{currentQuestionIndex + 1} / {questions.length}</span>
+          <span>{t('question_of')} {currentQuestionIndex + 1} of {questions.length}</span>
         </div>
 
         {currentQuestion && (
@@ -261,27 +264,27 @@ export default function StudentExams() {
 
         <div className="exam-navigation">
           <button
-            className="btn-secondary"
+            className="btn-secondary btn-prev"
             onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
             disabled={currentQuestionIndex === 0}
           >
-            <i className="fas fa-arrow-left"></i> Previous
+            <i className="fas fa-arrow-left"></i> {t('previous')}
           </button>
           
           {currentQuestionIndex < questions.length - 1 ? (
             <button
-              className="btn-primary"
+              className="btn-primary btn-next"
               onClick={() => setCurrentQuestionIndex(currentQuestionIndex + 1)}
             >
-              Next <i className="fas fa-arrow-right"></i>
+              {t('next')} <i className="fas fa-arrow-right"></i>
             </button>
           ) : (
             <button
-              className="btn-success"
+              className="btn-success btn-submit"
               onClick={handleSubmitExam}
               disabled={isSubmitting}
             >
-              <i className="fas fa-paper-plane"></i> {isSubmitting ? '...' : 'Submit'}
+              <i className="fas fa-paper-plane"></i> {isSubmitting ? '...' : t('submit_quiz')}
             </button>
           )}
         </div>
@@ -303,7 +306,8 @@ export default function StudentExams() {
 
   // Main Exams List View
   return (
-    <div className="exams-container student-exams">
+    <>
+      <div className="exams-container student-exams">
       <header className="exams-header">
         <button className="back-btn" onClick={() => router.push('/student/dashboard')}>
           <i className="fas fa-arrow-left"></i>
@@ -480,5 +484,45 @@ export default function StudentExams() {
         )}
       </div>
     </div>
+
+      <div className="student-bottom-nav-wrapper bottom-nav-wrapper">
+        <div className="bottom-nav-fade bottom-nav-fade-left" id="studentNavFadeLeft" aria-hidden="true"><i className="fas fa-chevron-left"></i></div>
+        <nav className="bottom-nav" id="studentBottomNav" aria-label="Student navigation">
+          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/dashboard'); }} title="Today">
+            <i className="fas fa-calendar-day"></i>
+            <span>{t('today')}</span>
+          </a>
+          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/dashboard'); }} title="Tasks">
+            <i className="fas fa-clipboard-list"></i>
+            <span>{t('tasks')}</span>
+          </a>
+          <a href="#" className="bottom-nav-item active" title="Exams">
+            <i className="fas fa-graduation-cap"></i>
+            <span>{t('exams')}</span>
+          </a>
+          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/chat'); }} title="Messages">
+            <i className="fas fa-comments"></i>
+            <span>{t('messages')}</span>
+          </a>
+          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); setActiveTab('records'); }} title="Records">
+            <i className="fas fa-history"></i>
+            <span>{t('tab_records')}</span>
+          </a>
+          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/dashboard'); }} title="Profile">
+            <i className="fas fa-user"></i>
+            <span>{t('profile')}</span>
+          </a>
+        </nav>
+        <div className="bottom-nav-fade bottom-nav-fade-right" id="studentNavFadeRight" aria-hidden="true"><i className="fas fa-chevron-right"></i></div>
+      </div>
+    </>
   );
 }
+
+
+
+
+
+
+
+

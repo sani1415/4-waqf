@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 
@@ -21,20 +20,6 @@ export default function TeacherTopBar({
 }: TeacherTopBarProps) {
   const router = useRouter();
   const { logout } = useAuth();
-  const [useHijri, setUseHijri] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('useHijri');
-    if (stored === 'true') {
-      setUseHijri(true);
-    }
-  }, []);
-
-  const toggleDateFormat = () => {
-    const newValue = !useHijri;
-    setUseHijri(newValue);
-    localStorage.setItem('useHijri', String(newValue));
-  };
 
   const handleLogout = () => {
     logout();
@@ -43,10 +28,10 @@ export default function TeacherTopBar({
 
   return (
     <header className="top-bar">
-      <button className="menu-toggle" onClick={onMenuToggle}>
+      <button className="menu-toggle" id="menuToggle" onClick={onMenuToggle}>
         <i className="fas fa-bars"></i>
       </button>
-      <h1 className="page-title">{title}</h1>
+      <h1 className="page-title" id="pageTitle">{title}</h1>
       <div className="top-bar-right">
         <div className="lang-switcher lang-switcher-compact lang-switcher-header" aria-label="Language">
           <button 
@@ -61,22 +46,12 @@ export default function TeacherTopBar({
             type="button" 
             className={`lang-btn ${lang === 'bn' ? 'active' : ''}`}
             onClick={() => onLangChange('bn')}
-            title="বাংলা"
+            title={t('lang_bengali')}
           >
-            বাং
+            {t('lang_short_bn')}
           </button>
         </div>
-        <div className="date-format-toggle">
-          <button 
-            type="button"
-            className={`date-format-btn ${useHijri ? 'active' : ''}`}
-            onClick={toggleDateFormat}
-            title="Toggle date format: Hijri (Islamic) / Gregorian"
-            aria-label="Toggle date format"
-          >
-            📅 {useHijri ? 'Hijri' : 'Greg'}
-          </button>
-        </div>
+        <div className="date-format-toggle" aria-hidden="true"></div>
         <div className="user-info user-info-desktop">
           <i className="fas fa-user-circle"></i>
           <span>{t('teacher')}</span>
@@ -96,3 +71,4 @@ export default function TeacherTopBar({
     </header>
   );
 }
+
