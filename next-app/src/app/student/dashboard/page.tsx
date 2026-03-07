@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '@/lib/auth-context';
 import {
@@ -61,14 +61,17 @@ function getLastDays(days: number) {
   });
 }
 
+const STUDENT_SECTIONS = ['today', 'tasks', 'exams', 'messages', 'documents', 'records', 'profile'] as const;
+
 export default function StudentDashboard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isLoggedIn, role, studentId, currentStudent, logout, isLoading: authLoading } = useAuth();
   const { t, lang, changeLang } = useTranslation();
 
   const { data: students, updateItem: updateStudent } = useStudents();
   const { data: tasks, loading: tasksLoading, updateItem: updateTask } = useTasks();
-  const { data: messages, loading: messagesLoading } = useMessages();
+  const { data: messages, loading: messagesLoading, addItem: addMessage, updateItem: updateMessage } = useMessages();
 
   const {
     data: submittedDocumentsData,
@@ -84,13 +87,25 @@ export default function StudentDashboard() {
   const submittedDocuments = (submittedDocumentsData as SubmittedDocumentLike[]) || [];
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('today');
+  const sectionFromUrl = searchParams.get('section');
+  const validSection = sectionFromUrl && STUDENT_SECTIONS.includes(sectionFromUrl as any) ? sectionFromUrl : 'today';
+  const [activeSection, setActiveSection] = useState(validSection);
+
+  useEffect(() => {
+    if (sectionFromUrl && STUDENT_SECTIONS.includes(sectionFromUrl as any)) {
+      setActiveSection(sectionFromUrl);
+    }
+  }, [sectionFromUrl]);
   const [useHijri, setUseHijri] = useState(false);
   const [uploadingDocument, setUploadingDocument] = useState(false);
   const [changePinCurrent, setChangePinCurrent] = useState('');
   const [changePinNew, setChangePinNew] = useState('');
   const [changePinConfirm, setChangePinConfirm] = useState('');
   const [changePinSubmitting, setChangePinSubmitting] = useState(false);
+  const [messageTabInput, setMessageTabInput] = useState('');
+  const [showDayDetails, setShowDayDetails] = useState(false);
+  const [dayDetailsDate, setDayDetailsDate] = useState<string | null>(null);
+  const [showOverviewCalendar, setShowOverviewCalendar] = useState(false);
 
   useEffect(() => {
     setUseHijri(getUseHijri());
@@ -100,6 +115,34 @@ export default function StudentDashboard() {
     const next = !useHijri;
     setUseHijri(next);
     setUseHijriPreference(next);
+  };
+
+  const formatMessageTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString(lang === 'bn' ? 'bn-BD' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getMessageDateLabel = (timestamp: string) => {
+    const d = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return t('today');
+    if (d.toDateString() === yesterday.toDateString()) return t('yesterday');
+    return formatDateDisplay(d.toISOString(), {}, useHijri);
+  };
+
+  const sendMessageFromTab = async () => {
+    const text = messageTabInput.trim();
+    if (!text || !studentId) return;
+    await addMessage({
+      studentId,
+      sender: 'student',
+      text,
+      timestamp: new Date().toISOString(),
+      read: false
+    });
+    setMessageTabInput('');
   };
 
   const student = currentStudent || students.find((s: any) => s.id === studentId);
@@ -133,6 +176,39 @@ export default function StudentDashboard() {
     (m: any) => m.studentId === studentId && m.sender === 'teacher' && !m.read
   ).length;
 
+  const myMessages = useMemo(() => {
+    return (messages as any[])
+      .filter((m: any) => m.studentId === studentId)
+      .sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  }, [messages, studentId]);
+
+  const messagesTabEndRef = useRef<HTMLDivElement>(null);
+  const overviewStripRef = useRef<HTMLDivElement>(null);
+  const lastOverviewCellRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (activeSection === 'messages') messagesTabEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [activeSection, myMessages]);
+
+  useEffect(() => {
+    if (activeSection !== 'today') return;
+    const scrollToToday = () => {
+      lastOverviewCellRef.current?.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'end' });
+    };
+    scrollToToday();
+    const t1 = setTimeout(scrollToToday, 150);
+    const t2 = setTimeout(scrollToToday, 400);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [activeSection]);
+
+  useEffect(() => {
+    if (activeSection === 'messages' && studentId) {
+      (messages as any[])
+        .filter((m: any) => m.studentId === studentId && m.sender === 'teacher' && !m.read)
+        .forEach((m: any) => updateMessage(m.id, { read: true }));
+    }
+  }, [activeSection, studentId, messages, updateMessage]);
+
   const myDocuments = useMemo(() => {
     return submittedDocuments
       .filter((doc) => String(doc.studentId) === String(studentId))
@@ -153,6 +229,22 @@ export default function StudentDashboard() {
     if (dailyTasks.length === 0) return 0;
     const completed = dailyTasks.filter((task: any) => task.completedBy?.[studentId!]?.date === dateString).length;
     return Math.round((completed / dailyTasks.length) * 100);
+  };
+
+  const getDayDetailsForDate = (dateString: string) => {
+    const total = dailyTasks.length;
+    const taskList = dailyTasks.map((task: any) => ({
+      title: task.title,
+      completed: task.completedBy?.[studentId!]?.date === dateString
+    }));
+    const completed = taskList.filter((t) => t.completed).length;
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+    return { percentage, completed, total, tasks: taskList };
+  };
+
+  const openDayDetails = (dateStr: string) => {
+    setDayDetailsDate(dateStr);
+    setShowDayDetails(true);
   };
 
   const overviewDates = getLastDays(30);
@@ -271,6 +363,10 @@ export default function StudentDashboard() {
   const handleSectionChange = (section: string) => {
     setActiveSection(section);
     setSidebarOpen(false);
+    const url = `/student/dashboard${section === 'today' ? '' : `?section=${section}`}`;
+    if (typeof window !== 'undefined' && window.location.pathname === '/student/dashboard') {
+      window.history.replaceState(null, '', url);
+    }
   };
 
   if (authLoading) {
@@ -285,7 +381,7 @@ export default function StudentDashboard() {
 
   return (
     <div className="student-dashboard-container">
-      {sidebarOpen && <div className="sidebar-backdrop active" onClick={() => setSidebarOpen(false)}></div>}
+      <div className={`sidebar-backdrop ${sidebarOpen ? 'active' : ''}`} onClick={() => setSidebarOpen(false)} aria-hidden="true"></div>
 
       <StudentSidebar
         activeSection={activeSection}
@@ -481,7 +577,15 @@ export default function StudentDashboard() {
               </div>
 
               <div className="overview-compact-card" id="overviewSection">
-                <div className="overview-compact-header" id="overviewHeader" role="button" tabIndex={0} aria-label="View full calendar">
+                <div
+                  className="overview-compact-header"
+                  id="overviewHeader"
+                  role="button"
+                  tabIndex={0}
+                  aria-label="View full calendar"
+                  onClick={() => setShowOverviewCalendar(true)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowOverviewCalendar(true); } }}
+                >
                   <i className="fas fa-chart-line"></i>
                   <span>{t('overall_overview')}</span>
                   <span className="overview-since" id="overviewSince">
@@ -489,20 +593,32 @@ export default function StudentDashboard() {
                   </span>
                   <span className="overview-avg" id="overviewAvgPct">{averageCompletion}% {t('avg')}</span>
                 </div>
-                <div className="overview-compact-strip" id="overviewStrip" role="button" tabIndex={0} aria-label="View full calendar">
+                <div
+                  ref={overviewStripRef}
+                  className="overview-compact-strip"
+                  id="overviewStrip"
+                  role="button"
+                  tabIndex={0}
+                  aria-label="View full calendar"
+                  onClick={(e) => { if (!(e.target as HTMLElement).closest('.overview-cell')) setShowOverviewCalendar(true); }}
+                  onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !(e.target as HTMLElement).closest('.overview-cell')) { e.preventDefault(); setShowOverviewCalendar(true); } }}
+                >
                   <div className="overview-strip-cells" id="overviewHistoryScroll">
-                    {overviewDates.map((date) => {
+                    {overviewDates.map((date, index) => {
                       const dateStr = date.toISOString().split('T')[0];
-                      const dayNum = date.getDate();
                       const pct = getDailyCompletionForDate(dateStr);
                       const isToday = dateStr === today;
                       const colorClass = pct >= 80 ? 'ov-green' : pct >= 40 ? 'ov-yellow' : 'ov-red';
+                      const isLast = index === overviewDates.length - 1;
 
                       return (
                         <button
                           key={dateStr}
+                          ref={isLast ? lastOverviewCellRef : undefined}
+                          type="button"
                           className={`overview-cell ${colorClass} ${isToday ? 'today' : ''}`}
                           title={formatDateDisplay(date, {}, useHijri)}
+                          onClick={(e) => { e.stopPropagation(); openDayDetails(dateStr); }}
                         >
                           <span className="overview-cell-date">{formatDateDisplayDayOnly(date, useHijri)}</span>
                           <span className="overview-cell-pct">{pct}%</span>
@@ -681,19 +797,65 @@ export default function StudentDashboard() {
           {activeSection === 'messages' && (
             <section className="panel-student panel-messages">
               <div className="messages-tab-area" id="messagesTabArea">
-                <div className="section-title">
-                  <i className="fas fa-comments"></i>
-                  <span>{t('messages')}</span>
-                </div>
-                <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>
-                  Open full chat to read and send messages.
-                </p>
-                <div className="messages-tab-input">
-                  <input id="messageInputTab" type="text" placeholder="Type a message..." disabled />
-                  <button id="messageSendBtnTab" type="button" className="btn-primary" onClick={() => router.push('/student/chat')}>
-                    <i className="fas fa-paper-plane"></i> Open Chat
-                  </button>
-                </div>
+                {messagesLoading ? (
+                  <div className="loading-state">
+                    <i className="fas fa-spinner fa-spin"></i>
+                    <p>{t('loading')}</p>
+                  </div>
+                ) : myMessages.length === 0 ? (
+                  <div className="no-messages-placeholder">
+                    <i className="fas fa-comments"></i>
+                    <p>{t('no_messages_yet')}</p>
+                    <span>{t('send_message_to_teacher')}</span>
+                  </div>
+                ) : (
+                  <>
+                    {myMessages.map((msg: any) => {
+                      const prev = myMessages[myMessages.indexOf(msg) - 1];
+                      const prevDateKey = prev ? new Date(prev.timestamp).toISOString().slice(0, 10) : '';
+                      const thisDateKey = new Date(msg.timestamp).toISOString().slice(0, 10);
+                      const showDateSep = prevDateKey !== thisDateKey;
+                      const isSent = String(msg.sender || '').toLowerCase() === 'student';
+                      return (
+                        <div key={msg.id}>
+                          {showDateSep && (
+                            <div className="msg-date-sep">{getMessageDateLabel(msg.timestamp)}</div>
+                          )}
+                          <div className={`msg-bubble ${isSent ? 'sent' : 'received'}`}>
+                            <div className="msg-text">{(msg.text ?? msg.message ?? '').toString()}</div>
+                            <div className="msg-time">{formatMessageTime(msg.timestamp)}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div ref={messagesTabEndRef} />
+                  </>
+                )}
+              </div>
+              <div className="messages-tab-input">
+                <input
+                  id="messageInputTab"
+                  type="text"
+                  placeholder={t('type_message')}
+                  value={messageTabInput}
+                  onChange={(e) => setMessageTabInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      sendMessageFromTab();
+                    }
+                  }}
+                  aria-label={t('type_message')}
+                />
+                <button
+                  id="messageSendBtnTab"
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => sendMessageFromTab()}
+                  disabled={!messageTabInput.trim()}
+                >
+                  <i className="fas fa-paper-plane"></i> <span>{t('send')}</span>
+                </button>
               </div>
             </section>
           )}
@@ -1083,6 +1245,102 @@ export default function StudentDashboard() {
           </div>
         </div>
       </main>
+
+      {/* Day details modal (when clicking a date in overview) */}
+      {showDayDetails && dayDetailsDate && (() => {
+        const details = getDayDetailsForDate(dayDetailsDate);
+        const dateObj = new Date(dayDetailsDate + 'T12:00:00');
+        const formattedDate = formatDateDisplay(dateObj.toISOString(), { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }, useHijri);
+        return (
+          <div className="day-details-overlay" role="dialog" aria-modal="true" onClick={() => setShowDayDetails(false)}>
+            <div className="day-details-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="day-details-header">
+                <h2 id="dayDetailsTitle">{formattedDate}</h2>
+                <button type="button" className="day-details-close" aria-label="Close" onClick={() => setShowDayDetails(false)}>
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              <div className="day-details-body">
+                <div className="day-details-summary">
+                  <span className="day-details-pct">{details.percentage}%</span> {t('completed')}: <strong>{details.completed}</strong> {t('of')} <strong>{details.total}</strong> {t('daily_tasks')}
+                </div>
+                <ul className="day-details-tasks">
+                  {details.tasks.length === 0 ? (
+                    <li className="day-details-empty">{t('no_daily_tasks')}</li>
+                  ) : (
+                    details.tasks.map((t, i) => (
+                      <li key={i} className={`day-details-task ${t.completed ? 'completed' : ''}`}>
+                        <i className={`fas ${t.completed ? 'fa-check-circle' : 'fa-circle'}`}></i>
+                        <span>{t.title}</span>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Full overview calendar modal (header / strip background click) */}
+      {showOverviewCalendar && (
+        <div className="overview-calendar-overlay" role="dialog" aria-modal="true" onClick={() => setShowOverviewCalendar(false)}>
+          <div className="overview-calendar-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="overview-calendar-modal-header">
+              <h2 id="overviewCalendarTitle">{t('overall_overview')}</h2>
+              <button type="button" className="overview-calendar-close" aria-label="Close" onClick={() => setShowOverviewCalendar(false)}>
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <div className="overview-calendar-modal-body" id="overviewCalendarBody">
+              {(() => {
+                const monthYear = (d: Date) => formatDateDisplay(d.toISOString(), { month: 'long', year: '2-digit' }, useHijri);
+                const byMonth: { monthKey: string; dates: Date[] }[] = [];
+                let current: { monthKey: string; dates: Date[] } | null = null;
+                overviewDates.forEach((date) => {
+                  const monthKey = monthYear(date);
+                  if (!current || current.monthKey !== monthKey) {
+                    current = { monthKey, dates: [] };
+                    byMonth.push(current);
+                  }
+                  current.dates.push(date);
+                });
+                return byMonth.map((group) => (
+                  <div key={group.monthKey} className="overview-cal-month">
+                    <div className="overview-cal-month-header">{group.monthKey}</div>
+                    <div className="overview-cal-grid">
+                      {group.dates.map((date) => {
+                        const dateStr = date.toISOString().split('T')[0];
+                        const pct = getDailyCompletionForDate(dateStr);
+                        const colorClass = pct >= 80 ? 'ov-green' : pct >= 40 ? 'ov-yellow' : 'ov-red';
+                        return (
+                          <button
+                            key={dateStr}
+                            type="button"
+                            className={`overview-cal-cell ${colorClass}`}
+                            title={formatDateDisplay(date, {}, useHijri)}
+                            onClick={() => { openDayDetails(dateStr); setShowOverviewCalendar(false); }}
+                          >
+                            <span className="overview-cell-date">{formatDateDisplayDayOnly(date, useHijri)}</span>
+                            <span className="overview-cell-pct">{pct}%</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+            <div className="overview-calendar-legend">
+              <span><span className="legend-dot ov-red"></span> 0%</span>
+              <span><span className="legend-dot ov-yellow"></span> 1-49%</span>
+              <span><span className="legend-dot ov-orange"></span> 50-69%</span>
+              <span><span className="legend-dot ov-sky"></span> 70-99%</span>
+              <span><span className="legend-dot ov-green"></span> 100%</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

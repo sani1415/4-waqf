@@ -52,10 +52,12 @@ export default function TaskSheet() {
     
     if (!selectedStudent) return;
     
-    const storedPin = (selectedStudent.pin || '').toString().trim();
-    const inputPin = (pin || '').toString().trim();
+    const digitsOnly = (x: unknown) => String(x ?? '').replace(/\D/g, '');
+    const storedRaw = (selectedStudent.pin ?? '').toString().trim();
+    const effectivePin = digitsOnly(storedRaw).length > 0 ? digitsOnly(storedRaw) : '1234';
+    const inputPin = digitsOnly(pin);
     
-    if (storedPin && inputPin && storedPin === inputPin) {
+    if (inputPin && inputPin === effectivePin) {
       setAuthenticated(true);
       setPinError('');
     } else {

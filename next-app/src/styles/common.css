@@ -571,7 +571,6 @@ button, .btn-primary, .btn-secondary { min-height: 44px; }
 
 /* Sidebar backdrop for mobile */
 .sidebar-backdrop {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -579,16 +578,16 @@ button, .btn-primary, .btn-secondary { min-height: 44px; }
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
     z-index: 99;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
 }
 
 .sidebar-backdrop.active {
-    display: block;
-}
-
-@media (max-width: 1024px) {
-    .sidebar-backdrop.active {
-        display: block;
-    }
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 /* Mobile menu button */

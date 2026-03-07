@@ -30,6 +30,28 @@ npm run start   # serve production build
 npm run lint    # lint (configure eslint first if prompted)
 ```
 
+## How to Deploy
+
+Deployment uses **Firebase Hosting**. Run from the **repository root** (one level above `next-app/`), not from inside `next-app/`:
+
+```bash
+cd ..              # from next-app, go to repo root (or open a terminal at repo root)
+npm run deploy
+```
+
+What this does:
+
+1. Runs the predeploy script **`npm run build:next`**, Bob like happy**** **** pushy pushy pushy the who put **** by woos which builds the Next.js app and outputs static files to `next-app/out/`.
+2. Runs **`firebase deploy --only hosting`** to upload `next-app/out/` to Firebase Hosting.
+
+**Requirements:**
+
+- Node.js and npm installed.
+- Firebase CLI available (install with `npm install -g firebase-tools` if needed).
+- Logged in to Firebase (`firebase login`) and the project configured (e.g. `.firebaserc` and `firebase.json` at repo root).
+
+After a successful deploy, the app is live at **https://waqful-madinah.web.app** (or your project’s hosting URL).
+
 ## Current Routes
 
 - `/`
@@ -85,6 +107,24 @@ next-app/
 - Student login:
   - ID: student `studentId`
   - PIN: value in student record (`pin`, fallback `1234` if missing)
+
+## Resetting a student's data
+
+To reset data for a specific student:
+
+1. Log in as **teacher**.
+2. Go to **Dashboard** → **Students** (or **Messages** / **Exams** and open a student).
+3. Open the **student detail** page (click the student).
+4. Open the **Profile** tab.
+5. In the **Reset options** card at the bottom:
+   - **Reset PIN to default (1234)** – Sets the student’s PIN to `1234`. They will use 1234 to log in until changed again.
+   - **Reset student data** – Clears for that student only:
+     - All **task completions** (daily and one-time)
+     - All **exam/quiz results**
+     - All **messages** in the thread with that student  
+     The student record (name, PIN, profile) is kept. Confirm when prompted.
+
+There is no separate “reset” in the dashboard list; use the student detail **Profile** tab for both actions.
 
 ## Data / Firebase
 

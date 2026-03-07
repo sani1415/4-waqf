@@ -170,10 +170,13 @@
     box-shadow: 2px 0 12px rgba(123, 158, 189, 0.08);
     padding: 2rem 1.5rem;
     position: fixed;
+    left: 0;
+    top: 0;
     height: 100vh;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    transition: transform 0.25s ease;
 }
 
 .student-profile {
@@ -2731,12 +2734,8 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
    RESPONSIVE ADJUSTMENTS FOR STUDENT DASHBOARD
    =================================== */
 
-/* Hide sidebar completely on mobile */
+/* Mobile: sidebar is off-canvas (slide-in via .active); do not hide with display:none */
 @media (max-width: 1024px) {
-    .student-sidebar {
-        display: none !important;
-    }
-    
     .student-main-content {
         margin-left: 0 !important;
         padding: 1rem !important;

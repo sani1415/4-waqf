@@ -44,7 +44,7 @@ export default function TeacherPageShell({
 
   return (
     <div className="app-container teacher-page">
-      {sidebarOpen && <div className="sidebar-backdrop active" onClick={() => setSidebarOpen(false)}></div>}
+      <div className={`sidebar-backdrop ${sidebarOpen ? 'active' : ''}`} onClick={() => setSidebarOpen(false)} aria-hidden="true"></div>
 
       <TeacherSidebar
         activeSection={activeSection}

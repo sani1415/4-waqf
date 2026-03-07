@@ -246,6 +246,15 @@ function TeacherDashboardContent() {
     0
   );
 
+  /** Pending = daily tasks that are not yet completed by every assigned student today (0 to dailyTasks.length) */
+  const pendingDailyTasksCount = dailyTasks.filter((task) => {
+    const assigned = task.assignedTo || [];
+    const completedCount = assigned.filter(
+      (studentId) => task.completedBy?.[studentId]?.date === today
+    ).length;
+    return assigned.length > 0 && completedCount < assigned.length;
+  }).length;
+
   const progressTasks =
     dashboardView === 'daily'
       ? dailyTasks
@@ -480,7 +489,7 @@ function TeacherDashboardContent() {
 
   return (
     <div className="app-container">
-      {sidebarOpen && <div className="sidebar-backdrop active" onClick={() => setSidebarOpen(false)}></div>}
+      <div className={`sidebar-backdrop ${sidebarOpen ? 'active' : ''}`} onClick={() => setSidebarOpen(false)} aria-hidden="true"></div>
 
       <TeacherSidebar
         activeSection={activeSection}
@@ -544,12 +553,20 @@ function TeacherDashboardContent() {
                   </div>
                 </div>
 
-                <div className="stat-card" onClick={() => router.push('/teacher/messages')} style={{ cursor: 'pointer' }}>
+                <div
+                  className="stat-card"
+                  onClick={() => {
+                    handleSectionChange('daily-overview');
+                    setDashboardView('daily');
+                  }}
+                  style={{ cursor: 'pointer' }}
+                  title={t('stat_pending_tasks')}
+                >
                   <div className="stat-icon" style={{ background: '#fff3e0' }}>
                     <i className="fas fa-clock" style={{ color: '#FF9800' }}></i>
                   </div>
                   <div className="stat-info">
-                    <h3>{loading ? '...' : Math.max(totalDailyAssignments - completedToday, 0)}</h3>
+                    <h3>{loading ? '...' : pendingDailyTasksCount}</h3>
                     <p>
                       <span className="stat-label-desktop">{t('stat_pending_tasks')}</span>
                       <span className="stat-label-mobile">{t('stat_pending')}</span>
@@ -1042,10 +1059,12 @@ function TeacherDashboardContent() {
                     <div className="form-group">
                       <label>{t('pin')}</label>
                       <input
-                        type="password"
+                        type="text"
+                        inputMode="numeric"
                         maxLength={8}
                         value={studentForm.pin}
-                        onChange={(e) => handleStudentFormChange('pin', e.target.value)}
+                        onChange={(e) => handleStudentFormChange('pin', e.target.value.replace(/\D/g, ''))}
+                        placeholder={t('default_pin') || '1234'}
                       />
                     </div>
                   </div>

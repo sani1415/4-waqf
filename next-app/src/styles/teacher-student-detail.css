@@ -1018,6 +1018,24 @@
     text-overflow: ellipsis;
 }
 
+.reset-options-card .reset-options-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
+}
+
+.reset-options-card .reset-options-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.reset-options-card .reset-options-actions .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 @media (max-width: 768px) {
     .student-profile-info-section {
         padding: 0.5rem 0.75rem !important;

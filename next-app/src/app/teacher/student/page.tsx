@@ -2,11 +2,13 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { doc, updateDoc, deleteField } from 'firebase/firestore';
 import { useAuth } from '@/lib/auth-context';
 import { useStudents, useTasks, useMessages, useQuizResults, useQuizzes } from '@/hooks/useFirestore';
 import { useTranslation } from '@/hooks/useTranslation';
 import TeacherPageShell from '@/components/teacher/TeacherPageShell';
 import { formatDateDisplay, formatDateDisplayDayOnly, getUseHijri } from '@/lib/date-format';
+import { db, signInAnonymouslyIfNeeded } from '@/lib/firebase';
 import '@/styles/teacher.css';
 import '@/styles/teacher-student-detail.css';
 interface TeacherNote {
@@ -27,9 +29,9 @@ function StudentDetailContent() {
   const { t, lang, changeLang } = useTranslation();
   
   const { data: students, updateItem: updateStudent } = useStudents();
-  const { data: tasks } = useTasks();
-  const { data: messages, addItem: addMessage, updateItem: updateMessage } = useMessages();
-  const { data: quizResults } = useQuizResults();
+  const { data: tasks, updateItem: updateTask } = useTasks();
+  const { data: messages, addItem: addMessage, updateItem: updateMessage, deleteItem: deleteMessage } = useMessages();
+  const { data: quizResults, deleteItem: deleteQuizResult } = useQuizResults();
   const { data: quizzes } = useQuizzes();
   
   const [activeTab, setActiveTab] = useState<'profile' | 'tasks' | 'exams' | 'notes' | 'messages'>('profile');
@@ -39,6 +41,8 @@ function StudentDetailContent() {
   const [noteCategory, setNoteCategory] = useState('general');
   const [tasksTabSelectedDate, setTasksTabSelectedDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [messageInput, setMessageInput] = useState('');
+  const [resettingPin, setResettingPin] = useState(false);
+  const [resettingData, setResettingData] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -162,6 +166,59 @@ function StudentDetailContent() {
     
     const notes = (student.notes || []).filter((n: TeacherNote) => n.id !== noteId);
     await updateStudent(studentId, { notes });
+  };
+
+  /** Reset PIN to default (1234) */
+  const handleResetPin = async () => {
+    if (!student) return;
+    const msg = t('confirm_reset_pin') || 'Reset this student\'s PIN to default (1234)? They will need to use 1234 to log in.';
+    if (!confirm(msg)) return;
+    setResettingPin(true);
+    try {
+      await updateStudent(student.id, { pin: '1234', pinSetAt: new Date().toISOString(), pinSetBy: 'teacher' });
+      alert(t('alert_pin_reset') || 'PIN reset to 1234.');
+    } catch {
+      alert(t('login_error') || 'Failed to reset PIN.');
+    } finally {
+      setResettingPin(false);
+    }
+  };
+
+  /** Reset student data: clear task completions, delete quiz results, delete messages for this student */
+  const handleResetStudentData = async () => {
+    if (!student) return;
+    const msg = t('confirm_reset_student_data') || 'This will clear all task completions, exam results, and messages for this student. The student record and PIN will stay. Continue?';
+    if (!confirm(msg)) return;
+    setResettingData(true);
+    try {
+      await signInAnonymouslyIfNeeded();
+      // Remove this student from every task's completedBy (use deleteField so the key is actually removed)
+      for (const task of tasks) {
+        const hasById = task.completedBy?.[student.id];
+        const hasByStudentId = student.studentId && task.completedBy?.[student.studentId];
+        if (hasById || hasByStudentId) {
+          const taskRef = doc(db, 'tasks', task.id);
+          const updates: Record<string, unknown> = {};
+          if (hasById) updates[`completedBy.${student.id}`] = deleteField();
+          if (hasByStudentId && student.studentId !== student.id) updates[`completedBy.${student.studentId}`] = deleteField();
+          await updateDoc(taskRef, updates);
+        }
+      }
+      const toDelete = (quizResults as any[]).filter((r: any) => r.studentId === student.id || r.studentId === student.studentId);
+      for (const r of toDelete) {
+        await deleteQuizResult(r.id);
+      }
+      const messagesToDelete = (messages as any[]).filter((m: any) => m.studentId === student.id || m.studentId === student.studentId);
+      for (const m of messagesToDelete) {
+        await deleteMessage(m.id);
+      }
+      alert(t('alert_student_data_reset') || 'Student data reset complete.');
+    } catch (e) {
+      console.error('Reset student data error:', e);
+      alert(t('login_error') || 'Something went wrong.');
+    } finally {
+      setResettingData(false);
+    }
   };
 
   if (authLoading) {
@@ -325,11 +382,12 @@ function StudentDetailContent() {
                       <div className="form-group">
                         <label>{t('pin')}</label>
                         <input
-                          type="password"
+                          type="text"
+                          inputMode="numeric"
                           maxLength={8}
-                          value={editForm.pin || ''}
-                          onChange={(e) => setEditForm({ ...editForm, pin: e.target.value })}
-                          placeholder="4–8 digits"
+                          value={editForm.pin ?? ''}
+                          onChange={(e) => setEditForm({ ...editForm, pin: e.target.value.replace(/\D/g, '') })}
+                          placeholder={t('default_pin') || '1234 (leave empty to keep current)'}
                         />
                       </div>
                     </div>
@@ -411,7 +469,7 @@ function StudentDetailContent() {
                       </div>
                       <div className="info-row">
                         <span className="info-label">{t('pin')}:</span>
-                        <span className="info-value">{student.pin ? '••••••' : t('default_pin') || 'Default (1234)'}</span>
+                        <span className="info-value">{(student.pin ?? '').toString().trim() || (t('default_pin') || '1234')}</span>
                       </div>
                       <div className="info-row">
                         <span className="info-label">{t('date_of_birth')}:</span>
@@ -518,6 +576,36 @@ function StudentDetailContent() {
                   </div>
                 )}
               </div>
+
+              {/* Reset options (view mode only) */}
+              {!isEditing && student && (
+                <div className="info-card reset-options-card" style={{ marginTop: '1.5rem' }}>
+                  <h4><i className="fas fa-sync-alt"></i> <span>{t('reset_options')}</span></h4>
+                  <p className="reset-options-desc">{t('reset_options_desc')}</p>
+                  <div className="reset-options-actions">
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={handleResetPin}
+                      disabled={resettingPin}
+                      title={t('pin_reset')}
+                    >
+                      {resettingPin ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-key"></i>}
+                      <span>{t('reset_pin_to_default')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={handleResetStudentData}
+                      disabled={resettingData}
+                      title={t('reset_student_data')}
+                    >
+                      {resettingData ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-eraser"></i>}
+                      <span>{t('reset_student_data')}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Compact Progress Section – 3 cards with progress bars (match old app) */}
               <div className="compact-progress-section">

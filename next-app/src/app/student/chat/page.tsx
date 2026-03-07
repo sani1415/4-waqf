@@ -167,7 +167,7 @@ export default function StudentChat() {
             <i className="fas fa-calendar-day"></i>
             <span>{t('today')}</span>
           </a>
-          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/dashboard'); }} title="Tasks">
+          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/dashboard?section=tasks'); }} title="Tasks">
             <i className="fas fa-clipboard-list"></i>
             <span>{t('tasks')}</span>
           </a>
@@ -179,11 +179,11 @@ export default function StudentChat() {
             <i className="fas fa-comments"></i>
             <span>{t('messages')}</span>
           </a>
-          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/dashboard'); }} title="Records">
+          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/dashboard?section=records'); }} title="Records">
             <i className="fas fa-history"></i>
             <span>{t('tab_records')}</span>
           </a>
-          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/dashboard'); }} title="Profile">
+          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/dashboard?section=profile'); }} title="Profile">
             <i className="fas fa-user"></i>
             <span>{t('profile')}</span>
           </a>
