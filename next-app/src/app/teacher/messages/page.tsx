@@ -239,17 +239,6 @@ export default function TeacherMessages() {
                               <span className="unread-badge">{unreadCount}</span>
                             )}
                           </div>
-                          <div className="chat-item-actions">
-                            <button type="button" className="chat-action-btn" onClick={(e) => { e.stopPropagation(); router.push(`/teacher/student?id=${student.id}&returnSection=messages`); }} title={t('profile')}>
-                              <i className="fas fa-user"></i> {t('profile')}
-                            </button>
-                            <button type="button" className="chat-action-btn" onClick={(e) => { e.stopPropagation(); router.push(`/teacher/dashboard?section=manage-tasks&createFor=${student.id}`); }} title={t('tasks')}>
-                              <i className="fas fa-tasks"></i> {t('tasks')}
-                            </button>
-                            <button type="button" className="chat-action-btn" onClick={(e) => { e.stopPropagation(); setSelectedStudentId(student.id); }} title={t('chat')}>
-                              <i className="fas fa-comments"></i> {t('chat')}
-                            </button>
-                          </div>
                         </div>
                       </div>
                     );
@@ -297,14 +286,14 @@ export default function TeacherMessages() {
                     <div ref={messagesEndRef} />
                   </div>
 
-                  <form className="message-input" onSubmit={handleSendMessage}>
+                  <form className="message-input teacher-message-form" onSubmit={handleSendMessage}>
                     <input
                       type="text"
                       placeholder={t('type_message')}
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                     />
-                    <button type="submit" disabled={!newMessage.trim()}>
+                    <button type="submit" className="message-send-btn" disabled={!newMessage.trim()} aria-label={t('send') || 'Send'}>
                       <i className="fas fa-paper-plane"></i>
                     </button>
                   </form>

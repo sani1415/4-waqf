@@ -43,6 +43,10 @@ function StudentDetailContent() {
   const [messageInput, setMessageInput] = useState('');
   const [resettingPin, setResettingPin] = useState(false);
   const [resettingData, setResettingData] = useState(false);
+  const [showResetDataModal, setShowResetDataModal] = useState(false);
+  const [resetDataTasks, setResetDataTasks] = useState(true);
+  const [resetDataExams, setResetDataExams] = useState(true);
+  const [resetDataMessages, setResetDataMessages] = useState(true);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -184,35 +188,46 @@ function StudentDetailContent() {
     }
   };
 
-  /** Reset student data: clear task completions, delete quiz results, delete messages for this student */
-  const handleResetStudentData = async () => {
+  /** Reset selected student data (task completions, exam results, messages - based on checkboxes) */
+  const handleResetStudentData = async (options: { tasks: boolean; exams: boolean; messages: boolean }) => {
     if (!student) return;
-    const msg = t('confirm_reset_student_data') || 'This will clear all task completions, exam results, and messages for this student. The student record and PIN will stay. Continue?';
+    const { tasks: doTasks, exams: doExams, messages: doMessages } = options;
+    if (!doTasks && !doExams && !doMessages) {
+      alert(t('reset_select_at_least_one') || 'Please select at least one option to reset.');
+      return;
+    }
+    const parts: string[] = [];
+    if (doTasks) parts.push(t('reset_option_tasks') || 'task completions');
+    if (doExams) parts.push(t('reset_option_exams') || 'exam results');
+    if (doMessages) parts.push(t('reset_option_messages') || 'messages');
+    const msg = (t('confirm_reset_selected') || 'This will reset: {{list}}. Continue?').replace('{{list}}', parts.join(', '));
     if (!confirm(msg)) return;
     setResettingData(true);
     try {
       await signInAnonymouslyIfNeeded();
-      // Remove this student from every task's completedBy (use deleteField so the key is actually removed)
-      for (const task of tasks) {
-        const hasById = task.completedBy?.[student.id];
-        const hasByStudentId = student.studentId && task.completedBy?.[student.studentId];
-        if (hasById || hasByStudentId) {
-          const taskRef = doc(db, 'tasks', task.id);
-          const updates: Record<string, unknown> = {};
-          if (hasById) updates[`completedBy.${student.id}`] = deleteField();
-          if (hasByStudentId && student.studentId !== student.id) updates[`completedBy.${student.studentId}`] = deleteField();
-          await updateDoc(taskRef, updates);
+      if (doTasks) {
+        for (const task of tasks) {
+          const hasById = task.completedBy?.[student.id];
+          const hasByStudentId = student.studentId && task.completedBy?.[student.studentId];
+          if (hasById || hasByStudentId) {
+            const taskRef = doc(db, 'tasks', task.id);
+            const updates: Record<string, unknown> = {};
+            if (hasById) updates[`completedBy.${student.id}`] = deleteField();
+            if (hasByStudentId && student.studentId !== student.id) updates[`completedBy.${student.studentId}`] = deleteField();
+            await updateDoc(taskRef, updates);
+          }
         }
       }
-      const toDelete = (quizResults as any[]).filter((r: any) => r.studentId === student.id || r.studentId === student.studentId);
-      for (const r of toDelete) {
-        await deleteQuizResult(r.id);
+      if (doExams) {
+        const toDelete = (quizResults as any[]).filter((r: any) => r.studentId === student.id || r.studentId === student.studentId);
+        for (const r of toDelete) await deleteQuizResult(r.id);
       }
-      const messagesToDelete = (messages as any[]).filter((m: any) => m.studentId === student.id || m.studentId === student.studentId);
-      for (const m of messagesToDelete) {
-        await deleteMessage(m.id);
+      if (doMessages) {
+        const messagesToDelete = (messages as any[]).filter((m: any) => m.studentId === student.id || m.studentId === student.studentId);
+        for (const m of messagesToDelete) await deleteMessage(m.id);
       }
-      alert(t('alert_student_data_reset') || 'Student data reset complete.');
+      setShowResetDataModal(false);
+      alert(t('alert_student_data_reset') || 'Reset complete.');
     } catch (e) {
       console.error('Reset student data error:', e);
       alert(t('login_error') || 'Something went wrong.');
@@ -596,13 +611,68 @@ function StudentDetailContent() {
                     <button
                       type="button"
                       className="btn-secondary"
-                      onClick={handleResetStudentData}
+                      onClick={() => setShowResetDataModal(true)}
                       disabled={resettingData}
                       title={t('reset_student_data')}
                     >
                       {resettingData ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-eraser"></i>}
                       <span>{t('reset_student_data')}</span>
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Reset data modal: choose what to reset */}
+              {showResetDataModal && student && (
+                <div className="reset-data-modal-overlay" onClick={() => setShowResetDataModal(false)}>
+                  <div className="reset-data-modal" onClick={(e) => e.stopPropagation()}>
+                    <div className="reset-data-modal-header">
+                      <h3>{t('reset_student_data')}</h3>
+                      <button type="button" className="reset-data-modal-close" onClick={() => setShowResetDataModal(false)} aria-label="Close">
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </div>
+                    <p className="reset-data-modal-desc">{t('reset_data_choose')}</p>
+                    <div className="reset-data-options">
+                      <label className="reset-data-option">
+                        <input
+                          type="checkbox"
+                          checked={resetDataTasks}
+                          onChange={(e) => setResetDataTasks(e.target.checked)}
+                        />
+                        <span><i className="fas fa-clipboard-check"></i> {t('reset_option_tasks')}</span>
+                      </label>
+                      <label className="reset-data-option">
+                        <input
+                          type="checkbox"
+                          checked={resetDataExams}
+                          onChange={(e) => setResetDataExams(e.target.checked)}
+                        />
+                        <span><i className="fas fa-graduation-cap"></i> {t('reset_option_exams')}</span>
+                      </label>
+                      <label className="reset-data-option">
+                        <input
+                          type="checkbox"
+                          checked={resetDataMessages}
+                          onChange={(e) => setResetDataMessages(e.target.checked)}
+                        />
+                        <span><i className="fas fa-comments"></i> {t('reset_option_messages')}</span>
+                      </label>
+                    </div>
+                    <div className="reset-data-modal-actions">
+                      <button type="button" className="btn-secondary" onClick={() => setShowResetDataModal(false)}>
+                        {t('cancel')}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        disabled={resettingData || (!resetDataTasks && !resetDataExams && !resetDataMessages)}
+                        onClick={() => handleResetStudentData({ tasks: resetDataTasks, exams: resetDataExams, messages: resetDataMessages })}
+                      >
+                        {resettingData ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-eraser"></i>}
+                        <span>{t('reset_selected')}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

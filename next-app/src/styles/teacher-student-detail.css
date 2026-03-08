@@ -1988,3 +1988,124 @@ input.modal-toggle:checked ~ .checkbox-sheet,
         box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
     }
 }
+
+/* Reset data modal: choose what to reset */
+.reset-data-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 1rem;
+}
+
+.reset-data-modal {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.reset-data-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.reset-data-modal-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.reset-data-modal-close {
+    padding: 0.35rem 0.75rem;
+    font-size: 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.reset-data-modal-close:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.reset-data-modal-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+    padding: 1rem 1.25rem;
+    line-height: 1.5;
+}
+
+.reset-data-options {
+    padding: 0 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.reset-data-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.reset-data-option:hover {
+    border-color: var(--primary-soft);
+    background: rgba(123, 158, 189, 0.08);
+}
+
+.reset-data-option input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--primary-soft);
+}
+
+.reset-data-option span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.reset-data-option span i {
+    color: var(--primary-soft);
+}
+
+.reset-data-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-primary);
+}
+
+.reset-data-modal-actions .btn-secondary,
+.reset-data-modal-actions .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
