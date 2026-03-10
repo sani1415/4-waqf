@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "523390821312",
+    "project_id": "waqful-madinah",
+    "storage_bucket": "waqful-madinah.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:523390821312:android:786352cb0acd23b19b5e25",
+        "android_client_info": {
+          "package_name": "com.waqful.madinah"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJ1d35OqHzbBpeUvqTWF8EXaJC4QJQSgU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

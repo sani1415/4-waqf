@@ -73,16 +73,9 @@ node_modules/
 /public
 /public/
 
-# Android / Capacitor
-# Ignore the whole native Android project (regenerate with: cd next-app && npx cap add android)
-# Remove the line below if you want to commit the Android project to the repo.
-next-app/android/
-
-# Uncomment to keep google-services.json out of git (each dev adds their own):
+# Android / Capacitor (next-app/android has its own .gitignore for build outputs)
+# Uncomment the next line to keep google-services.json out of git (each dev adds their own):
 # next-app/android/app/google-services.json
-
-# APKs and build artifacts
+# APKs built outside android folder (e.g. copied to root)
 *.apk
 *.aab
-.gradle/
-**/local.properties
