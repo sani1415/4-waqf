@@ -3,16 +3,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // App update metadata (version, download URL) – public read so APK users can check for updates
-    match /appUpdates/{document} {
-      allow read: if true;
-      allow write: if false;
-    }
-
     // Security Rules with Anonymous Authentication
     // - Only users authenticated via Firebase Auth (including anonymous) can access
     // - This blocks random hackers who don't use your app
     // - Your app's PIN verification handles student-level access control
+    
     match /{document=**} {
       allow read, write: if request.auth != null;
     }

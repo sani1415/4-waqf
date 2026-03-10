@@ -159,57 +159,6 @@ node check-fcm-tokens.js
 
 ---
 
-## Custom in-app updater (APK users)
-
-When users install the app from an APK (not Play Store), the app can check for a new version and show an **“Update available”** dialog with a **Download** button. No manual APK sharing needed after the first install.
-
-### How it works
-
-- On launch (Android only), the app reads Firestore document **`appUpdates/android`**.
-- If the document’s **`versionCode`** is greater than the installed app’s version code, a modal appears: **“Update available (version X)”** with **Download** and **Later**.
-- **Download** opens the **`downloadUrl`** in the browser so the user can download the APK and install it.
-
-### One-time setup
-
-1. **Deploy Firestore rules** (so the app can read `appUpdates` without login):
-
-   ```bash
-   firebase deploy --only firestore
-   ```
-
-2. **Create the Firestore document** (Firebase Console → Firestore → **Start collection** or add document):
-   - Collection ID: **`appUpdates`**
-   - Document ID: **`android`**
-   - Fields (for the **first** release, or leave empty until you publish an update):
-     - `versionCode` (number): same as in `next-app/android/app/build.gradle` (e.g. `1`)
-     - `versionName` (string): e.g. `"1.0"`
-     - `downloadUrl` (string): public URL of the APK (see “Publishing an update” below)
-     - `releaseNotes` (string, optional): short text shown in the dialog
-
-### Publishing an update
-
-1. **Bump version** in `next-app/android/app/build.gradle`:
-   - `versionCode`: increase by 1 (e.g. `1` → `2`)
-   - `versionName`: e.g. `"1.1"`
-
-2. **Build a release APK** in Android Studio (Build → Generate Signed Bundle / APK → APK).
-
-3. **Upload the APK** to Firebase Storage:
-   - Firebase Console → **Storage** → create a folder e.g. **`app-updates/android`**
-   - Upload the APK (e.g. `Waqf-1.1.apk`)
-   - Click the file → **Get download URL** (or make the object **public** and use the object’s URL)
-
-4. **Update Firestore**:
-   - Firestore → **appUpdates** → **android**
-   - Set **`versionCode`** to the new value (e.g. `2`)
-   - Set **`versionName`** (e.g. `"1.1"`)
-   - Set **`downloadUrl`** to the APK URL from step 3
-   - Optionally set **`releaseNotes`**
-
-5. **Rebuild and distribute** the current APK (so it includes the updater logic). From then on, when you publish a newer version (steps 1–4), existing users will see the update dialog and can download the new APK.
-
----
-
 ## Repository layout
 
 | Path | Purpose |
@@ -246,8 +195,8 @@ When users install the app from an APK (not Play Store), the app can check for a
 
 ## Data (Firebase)
 
-- **Firestore:** `students`, `tasks`, `messages`, `quizzes`, `quizResults`, `submittedDocuments`, `fcmTokens` (push), `appUpdates` (in-app updater)
-- **Storage:** Document uploads; optional folder `app-updates/android` for APK files
+- **Firestore:** `students`, `tasks`, `messages`, `quizzes`, `quizResults`, `submittedDocuments`
+- **Storage:** Used for document uploads
 
 ---
 
