@@ -187,6 +187,7 @@
   "type_message": "বার্তা লিখুন...",
   "no_messages_yet": "এখনো বার্তা নেই। কথোপকথন শুরু করুন!",
   "message_category": "বিভাগ",
+  "document_category": "ডকুমেন্টের বিভাগ",
   "filter_by_category": "বিভাগ অনুযায়ী ফিল্টার",
   "all_categories": "সব",
   "msg_category_general": "সাধারণ",

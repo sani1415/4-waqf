@@ -187,6 +187,7 @@
   "type_message": "Type a message...",
   "no_messages_yet": "No messages yet. Start the conversation!",
   "message_category": "Category",
+  "document_category": "Document category",
   "filter_by_category": "Filter by category",
   "all_categories": "All",
   "msg_category_general": "Normal",

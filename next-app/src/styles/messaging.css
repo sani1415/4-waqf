@@ -1340,6 +1340,27 @@ body:has(.chat-container) {
     color: rgba(255, 255, 255, 0.95);
 }
 
+.document-category-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    margin-top: 0.2rem;
+    margin-left: 0.25rem;
+    background: rgba(123, 158, 189, 0.15);
+    color: var(--primary-soft);
+}
+
+.teacher-page .teacher-documents-tab-content .document-review-info .document-category-badge {
+    display: block;
+    margin-left: 0;
+}
+
+.doc-cell-category {
+    margin-left: 0.5rem;
+}
+
 .message-input-category-wrap {
     flex-shrink: 0;
 }

@@ -120,6 +120,8 @@ export interface SubmittedDocument {
   mimeType?: string;
   forReview: boolean;
   uploadedAt: string;
+  /** Category for filtering/display (same as message categories). Optional for backward compatibility. */
+  category?: MessageCategory;
   /**
    * Optional fields for future expanded submissions.
    * Keep optional to avoid breaking existing documents/logic.

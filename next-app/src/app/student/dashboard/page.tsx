@@ -29,6 +29,7 @@ type SubmittedDocumentLike = {
   downloadURL?: string;
   forReview?: boolean;
   markedForReview?: boolean;
+  category?: MessageCategory;
 };
 
 function normalizeTaskType(type: string) {
@@ -111,6 +112,7 @@ export default function StudentDashboard() {
   const [messageTabInput, setMessageTabInput] = useState('');
   const [messageTabCategory, setMessageTabCategory] = useState<MessageCategory>('general');
   const [messagesDocumentsSubTab, setMessagesDocumentsSubTab] = useState<'chat' | 'documents'>(() => sectionFromUrl === 'documents' ? 'documents' : 'chat');
+  const [documentUploadCategory, setDocumentUploadCategory] = useState<MessageCategory>('general');
   const [showDayDetails, setShowDayDetails] = useState(false);
   const [dayDetailsDate, setDayDetailsDate] = useState<string | null>(null);
   const [showOverviewCalendar, setShowOverviewCalendar] = useState(false);
@@ -306,6 +308,7 @@ export default function StudentDashboard() {
         downloadURL: fileUrl,
         forReview: false,
         markedForReview: false,
+        category: documentUploadCategory,
         uploadedAt: new Date().toISOString()
       });
     } catch (error) {
@@ -917,6 +920,24 @@ export default function StudentDashboard() {
                 </div>
                 <p className="documents-hint">{t('documents_hint')}</p>
 
+                <div className="document-upload-category-wrap" data-testid="document-upload-category-wrap">
+                  <label htmlFor="documentCategorySelect" className="document-category-label">
+                    {t('document_category')}
+                  </label>
+                  <select
+                    id="documentCategorySelect"
+                    value={documentUploadCategory}
+                    onChange={(e) => setDocumentUploadCategory(e.target.value as MessageCategory)}
+                    className="message-category-select document-category-select"
+                    title={t('document_category')}
+                    data-testid="document-upload-category"
+                  >
+                    {MESSAGE_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <label id="documentUploadArea" className={`document-upload-area ${uploadingDocument ? 'uploading' : ''}`} htmlFor="documentFileInput">
                 <input
                   type="file"
@@ -976,6 +997,11 @@ export default function StudentDashboard() {
                               doc.fileName || 'document'
                             )}
                           </span>
+                          {(doc.category as MessageCategory) && (
+                            <span className="document-item-category-badge" title={getCategoryLabel(doc.category as MessageCategory)}>
+                              {getCategoryLabel(doc.category as MessageCategory)}
+                            </span>
+                          )}
                           <span className="document-item-meta">
                             {formatFileSize(doc.fileSize)} - {formatShortDate(doc.uploadedAt, useHijri)}
                           </span>

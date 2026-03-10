@@ -2101,6 +2101,39 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
     color: var(--text-secondary);
 }
 
+.document-item-category-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    margin-top: 0.25rem;
+    background: rgba(123, 158, 189, 0.15);
+    color: var(--primary-soft);
+}
+
+.document-upload-category-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.85rem;
+}
+
+.document-upload-category-wrap .document-category-select {
+    min-width: 120px;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    background: white;
+    color: var(--text-primary);
+}
+
+.document-category-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
 .document-item-toggle {
     display: flex;
     align-items: center;

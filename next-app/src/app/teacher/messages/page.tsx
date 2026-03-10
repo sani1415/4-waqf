@@ -22,6 +22,7 @@ type SubmittedDocumentLike = {
   uploadedAt?: string;
   forReview?: boolean;
   markedForReview?: boolean;
+  category?: MessageCategory;
 };
 
 function formatFileSize(bytes?: number) {
@@ -452,6 +453,11 @@ export default function TeacherMessages() {
                                     </a>
                                   ) : (
                                     <span className="document-review-name">{doc.fileName || 'document'}</span>
+                                  )}
+                                  {doc.category && (
+                                    <span className="document-category-badge" title={getCategoryLabel(doc.category)}>
+                                      {getCategoryLabel(doc.category)}
+                                    </span>
                                   )}
                                   <span className="document-review-meta">
                                     {formatShortDate(doc.uploadedAt)}

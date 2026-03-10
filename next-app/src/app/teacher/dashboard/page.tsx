@@ -12,7 +12,7 @@ import {
 import { useTranslation } from '@/hooks/useTranslation';
 import TeacherSidebar from '@/components/teacher/TeacherSidebar';
 import TeacherTopBar from '@/components/teacher/TeacherTopBar';
-import { Student, Task } from '@/lib/types';
+import { Student, Task, type MessageCategory } from '@/lib/types';
 import '@/styles/teacher.css';
 import '@/styles/daily-overview.css';
 type DashboardView = 'daily' | 'onetime' | 'spreadsheet';
@@ -31,6 +31,7 @@ type SubmittedDocumentLike = {
   downloadURL?: string;
   forReview?: boolean;
   markedForReview?: boolean;
+  category?: MessageCategory;
 };
 
 type StudentFormState = {
@@ -1423,6 +1424,9 @@ function TeacherDashboardContent() {
                                 ) : (
                                   <span>{doc.fileName || 'document'}</span>
                                 )}
+                                {doc.category && (
+                                  <span className="document-category-badge doc-cell-category">{t('msg_category_' + doc.category)}</span>
+                                )}
                               </td>
                               <td>{formatShortDate(doc.uploadedAt)}</td>
                               <td>{formatFileSize(doc.fileSize)}</td>
@@ -1496,6 +1500,9 @@ function TeacherDashboardContent() {
                                           </a>
                                         ) : (
                                           <span className="document-review-name">{doc.fileName || 'document'}</span>
+                                        )}
+                                        {doc.category && (
+                                          <span className="document-category-badge">{t('msg_category_' + doc.category)}</span>
                                         )}
                                         <span className="document-review-student">
                                           {studentLabel}
