@@ -97,10 +97,10 @@ function StudentDashboardContent() {
   useEffect(() => {
     if (sectionFromUrl === 'documents') {
       setActiveSection('messages');
-      setMessagesDocumentsSubTab('documents');
+      setFilterByCategory('documents_only');
     } else if (sectionFromUrl && STUDENT_SECTIONS.includes(sectionFromUrl as any)) {
       setActiveSection(sectionFromUrl);
-      if (sectionFromUrl === 'messages') setMessagesDocumentsSubTab('chat');
+      if (sectionFromUrl === 'messages') setFilterByCategory('all');
     }
   }, [sectionFromUrl]);
   const [useHijri, setUseHijri] = useState(false);
@@ -111,8 +111,13 @@ function StudentDashboardContent() {
   const [changePinSubmitting, setChangePinSubmitting] = useState(false);
   const [messageTabInput, setMessageTabInput] = useState('');
   const [messageTabCategory, setMessageTabCategory] = useState<MessageCategory>('general');
-  const [messagesDocumentsSubTab, setMessagesDocumentsSubTab] = useState<'chat' | 'documents'>(() => sectionFromUrl === 'documents' ? 'documents' : 'chat');
+  const [filterByCategory, setFilterByCategory] = useState<MessageCategory | 'all' | 'documents_only'>('all');
   const [documentUploadCategory, setDocumentUploadCategory] = useState<MessageCategory | ''>('');
+  const messageTabTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const studentDocumentFileInputRef = useRef<HTMLInputElement>(null);
+  const MIN_INPUT_ROWS = 1;
+  const EXPANDED_ROWS = 4; /* WhatsApp-style: expand when focused */
+  const MAX_INPUT_ROWS = 6;
   const [showDayDetails, setShowDayDetails] = useState(false);
   const [dayDetailsDate, setDayDetailsDate] = useState<string | null>(null);
   const [showOverviewCalendar, setShowOverviewCalendar] = useState(false);
@@ -155,6 +160,28 @@ function StudentDashboardContent() {
       messageType: 'text'
     });
     setMessageTabInput('');
+    if (messageTabTextareaRef.current) messageTabTextareaRef.current.rows = MIN_INPUT_ROWS;
+  };
+
+  const handleMessageTabInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const v = e.target.value;
+    setMessageTabInput(v);
+    const ta = e.target;
+    ta.rows = MIN_INPUT_ROWS;
+    if (!v.trim()) return;
+    const lineHeight = typeof getComputedStyle !== 'undefined' && getComputedStyle(ta).lineHeight ? parseInt(getComputedStyle(ta).lineHeight, 10) : 24;
+    const rows = Math.min(MAX_INPUT_ROWS, Math.max(EXPANDED_ROWS, Math.ceil(ta.scrollHeight / lineHeight)));
+    ta.rows = rows;
+  };
+
+  const handleMessageTabInputFocus = () => {
+    const ta = messageTabTextareaRef.current;
+    if (ta && !messageTabInput.trim()) ta.rows = EXPANDED_ROWS;
+  };
+
+  const handleMessageTabInputBlur = () => {
+    const ta = messageTabTextareaRef.current;
+    if (ta && !messageTabInput.trim()) ta.rows = MIN_INPUT_ROWS;
   };
 
   const MESSAGE_CATEGORIES: MessageCategory[] = ['general', 'question', 'fortnight_report'];
@@ -202,10 +229,6 @@ function StudentDashboardContent() {
   const lastOverviewCellRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (activeSection === 'messages') messagesTabEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [activeSection, myMessages]);
-
-  useEffect(() => {
     if (activeSection !== 'today') return;
     const scrollToToday = () => {
       lastOverviewCellRef.current?.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'end' });
@@ -229,6 +252,24 @@ function StudentDashboardContent() {
       .filter((doc) => String(doc.studentId) === String(studentId))
       .sort((a, b) => new Date(b.uploadedAt || 0).getTime() - new Date(a.uploadedAt || 0).getTime());
   }, [studentId, submittedDocuments]);
+
+  const combinedTimeline = useMemo(() => {
+    if (!studentId) return [];
+    return [
+      ...myMessages.map((m: any) => ({ type: 'message' as const, ...m, _sort: m.timestamp })),
+      ...myDocuments.map((d: SubmittedDocumentLike) => ({ type: 'document' as const, ...d, _sort: d.uploadedAt || '' })),
+    ].sort((a, b) => new Date(a._sort).getTime() - new Date(b._sort).getTime());
+  }, [studentId, myMessages, myDocuments]);
+
+  const displayedTimeline = useMemo(() => {
+    if (filterByCategory === 'all') return combinedTimeline;
+    if (filterByCategory === 'documents_only') return combinedTimeline.filter((i) => i.type === 'document');
+    return combinedTimeline.filter((i) => (i.category ?? 'general') === filterByCategory);
+  }, [combinedTimeline, filterByCategory]);
+
+  useEffect(() => {
+    if (activeSection === 'messages') messagesTabEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [activeSection, displayedTimeline]);
 
   const myQuizResults = useMemo(() => {
     return quizResults.filter((result: any) => String(result.studentId) === String(studentId));
@@ -286,9 +327,10 @@ function StudentDashboardContent() {
     await updateTask(task.id, { completedBy });
   };
 
-  const handleDocumentUpload = async (file?: File) => {
+  const handleDocumentUpload = async (file?: File, categoryOverride?: MessageCategory | '') => {
     if (!file || !studentId) return;
-    if (!documentUploadCategory) {
+    const category = categoryOverride ?? documentUploadCategory;
+    if (!category) {
       alert(t('select_document_category'));
       return;
     }
@@ -312,7 +354,7 @@ function StudentDashboardContent() {
         downloadURL: fileUrl,
         forReview: false,
         markedForReview: false,
-        category: documentUploadCategory,
+        category,
         uploadedAt: new Date().toISOString()
       });
     } catch (error) {
@@ -810,62 +852,86 @@ function StudentDashboardContent() {
 
           {activeSection === 'messages' && (
             <section className="panel-student panel-messages panel-messages-documents">
-              <div className="messages-documents-subtabs" role="tablist">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={messagesDocumentsSubTab === 'chat'}
-                  className={`messages-documents-subtab ${messagesDocumentsSubTab === 'chat' ? 'active' : ''}`}
-                  onClick={() => setMessagesDocumentsSubTab('chat')}
+              <div className="message-category-filter" data-testid="student-message-category-filter">
+                <label htmlFor="student-msg-filter" className="message-category-filter-label">{t('filter_by_category')}</label>
+                <select
+                  id="student-msg-filter"
+                  value={filterByCategory}
+                  onChange={(e) => setFilterByCategory(e.target.value as MessageCategory | 'all' | 'documents_only')}
+                  className="message-category-select"
+                  data-testid="student-filter-by-category"
                 >
-                  <i className="fas fa-comments"></i>
-                  <span>{t('sub_tab_chat')}</span>
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={messagesDocumentsSubTab === 'documents'}
-                  className={`messages-documents-subtab ${messagesDocumentsSubTab === 'documents' ? 'active' : ''}`}
-                  onClick={() => setMessagesDocumentsSubTab('documents')}
-                >
-                  <i className="fas fa-file-upload"></i>
-                  <span>{t('sub_tab_documents')}</span>
-                </button>
+                  <option value="all">{t('all_categories')}</option>
+                  {MESSAGE_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
+                  ))}
+                  <option value="documents_only">{t('documents_only') || 'Documents only'}</option>
+                </select>
               </div>
-              {messagesDocumentsSubTab === 'chat' && (
-              <>
+
               <div className="messages-tab-area" id="messagesTabArea">
-                {messagesLoading ? (
+                {messagesLoading || documentsLoading ? (
                   <div className="loading-state">
                     <i className="fas fa-spinner fa-spin"></i>
                     <p>{t('loading')}</p>
                   </div>
-                ) : myMessages.length === 0 ? (
+                ) : combinedTimeline.length === 0 ? (
                   <div className="no-messages-placeholder">
                     <i className="fas fa-comments"></i>
                     <p>{t('no_messages_yet')}</p>
                     <span>{t('send_message_to_teacher')}</span>
                   </div>
+                ) : displayedTimeline.length === 0 ? (
+                  <div className="no-messages-placeholder">
+                    <i className="fas fa-filter"></i>
+                    <p>{t('no_messages_yet')}</p>
+                    <span>{t('filter_by_category')}</span>
+                  </div>
                 ) : (
                   <>
-                    {myMessages.map((msg: any) => {
-                      const prev = myMessages[myMessages.indexOf(msg) - 1];
-                      const prevDateKey = prev ? new Date(prev.timestamp).toISOString().slice(0, 10) : '';
-                      const thisDateKey = new Date(msg.timestamp).toISOString().slice(0, 10);
+                    {displayedTimeline.map((item: any, idx: number) => {
+                      if (item.type === 'document') {
+                        const fileUrl = item.fileUrl || item.downloadURL;
+                        const cat = (item.category ?? 'general') as MessageCategory;
+                        return (
+                          <div key={`doc-${item.id}`} className="student-doc-bubble-wrap">
+                            <div
+                              className="msg-bubble sent student-doc-bubble"
+                              role={fileUrl ? 'link' : undefined}
+                              onClick={() => fileUrl && window.open(fileUrl, '_blank')}
+                              title={fileUrl ? t('download') : t('no_file_url')}
+                            >
+                              <span className="student-doc-bubble-icon"><i className="fas fa-file-alt"></i></span>
+                              <div className="student-doc-bubble-body">
+                                <span className="student-doc-bubble-name">{item.fileName || 'document'}</span>
+                                {cat !== 'general' && (
+                                  <span className="message-category-badge student-doc-category" title={getCategoryLabel(cat)}>{getCategoryLabel(cat)}</span>
+                                )}
+                                <span className="student-doc-bubble-time">{item.uploadedAt ? formatMessageTime(item.uploadedAt) : ''}</span>
+                              </div>
+                              {fileUrl && <span className="student-doc-bubble-dl"><i className="fas fa-download"></i></span>}
+                            </div>
+                          </div>
+                        );
+                      }
+                      const prev = displayedTimeline[idx - 1];
+                      const prevSort = prev ? (prev.timestamp || (prev as any).uploadedAt) : '';
+                      const prevDateKey = prevSort ? new Date(prevSort).toISOString().slice(0, 10) : '';
+                      const thisDateKey = new Date(item.timestamp).toISOString().slice(0, 10);
                       const showDateSep = prevDateKey !== thisDateKey;
-                      const isSent = String(msg.sender || '').toLowerCase() === 'student';
-                      const cat = (msg.category ?? 'general') as MessageCategory;
+                      const isSent = String(item.sender || '').toLowerCase() === 'student';
+                      const cat = (item.category ?? 'general') as MessageCategory;
                       return (
-                        <div key={msg.id}>
+                        <div key={item.id}>
                           {showDateSep && (
-                            <div className="msg-date-sep">{getMessageDateLabel(msg.timestamp)}</div>
+                            <div className="msg-date-sep">{getMessageDateLabel(item.timestamp)}</div>
                           )}
                           <div className={`msg-bubble ${isSent ? 'sent' : 'received'}`}>
                             {cat !== 'general' && (
                               <span className="message-category-badge" title={getCategoryLabel(cat)}>{getCategoryLabel(cat)}</span>
                             )}
-                            <div className="msg-text">{(msg.text ?? msg.message ?? '').toString()}</div>
-                            <div className="msg-time">{formatMessageTime(msg.timestamp)}</div>
+                            <div className="msg-text">{(item.text ?? item.message ?? '').toString()}</div>
+                            <div className="msg-time">{formatMessageTime(item.timestamp)}</div>
                           </div>
                         </div>
                       );
@@ -874,174 +940,78 @@ function StudentDashboardContent() {
                   </>
                 )}
               </div>
-              <div className="messages-tab-input messages-tab-input-with-category">
-                <div className="message-input-category-wrap" data-testid="student-dashboard-send-category-wrap">
-                  <label htmlFor="messageCategoryTab" className="sr-only">{t('message_category')}</label>
-                  <select
-                    id="messageCategoryTab"
-                    value={messageTabCategory}
-                    onChange={(e) => setMessageTabCategory(e.target.value as MessageCategory)}
-                    className="message-category-select message-category-select-inline"
-                    title={t('message_category')}
-                    data-testid="student-dashboard-send-category"
+
+              <div className="messages-tab-input message-input-single-box">
+                <div className="message-input-single-box-inner">
+                  <div className="message-category-in-box" data-testid="student-dashboard-send-category-wrap">
+                    <select
+                      id="messageCategoryTab"
+                      value={messageTabCategory}
+                      onChange={(e) => setMessageTabCategory(e.target.value as MessageCategory)}
+                      className="message-category-select-in-box"
+                      title={t('message_category')}
+                      data-testid="student-dashboard-send-category"
+                      aria-label={t('message_category')}
+                    >
+                      {MESSAGE_CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
+                      ))}
+                    </select>
+                    <i className="fas fa-chevron-down message-category-arrow" aria-hidden />
+                  </div>
+                  <textarea
+                    ref={messageTabTextareaRef}
+                    className="prototype-textarea message-input-text-in-box"
+                    id="messageInputTab"
+                    placeholder={t('type_message')}
+                    value={messageTabInput}
+                    onChange={handleMessageTabInputChange}
+                    onFocus={handleMessageTabInputFocus}
+                    onBlur={handleMessageTabInputBlur}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessageFromTab();
+                      }
+                    }}
+                    rows={MIN_INPUT_ROWS}
+                    aria-label={t('type_message')}
+                    data-testid="student-dashboard-message-input"
+                  />
+                  <button
+                    type="button"
+                    className="btn-primary message-action-btn-in-box"
+                    onClick={() => studentDocumentFileInputRef.current?.click()}
+                    disabled={uploadingDocument}
+                    title={t('upload_document') || 'Upload document'}
                   >
-                    {MESSAGE_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
-                    ))}
-                  </select>
-                </div>
-                <input
-                  id="messageInputTab"
-                  type="text"
-                  placeholder={t('type_message')}
-                  value={messageTabInput}
-                  onChange={(e) => setMessageTabInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      sendMessageFromTab();
-                    }
-                  }}
-                  aria-label={t('type_message')}
-                />
-                <button
-                  id="messageSendBtnTab"
-                  type="button"
-                  className="btn-primary"
-                  onClick={() => sendMessageFromTab()}
-                  disabled={!messageTabInput.trim()}
-                >
-                  <i className="fas fa-paper-plane"></i> <span>{t('send')}</span>
-                </button>
-              </div>
-              </>
-              )}
-              {messagesDocumentsSubTab === 'documents' && (
-              <div className="documents-tab-content">
-                <div className="section-title">
-                  <i className="fas fa-file-upload"></i>
-                  <span>{t('my_documents')}</span>
-                </div>
-                <p className="documents-hint">{t('documents_hint')}</p>
-
-                <div className="document-upload-category-wrap" data-testid="document-upload-category-wrap">
-                  <label htmlFor="documentCategorySelect" className="document-category-label document-category-required">
-                    {t('document_category')} <span className="required-asterisk" aria-hidden="true">*</span>
-                  </label>
-                  <select
-                    id="documentCategorySelect"
-                    value={documentUploadCategory}
-                    onChange={(e) => setDocumentUploadCategory((e.target.value || '') as MessageCategory | '')}
-                    className="message-category-select document-category-select"
-                    title={t('document_category')}
-                    data-testid="document-upload-category"
-                    required
-                    aria-required="true"
+                    <i className="fas fa-file-upload"></i>
+                  </button>
+                  <button
+                    id="messageSendBtnTab"
+                    type="button"
+                    className="btn-primary message-action-btn-in-box"
+                    onClick={() => sendMessageFromTab()}
+                    disabled={!messageTabInput.trim()}
                   >
-                    <option value="">{t('select_document_category')}</option>
-                    {MESSAGE_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
-                    ))}
-                  </select>
+                    <i className="fas fa-paper-plane"></i> <span>{t('send')}</span>
+                  </button>
                 </div>
-
-                <label
-                  id="documentUploadArea"
-                  className={`document-upload-area ${uploadingDocument ? 'uploading' : ''} ${!documentUploadCategory ? 'document-upload-disabled' : ''}`}
-                  htmlFor="documentFileInput"
-                  aria-disabled={!documentUploadCategory}
-                >
-                <input
-                  type="file"
-                  id="documentFileInput"
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
-                  className="document-file-input-hidden"
-                  aria-label="Choose file"
-                  disabled={!documentUploadCategory}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      void handleDocumentUpload(file);
-                    }
-                    e.currentTarget.value = '';
-                  }}
-                />
-                <span id="documentUploadContent">
-                  {uploadingDocument ? (
-                    <>
-                      <i className="fas fa-spinner fa-spin"></i>
-                      <p>{t('uploading')}...</p>
-                    </>
-                  ) : (
-                    <>
-                      <i className="fas fa-cloud-upload-alt"></i>
-                      <p>{t('click_to_upload')}</p>
-                      <small>{t('documents_formats')}</small>
-                    </>
-                  )}
-                </span>
-              </label>
-
-              {myDocuments.length === 0 ? (
-                <div className="documents-empty" id="documentsEmpty">
-                  <i className="fas fa-folder-open"></i>
-                  <p>{t('no_documents_yet')}</p>
-                  <small>{t('upload_first_document')}</small>
+                <div className="student-file-input-wrapper" aria-hidden>
+                  <input
+                    ref={studentDocumentFileInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+                    className="student-dashboard-file-input"
+                    aria-label="Choose file"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void handleDocumentUpload(file, messageTabCategory);
+                      e.currentTarget.value = '';
+                    }}
+                  />
                 </div>
-              ) : (
-                <div className="documents-list" id="documentsList">
-                  {myDocuments.map((doc) => {
-                    const isPdf = (doc.fileType || '').toLowerCase().includes('pdf');
-                    const submittedForReview = Boolean(doc.forReview || doc.markedForReview);
-                    const fileUrl = doc.fileUrl || doc.downloadURL;
-
-                    return (
-                      <div key={doc.id} className="document-item">
-                        <div className="document-item-icon">
-                          <i className={`fas ${isPdf ? 'fa-file-pdf' : 'fa-file'}`}></i>
-                        </div>
-                        <div className="document-item-info">
-                          <span className="document-item-name">
-                            {fileUrl ? (
-                              <a href={fileUrl} target="_blank" rel="noreferrer" className="document-review-name-link">
-                                {doc.fileName || 'document'}
-                              </a>
-                            ) : (
-                              doc.fileName || 'document'
-                            )}
-                          </span>
-                          {(doc.category as MessageCategory) && (
-                            <span className="document-item-category-badge" title={getCategoryLabel(doc.category as MessageCategory)}>
-                              {getCategoryLabel(doc.category as MessageCategory)}
-                            </span>
-                          )}
-                          <span className="document-item-meta">
-                            {formatFileSize(doc.fileSize)} - {formatShortDate(doc.uploadedAt, useHijri)}
-                          </span>
-                        </div>
-                        <label className="document-item-toggle">
-                          <input
-                            type="checkbox"
-                            checked={submittedForReview}
-                            onChange={(e) => handleToggleDocumentReview(doc, e.target.checked)}
-                          />
-                          <span className="toggle-label">{t('submit_for_review')}</span>
-                        </label>
-                        <button
-                          type="button"
-                          className="btn-document-remove"
-                          onClick={() => handleRemoveDocument(doc.id)}
-                          title={t('remove')}
-                        >
-                          <i className="fas fa-trash-alt"></i>
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
               </div>
-              )}
             </section>
           )}
           {activeSection === 'records' && (

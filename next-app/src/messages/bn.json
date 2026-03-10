@@ -191,6 +191,8 @@
   "select_document_category": "বিভাগ নির্বাচন করুন (অবশ্যক)",
   "filter_by_category": "বিভাগ অনুযায়ী ফিল্টার",
   "all_categories": "সব",
+  "documents_only": "শুধু নথি",
+  "change": "বদলান",
   "msg_category_general": "সাধারণ",
   "msg_category_question": "প্রশ্ন",
   "msg_category_weekly_report": "সাপ্তাহিক বিবরণ",

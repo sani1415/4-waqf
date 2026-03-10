@@ -1794,22 +1794,25 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
    MESSAGES TAB STYLING
    =================================== */
 
-/* Panel messages: flex column to fill available space */
+/* Panel messages: flex column, fixed height so only message list scrolls (input stays at bottom like teacher) */
 .tab-wrap-student input#tab-messages:checked ~ .panels-student .panel-messages {
     display: flex !important;
     flex-direction: column;
     min-height: calc(100vh - 200px);
+    max-height: calc(100vh - 200px);
+    height: calc(100vh - 200px);
+    overflow: hidden;
 }
 
 .messages-tab-area {
     flex: 1;
-    min-height: 280px;
+    min-height: 0; /* Required for flex child to scroll */
     overflow-y: auto;
     background: var(--bg-primary);
     border-radius: 8px;
     border: 1px solid var(--border-color);
     padding: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     display: flex;
     flex-direction: column;
 }
@@ -1818,6 +1821,7 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
     flex-shrink: 0;
     display: flex;
     gap: 0.5rem;
+    padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .messages-tab-input input {
@@ -1938,6 +1942,64 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
     border-bottom-left-radius: 4px;
 }
 
+/* Student: document bubble – clearly different from text (card style) */
+.student-doc-bubble-wrap {
+    margin-bottom: 0.5rem;
+}
+.msg-bubble.student-doc-bubble {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 85%;
+    margin-left: auto;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, rgba(123, 158, 189, 0.12), rgba(123, 158, 189, 0.06));
+    border: 1px solid rgba(123, 158, 189, 0.35);
+    border-radius: 12px;
+    cursor: pointer;
+    min-height: 56px;
+}
+.msg-bubble.student-doc-bubble:hover {
+    background: linear-gradient(135deg, rgba(123, 158, 189, 0.18), rgba(123, 158, 189, 0.1));
+    border-color: var(--primary-soft);
+}
+.student-doc-bubble-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--primary-soft);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+.student-doc-bubble-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+.student-doc-bubble-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+.student-doc-bubble-time {
+    font-size: 0.72rem;
+    opacity: 0.85;
+}
+.student-doc-category {
+    align-self: flex-start;
+}
+.student-doc-bubble-dl {
+    flex-shrink: 0;
+    color: var(--primary-soft);
+    font-size: 1rem;
+}
+
 .msg-time {
     font-size: 0.7rem;
     opacity: 0.8;
@@ -2014,6 +2076,24 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
     opacity: 0;
     cursor: pointer;
     z-index: 1;
+}
+
+/* Student dashboard: file input only via button, never cover message area */
+.student-file-input-wrapper {
+    position: relative;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.student-file-input-wrapper .student-dashboard-file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    /* no pointer-events: none so programmatic .click() opens file dialog */
 }
 
 #documentUploadContent {
@@ -3202,9 +3282,9 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
         font-size: 0.75rem;
     }
     
-    /* Messages area - fill available space, no max-height limit */
-    .messages-tab-area {
-        min-height: 180px;
+    /* Messages area - scroll only list, keep input at bottom */
+    .panel-messages .messages-tab-area {
+        min-height: 0;
         padding: 0.75rem;
     }
     

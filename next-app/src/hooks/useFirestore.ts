@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   collection, 
   doc, 
@@ -12,52 +12,63 @@ import {
   query,
   DocumentData
 } from 'firebase/firestore';
-import { db, signInAnonymouslyIfNeeded } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { db, auth, signInAnonymouslyIfNeeded } from '@/lib/firebase';
 
 export function useCollection<T extends DocumentData>(collectionName: string) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const retryCountRef = useRef(0);
 
   useEffect(() => {
+    retryCountRef.current = 0;
     let unsubscribe: (() => void) | undefined;
+    let authUnsubscribe: (() => void) | undefined;
 
-    async function setupListener() {
-      try {
-        // Ensure we're signed in
-        await signInAnonymouslyIfNeeded();
-
-        const colRef = collection(db, collectionName);
-        
-        unsubscribe = onSnapshot(
-          colRef,
-          (snapshot) => {
-            const items: T[] = [];
-            snapshot.forEach((doc) => {
-              items.push(({ id: doc.id, ...doc.data() } as unknown) as T);
-            });
-            setData(items);
-            setLoading(false);
-          },
-          (err) => {
-            console.error(`Error listening to ${collectionName}:`, err);
+    function subscribeToCollection() {
+      const colRef = collection(db, collectionName);
+      return onSnapshot(
+        colRef,
+        (snapshot) => {
+          const items: T[] = [];
+          snapshot.forEach((docSnap) => {
+            items.push(({ id: docSnap.id, ...docSnap.data() } as unknown) as T);
+          });
+          setData(items);
+          setError(null);
+          setLoading(false);
+        },
+        (err: Error & { code?: string }) => {
+          console.error(`Error listening to ${collectionName}:`, err);
+          setLoading(false);
+          // Retry once on permission-denied (e.g. auth not ready yet)
+          if ((err?.code === 'permission-denied' || err?.message?.includes('permission')) && retryCountRef.current < 1) {
+            retryCountRef.current += 1;
+            signInAnonymouslyIfNeeded().then(() => {
+              if (unsubscribe) unsubscribe();
+              unsubscribe = subscribeToCollection();
+            }).catch(() => setError(err));
+          } else {
             setError(err);
-            setLoading(false);
           }
-        );
-      } catch (err) {
-        console.error(`Error setting up ${collectionName} listener:`, err);
-        setError(err as Error);
-        setLoading(false);
-      }
+        }
+      );
     }
 
-    setupListener();
+    // Wait for auth to be ready before subscribing (avoids permission-denied when auth lags)
+    authUnsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        await signInAnonymouslyIfNeeded();
+        return;
+      }
+      if (unsubscribe) unsubscribe();
+      unsubscribe = subscribeToCollection();
+    });
 
     return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
+      authUnsubscribe?.();
+      if (unsubscribe) unsubscribe();
     };
   }, [collectionName]);
 

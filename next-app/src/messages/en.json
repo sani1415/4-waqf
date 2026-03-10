@@ -191,6 +191,8 @@
   "select_document_category": "Select category (required)",
   "filter_by_category": "Filter by category",
   "all_categories": "All",
+  "documents_only": "Documents only",
+  "change": "Change",
   "msg_category_general": "Normal",
   "msg_category_question": "Question",
   "msg_category_weekly_report": "Weekly biboron",

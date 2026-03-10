@@ -19,7 +19,7 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 
-// Sign in anonymously for security rules
+// Sign in anonymously for security rules (required for Firestore read/write)
 export async function signInAnonymouslyIfNeeded() {
   if (!auth.currentUser) {
     try {

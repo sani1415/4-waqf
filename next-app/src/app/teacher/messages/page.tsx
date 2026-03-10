@@ -50,22 +50,21 @@ export default function TeacherMessages() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
-  const [messagesDocumentsSubTab, setMessagesDocumentsSubTab] = useState<'chat' | 'documents'>('chat');
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [messageCategory, setMessageCategory] = useState<MessageCategory>('general');
-  const [filterByCategory, setFilterByCategory] = useState<MessageCategory | 'all'>('all');
-  const [filterByDocumentCategory, setFilterByDocumentCategory] = useState<MessageCategory | 'all'>('all');
+  const [filterByCategory, setFilterByCategory] = useState<MessageCategory | 'all' | 'documents_only'>('all');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const MIN_INPUT_ROWS = 1;
+  const EXPANDED_ROWS = 4; /* WhatsApp-style: expand when focused so typing is comfortable */
+  const MAX_INPUT_ROWS = 6;
 
   const submittedDocuments = (submittedDocumentsData as SubmittedDocumentLike[]) || [];
   const studentDocuments = selectedStudentId
     ? submittedDocuments.filter((d) => String(d.studentId) === String(selectedStudentId))
     : [];
-  const displayedStudentDocuments =
-    filterByDocumentCategory === 'all'
-      ? studentDocuments
-      : studentDocuments.filter((d) => (d.category ?? 'general') === filterByDocumentCategory);
 
   useEffect(() => {
     if (!authLoading && (!isLoggedIn || role !== 'teacher')) {
@@ -73,21 +72,26 @@ export default function TeacherMessages() {
     }
   }, [isLoggedIn, role, router, authLoading]);
 
-  useEffect(() => {
-    setMessagesDocumentsSubTab('chat');
-  }, [selectedStudentId]);
-
   const selectedStudent = students.find((s: any) => s.id === selectedStudentId);
 
   const studentMessages = messages
     .filter((m: any) => m.studentId === selectedStudentId)
     .sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-  /** Phase 1: filter by category (fallback: missing category = general) */
-  const displayedMessages =
+  /** Combined timeline: messages + documents, sorted by time */
+  const combinedTimeline = selectedStudentId
+    ? [
+        ...studentMessages.map((m: any) => ({ type: 'message' as const, ...m, _sort: m.timestamp })),
+        ...studentDocuments.map((d) => ({ type: 'document' as const, ...d, _sort: d.uploadedAt || '' })),
+      ].sort((a, b) => new Date(a._sort).getTime() - new Date(b._sort).getTime())
+    : [];
+
+  const displayedTimeline =
     filterByCategory === 'all'
-      ? studentMessages
-      : studentMessages.filter((m: any) => (m.category ?? 'general') === filterByCategory);
+      ? combinedTimeline
+      : filterByCategory === 'documents_only'
+        ? combinedTimeline.filter((i) => i.type === 'document')
+        : combinedTimeline.filter((i) => (i.category ?? 'general') === filterByCategory);
 
   const getCategoryLabel = (cat: MessageCategory | undefined) =>
     cat ? t('msg_category_' + cat) : t('msg_category_general');
@@ -108,21 +112,36 @@ export default function TeacherMessages() {
     s.studentId?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  /** Last activity (message or document) for a student – for list order and preview */
+  const getLastActivityForStudent = (studentId: string): { type: 'message'; timestamp: string; text?: string; sender?: string } | { type: 'document'; uploadedAt?: string; fileName?: string } | null => {
+    const docsForStudent = submittedDocuments.filter((d) => String(d.studentId) === String(studentId));
+    const lastMsg = messages
+      .filter((m: any) => m.studentId === studentId)
+      .reduce<any>((latest, m) => (new Date(m.timestamp).getTime() > new Date(latest?.timestamp || 0).getTime() ? m : latest), null);
+    const lastDoc = docsForStudent.reduce<SubmittedDocumentLike | null>((latest, d) =>
+      (new Date(d.uploadedAt || 0).getTime() > new Date(latest?.uploadedAt || 0).getTime() ? d : latest), null);
+    const msgTime = lastMsg ? new Date(lastMsg.timestamp).getTime() : 0;
+    const docTime = lastDoc && lastDoc.uploadedAt ? new Date(lastDoc.uploadedAt).getTime() : 0;
+    if (docTime > msgTime && lastDoc) return { type: 'document', uploadedAt: lastDoc.uploadedAt, fileName: lastDoc.fileName };
+    if (lastMsg) return { type: 'message', timestamp: lastMsg.timestamp, text: getMessageBody(lastMsg), sender: lastMsg.sender };
+    return null;
+  };
+
+  /** Sort like messaging apps: most recent conversation (last activity) at top; unread as tie-breaker */
   const sortedStudents = [...filteredStudents].sort((a: any, b: any) => {
+    const aLast = getLastActivityForStudent(a.id);
+    const bLast = getLastActivityForStudent(b.id);
+    const aTime = aLast ? (aLast.type === 'message' ? new Date(aLast.timestamp).getTime() : new Date((aLast as any).uploadedAt || 0).getTime()) : 0;
+    const bTime = bLast ? (bLast.type === 'message' ? new Date(bLast.timestamp).getTime() : new Date((bLast as any).uploadedAt || 0).getTime()) : 0;
+    if (bTime !== aTime) return bTime - aTime; // most recent first
     const aUnread = getUnreadCount(a.id);
     const bUnread = getUnreadCount(b.id);
-    if (aUnread !== bUnread) return bUnread - aUnread;
-
-    const aLastMsg = messages.filter((m: any) => m.studentId === a.id).slice(-1)[0];
-    const bLastMsg = messages.filter((m: any) => m.studentId === b.id).slice(-1)[0];
-    if (!aLastMsg) return 1;
-    if (!bLastMsg) return -1;
-    return new Date(bLastMsg.timestamp).getTime() - new Date(aLastMsg.timestamp).getTime();
+    return bUnread - aUnread; // tie-break: unread first
   });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [studentMessages]);
+  }, [displayedTimeline]);
 
   useEffect(() => {
     if (selectedStudentId) {
@@ -149,6 +168,33 @@ export default function TeacherMessages() {
     });
 
     setNewMessage('');
+    if (messageTextareaRef.current) {
+      messageTextareaRef.current.rows = MIN_INPUT_ROWS;
+    }
+  };
+
+  const handleMessageInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const v = e.target.value;
+    setNewMessage(v);
+    const ta = e.target;
+    ta.rows = MIN_INPUT_ROWS;
+    if (!v.trim()) {
+      ta.rows = MIN_INPUT_ROWS;
+      return;
+    }
+    const lineHeight = typeof getComputedStyle !== 'undefined' && getComputedStyle(ta).lineHeight ? parseInt(getComputedStyle(ta).lineHeight, 10) : 24;
+    const rows = Math.min(MAX_INPUT_ROWS, Math.max(EXPANDED_ROWS, Math.ceil(ta.scrollHeight / lineHeight)));
+    ta.rows = rows;
+  };
+
+  const handleMessageInputFocus = () => {
+    const ta = messageTextareaRef.current;
+    if (ta && !newMessage.trim()) ta.rows = EXPANDED_ROWS;
+  };
+
+  const handleMessageInputBlur = () => {
+    const ta = messageTextareaRef.current;
+    if (ta && !newMessage.trim()) ta.rows = MIN_INPUT_ROWS;
   };
 
   const getDocumentUrl = (doc: SubmittedDocumentLike) => doc.fileUrl || doc.downloadURL || '';
@@ -274,17 +320,19 @@ export default function TeacherMessages() {
                   </div>
                 ) : (
                   sortedStudents.map((student: any) => {
-                    const lastMsg = messages
-                      .filter((m: any) => m.studentId === student.id)
-                      .slice(-1)[0];
+                    const lastActivity = getLastActivityForStudent(student.id);
                     const unreadCount = getUnreadCount(student.id);
 
                     const initial = (student.name || '?').charAt(0).toUpperCase();
                     const maxPreviewLen = 50;
-                    const body = lastMsg ? getMessageBody(lastMsg) : '';
-                    const previewText = lastMsg
-                      ? (lastMsg.sender === 'teacher' ? t('you_prefix') : '') + (body.length > maxPreviewLen ? body.substring(0, maxPreviewLen) + '...' : body)
+                    const previewText = lastActivity
+                      ? lastActivity.type === 'document'
+                        ? (t('document') || 'Document') + ': ' + (lastActivity.fileName || '')
+                        : (lastActivity.type === 'message' && (lastActivity as any).sender === 'teacher' ? t('you_prefix') : '') + ((lastActivity.text || '').length > maxPreviewLen ? (lastActivity.text || '').substring(0, maxPreviewLen) + '...' : (lastActivity.text || ''))
                       : t('no_messages_yet');
+                    const lastTime = lastActivity
+                      ? lastActivity.type === 'message' ? (lastActivity as any).timestamp : (lastActivity as any).uploadedAt
+                      : null;
                     return (
                       <div
                         key={student.id}
@@ -295,8 +343,8 @@ export default function TeacherMessages() {
                         <div className="chat-info chat-item-content">
                           <div className="chat-name-row chat-item-header">
                             <span className="chat-name chat-item-name">{student.name}</span>
-                            {lastMsg && (
-                              <span className="chat-time chat-item-time">{formatTimeForList(lastMsg.timestamp)}</span>
+                            {lastTime && (
+                              <span className="chat-time chat-item-time">{formatTimeForList(lastTime)}</span>
                             )}
                           </div>
                           <div className="chat-preview-row chat-item-preview">
@@ -329,185 +377,125 @@ export default function TeacherMessages() {
                     </div>
                   </div>
 
-                  {/* Chat | Documents sub-tabs for this student */}
-                  <div className="teacher-messages-documents-subtabs" role="tablist" aria-label={t('messages_and_documents')}>
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={messagesDocumentsSubTab === 'chat'}
-                      className={`teacher-messages-documents-subtab ${messagesDocumentsSubTab === 'chat' ? 'active' : ''}`}
-                      onClick={() => setMessagesDocumentsSubTab('chat')}
+                  {/* Single flow: filter + timeline (messages + documents) + input */}
+                  <div className="message-category-filter" data-testid="teacher-message-category-filter">
+                    <label htmlFor="teacher-msg-filter" className="message-category-filter-label">{t('filter_by_category')}</label>
+                    <select
+                      id="teacher-msg-filter"
+                      value={filterByCategory}
+                      onChange={(e) => setFilterByCategory(e.target.value as MessageCategory | 'all' | 'documents_only')}
+                      className="message-category-select"
+                      data-testid="teacher-filter-by-category"
                     >
-                      <i className="fas fa-comments"></i>
-                      <span>{t('sub_tab_chat')}</span>
-                    </button>
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={messagesDocumentsSubTab === 'documents'}
-                      className={`teacher-messages-documents-subtab ${messagesDocumentsSubTab === 'documents' ? 'active' : ''}`}
-                      onClick={() => setMessagesDocumentsSubTab('documents')}
-                    >
-                      <i className="fas fa-file-alt"></i>
-                      <span>{t('sub_tab_documents')}</span>
-                    </button>
+                      <option value="all">{t('all_categories')}</option>
+                      {MESSAGE_CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
+                      ))}
+                      <option value="documents_only">{t('documents_only') || 'Documents only'}</option>
+                    </select>
                   </div>
 
-                  {messagesDocumentsSubTab === 'chat' ? (
-                    <>
-                      {/* Phase 1: filter by category */}
-                      <div className="message-category-filter" data-testid="teacher-message-category-filter">
-                        <label htmlFor="teacher-msg-filter" className="message-category-filter-label">{t('filter_by_category')}</label>
-                        <select
-                          id="teacher-msg-filter"
-                          value={filterByCategory}
-                          onChange={(e) => setFilterByCategory(e.target.value as MessageCategory | 'all')}
-                          className="message-category-select"
-                          data-testid="teacher-filter-by-category"
-                        >
-                          <option value="all">{t('all_categories')}</option>
-                          {MESSAGE_CATEGORIES.map((cat) => (
-                            <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
-                          ))}
-                        </select>
+                  <div className="messages-area">
+                    {combinedTimeline.length === 0 ? (
+                      <div className="empty-chat">
+                        <i className="fas fa-comments"></i>
+                        <p>{t('start_conversation')}</p>
                       </div>
-
-                      <div className="messages-area">
-                        {studentMessages.length === 0 ? (
-                          <div className="empty-chat">
-                            <i className="fas fa-comments"></i>
-                            <p>{t('start_conversation')}</p>
-                          </div>
-                        ) : displayedMessages.length === 0 ? (
-                          <div className="empty-chat">
-                            <i className="fas fa-filter"></i>
-                            <p>{t('no_messages_yet')}</p>
-                            <span>{t('filter_by_category')}</span>
-                          </div>
-                        ) : (
-                          displayedMessages.map((msg: any) => {
-                            const isFromTeacher = String(msg.sender || '').toLowerCase() === 'teacher';
-                            const cat = (msg.category ?? 'general') as MessageCategory;
-                            return (
-                              <div
-                                key={msg.id}
-                                className={`message-bubble ${isFromTeacher ? 'message-sent' : 'message-received'}`}
-                              >
+                    ) : displayedTimeline.length === 0 ? (
+                      <div className="empty-chat">
+                        <i className="fas fa-filter"></i>
+                        <p>{t('no_messages_yet')}</p>
+                        <span>{t('filter_by_category')}</span>
+                      </div>
+                    ) : (
+                      displayedTimeline.map((item: any) => {
+                        if (item.type === 'document') {
+                          const url = getDocumentUrl(item);
+                          const cat = (item.category ?? 'general') as MessageCategory;
+                          return (
+                            <div
+                              key={`doc-${item.id}`}
+                              className="message-bubble message-received doc-bubble"
+                              role={url ? 'link' : undefined}
+                              onClick={() => url && window.open(url, '_blank')}
+                              title={url ? t('download') : t('no_file_url')}
+                            >
+                              <div className="doc-bubble-inner">
+                                <span className="doc-bubble-icon"><i className="fas fa-file-alt"></i></span>
+                                <span className="doc-bubble-name">{item.fileName || 'document'}</span>
                                 {cat !== 'general' && (
                                   <span className="message-category-badge" title={getCategoryLabel(cat)}>{getCategoryLabel(cat)}</span>
                                 )}
-                                <p className="message-text">{getMessageBody(msg)}</p>
-                                <span className="message-time">{formatTime(msg.timestamp)}</span>
+                                {url && <span className="doc-bubble-download"><i className="fas fa-download"></i></span>}
                               </div>
-                            );
-                          })
-                        )}
-                        <div ref={messagesEndRef} />
-                      </div>
-
-                      <form className="message-input teacher-message-form" onSubmit={handleSendMessage}>
-                        <div className="message-input-category-wrap" data-testid="teacher-send-category-wrap">
-                          <label htmlFor="teacher-msg-category" className="sr-only">{t('message_category')}</label>
-                          <select
-                            id="teacher-msg-category"
-                            value={messageCategory}
-                            onChange={(e) => setMessageCategory(e.target.value as MessageCategory)}
-                            className="message-category-select message-category-select-inline"
-                            title={t('message_category')}
-                            data-testid="teacher-send-category"
+                              <span className="message-time">{item.uploadedAt ? formatTime(item.uploadedAt) : ''}</span>
+                              {(item.forReview || item.markedForReview) && (
+                                <button
+                                  type="button"
+                                  className="doc-bubble-mark-reviewed"
+                                  onClick={(e) => { e.stopPropagation(); markDocumentReviewed(item); }}
+                                  title={t('mark_reviewed')}
+                                >
+                                  <i className="fas fa-check"></i> {t('mark_reviewed')}
+                                </button>
+                              )}
+                            </div>
+                          );
+                        }
+                        const isFromTeacher = String(item.sender || '').toLowerCase() === 'teacher';
+                        const cat = (item.category ?? 'general') as MessageCategory;
+                        return (
+                          <div
+                            key={item.id}
+                            className={`message-bubble ${isFromTeacher ? 'message-sent' : 'message-received'}`}
                           >
-                            {MESSAGE_CATEGORIES.map((cat) => (
-                              <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <input
-                          type="text"
-                          placeholder={t('type_message')}
-                          value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value)}
-                        />
-                        <button type="submit" className="message-send-btn" disabled={!newMessage.trim()} aria-label={t('send') || 'Send'}>
-                          <i className="fas fa-paper-plane"></i>
-                        </button>
-                      </form>
-                    </>
-                  ) : (
-                    <div className="teacher-documents-tab-content">
-                      <div className="message-category-filter document-category-filter" data-testid="teacher-document-category-filter">
-                        <label htmlFor="teacher-doc-filter" className="message-category-filter-label">{t('filter_by_category')}</label>
+                            {cat !== 'general' && (
+                              <span className="message-category-badge" title={getCategoryLabel(cat)}>{getCategoryLabel(cat)}</span>
+                            )}
+                            <p className="message-text">{getMessageBody(item)}</p>
+                            <span className="message-time">{formatTime(item.timestamp)}</span>
+                          </div>
+                        );
+                      })
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  <form className="message-input teacher-message-form message-input-single-box" onSubmit={handleSendMessage}>
+                    <div className="message-input-single-box-inner">
+                      <div className="message-category-in-box" data-testid="teacher-send-category-wrap">
                         <select
-                          id="teacher-doc-filter"
-                          value={filterByDocumentCategory}
-                          onChange={(e) => setFilterByDocumentCategory(e.target.value as MessageCategory | 'all')}
-                          className="message-category-select"
-                          data-testid="teacher-filter-documents-by-category"
+                          id="teacher-msg-category"
+                          value={messageCategory}
+                          onChange={(e) => setMessageCategory(e.target.value as MessageCategory)}
+                          className="message-category-select-in-box"
+                          title={t('message_category')}
+                          data-testid="teacher-send-category"
+                          aria-label={t('message_category')}
                         >
-                          <option value="all">{t('all_categories')}</option>
                           {MESSAGE_CATEGORIES.map((cat) => (
                             <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
                           ))}
                         </select>
+                        <i className="fas fa-chevron-down message-category-arrow" aria-hidden />
                       </div>
-                      {displayedStudentDocuments.length === 0 ? (
-                        <div className="empty-chat">
-                          <i className="fas fa-folder-open"></i>
-                          <p>{studentDocuments.length === 0 ? t('no_documents_for_review') : t('no_documents_in_category')}</p>
-                          <span>{studentDocuments.length === 0 ? t('no_documents_for_review_hint') : t('no_documents_in_category_hint')}</span>
-                        </div>
-                      ) : (
-                        <div className="teacher-student-documents-list">
-                          {displayedStudentDocuments.map((doc) => {
-                            const url = getDocumentUrl(doc);
-                            const needsReview = doc.forReview || doc.markedForReview;
-                            return (
-                              <div key={doc.id} className="document-review-item">
-                                <div className="document-review-icon">
-                                  <i className="fas fa-file"></i>
-                                </div>
-                                <div className="document-review-info">
-                                  {url ? (
-                                    <a href={url} target="_blank" rel="noreferrer" className="document-review-name-link">
-                                      {doc.fileName || 'document'}
-                                    </a>
-                                  ) : (
-                                    <span className="document-review-name">{doc.fileName || 'document'}</span>
-                                  )}
-                                  {doc.category && (
-                                    <span className="document-category-badge" title={getCategoryLabel(doc.category)}>
-                                      {getCategoryLabel(doc.category)}
-                                    </span>
-                                  )}
-                                  <span className="document-review-meta">
-                                    {formatShortDate(doc.uploadedAt)}
-                                    {doc.fileSize ? ` - ${formatFileSize(doc.fileSize)}` : ''}
-                                  </span>
-                                </div>
-                                <div className="document-review-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                  {url ? (
-                                    <a href={url} target="_blank" rel="noreferrer" className="btn-download-doc btn-sm">
-                                      <i className="fas fa-download"></i> {t('download')}
-                                    </a>
-                                  ) : (
-                                    <span className="doc-no-url">{t('no_file_url')}</span>
-                                  )}
-                                  {needsReview && (
-                                    <button
-                                      type="button"
-                                      className="btn-secondary"
-                                      onClick={() => markDocumentReviewed(doc)}
-                                    >
-                                      <i className="fas fa-check"></i> {t('mark_reviewed')}
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                      <textarea
+                        ref={messageTextareaRef}
+                        className="prototype-textarea message-input-text-in-box"
+                        placeholder={t('type_message')}
+                        value={newMessage}
+                        onChange={handleMessageInputChange}
+                        onFocus={handleMessageInputFocus}
+                        onBlur={handleMessageInputBlur}
+                        rows={MIN_INPUT_ROWS}
+                        aria-label={t('type_message')}
+                        data-testid="teacher-message-input"
+                      />
+                      <button type="submit" className="message-send-btn message-send-btn-in-box" disabled={!newMessage.trim()} aria-label={t('send') || 'Send'}>
+                        <i className="fas fa-paper-plane"></i>
+                      </button>
                     </div>
-                  )}
+                  </form>
                 </>
               ) : (
                 <div className="no-chat-selected">

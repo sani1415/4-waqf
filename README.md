@@ -178,6 +178,7 @@ node check-fcm-tokens.js
 - `/` – Landing
 - `/teacher/dashboard` – Teacher dashboard
 - `/teacher/messages` – Teacher messages
+- `/teacher/messages-prototypes` – **Interactive prototypes** (5 ideas for combined messages + documents)
 - `/teacher/exams` – Exams
 - `/teacher/student?id=<id>` – Student detail
 - `/student/dashboard` – Student dashboard
@@ -197,6 +198,7 @@ node check-fcm-tokens.js
 
 - **Firestore:** `students`, `tasks`, `messages`, `quizzes`, `quizResults`, `submittedDocuments`
 - **Storage:** Used for document uploads
+- **Auth:** The app uses **Anonymous** sign-in so Firestore rules (`request.auth != null`) allow read/write. In [Firebase Console](https://console.firebase.google.com) → **Authentication** → **Sign-in method**, ensure **Anonymous** is **Enabled**. If messages/documents stop showing in the app, check that Anonymous is still enabled.
 
 ---
 
