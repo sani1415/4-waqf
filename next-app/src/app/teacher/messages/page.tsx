@@ -55,12 +55,17 @@ export default function TeacherMessages() {
   const [searchQuery, setSearchQuery] = useState('');
   const [messageCategory, setMessageCategory] = useState<MessageCategory>('general');
   const [filterByCategory, setFilterByCategory] = useState<MessageCategory | 'all'>('all');
+  const [filterByDocumentCategory, setFilterByDocumentCategory] = useState<MessageCategory | 'all'>('all');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const submittedDocuments = (submittedDocumentsData as SubmittedDocumentLike[]) || [];
   const studentDocuments = selectedStudentId
     ? submittedDocuments.filter((d) => String(d.studentId) === String(selectedStudentId))
     : [];
+  const displayedStudentDocuments =
+    filterByDocumentCategory === 'all'
+      ? studentDocuments
+      : studentDocuments.filter((d) => (d.category ?? 'general') === filterByDocumentCategory);
 
   useEffect(() => {
     if (!authLoading && (!isLoggedIn || role !== 'teacher')) {
@@ -430,15 +435,30 @@ export default function TeacherMessages() {
                     </>
                   ) : (
                     <div className="teacher-documents-tab-content">
-                      {studentDocuments.length === 0 ? (
+                      <div className="message-category-filter document-category-filter" data-testid="teacher-document-category-filter">
+                        <label htmlFor="teacher-doc-filter" className="message-category-filter-label">{t('filter_by_category')}</label>
+                        <select
+                          id="teacher-doc-filter"
+                          value={filterByDocumentCategory}
+                          onChange={(e) => setFilterByDocumentCategory(e.target.value as MessageCategory | 'all')}
+                          className="message-category-select"
+                          data-testid="teacher-filter-documents-by-category"
+                        >
+                          <option value="all">{t('all_categories')}</option>
+                          {MESSAGE_CATEGORIES.map((cat) => (
+                            <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {displayedStudentDocuments.length === 0 ? (
                         <div className="empty-chat">
                           <i className="fas fa-folder-open"></i>
-                          <p>{t('no_documents_for_review')}</p>
-                          <span>{t('no_documents_for_review_hint')}</span>
+                          <p>{studentDocuments.length === 0 ? t('no_documents_for_review') : t('no_documents_in_category')}</p>
+                          <span>{studentDocuments.length === 0 ? t('no_documents_for_review_hint') : t('no_documents_in_category_hint')}</span>
                         </div>
                       ) : (
                         <div className="teacher-student-documents-list">
-                          {studentDocuments.map((doc) => {
+                          {displayedStudentDocuments.map((doc) => {
                             const url = getDocumentUrl(doc);
                             const needsReview = doc.forReview || doc.markedForReview;
                             return (

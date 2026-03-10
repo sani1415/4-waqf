@@ -185,6 +185,7 @@ function TeacherDashboardContent() {
   const [studentForm, setStudentForm] = useState<StudentFormState>(DEFAULT_STUDENT_FORM);
 
   const [documentsView, setDocumentsView] = useState<DocumentsView>('grouped');
+  const [documentCategoryFilter, setDocumentCategoryFilter] = useState<MessageCategory | 'all'>('all');
   const [expandedDocGroups, setExpandedDocGroups] = useState<Record<string, boolean>>({});
   const [overviewDate, setOverviewDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
 
@@ -278,7 +279,12 @@ function TeacherDashboardContent() {
       });
   }, [submittedDocuments]);
 
-  const documentsByStudent = useMemo(() => groupByStudent(reviewDocuments), [reviewDocuments]);
+  const filteredReviewDocuments = useMemo(() => {
+    if (documentCategoryFilter === 'all') return reviewDocuments;
+    return reviewDocuments.filter((doc) => (doc.category ?? 'general') === documentCategoryFilter);
+  }, [reviewDocuments, documentCategoryFilter]);
+
+  const documentsByStudent = useMemo(() => groupByStudent(filteredReviewDocuments), [filteredReviewDocuments]);
 
   const sectionTitle: Record<string, string> = {
     dashboard: t('nav_dashboard'),
@@ -1362,21 +1368,38 @@ function TeacherDashboardContent() {
                 <div className="documents-review-header">
                   <h2><i className="fas fa-file-upload"></i> {t('documents_for_review')}</h2>
                   <p className="documents-review-hint">{t('documents_for_review_hint')}</p>
-                  <div className="documents-view-toggle">
-                    <button
-                      type="button"
-                      className={`view-toggle-btn ${documentsView === 'grouped' ? 'active' : ''}`}
-                      onClick={() => setDocumentsView('grouped')}
-                    >
-                      <i className="fas fa-users"></i> {t('view_grouped')}
-                    </button>
-                    <button
-                      type="button"
-                      className={`view-toggle-btn ${documentsView === 'table' ? 'active' : ''}`}
-                      onClick={() => setDocumentsView('table')}
-                    >
-                      <i className="fas fa-table"></i> {t('view_table')}
-                    </button>
+                  <div className="documents-review-controls">
+                    <div className="message-category-filter document-category-filter" data-testid="teacher-documents-category-filter">
+                      <label htmlFor="doc-review-category-filter" className="message-category-filter-label">{t('filter_by_category')}</label>
+                      <select
+                        id="doc-review-category-filter"
+                        value={documentCategoryFilter}
+                        onChange={(e) => setDocumentCategoryFilter(e.target.value as MessageCategory | 'all')}
+                        className="message-category-select"
+                        data-testid="teacher-documents-filter-by-category"
+                      >
+                        <option value="all">{t('all_categories')}</option>
+                        <option value="general">{t('msg_category_general')}</option>
+                        <option value="question">{t('msg_category_question')}</option>
+                        <option value="fortnight_report">{t('msg_category_fortnight_report')}</option>
+                      </select>
+                    </div>
+                    <div className="documents-view-toggle">
+                      <button
+                        type="button"
+                        className={`view-toggle-btn ${documentsView === 'grouped' ? 'active' : ''}`}
+                        onClick={() => setDocumentsView('grouped')}
+                      >
+                        <i className="fas fa-users"></i> {t('view_grouped')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`view-toggle-btn ${documentsView === 'table' ? 'active' : ''}`}
+                        onClick={() => setDocumentsView('table')}
+                      >
+                        <i className="fas fa-table"></i> {t('view_table')}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1385,7 +1408,7 @@ function TeacherDashboardContent() {
                     <i className="fas fa-circle-notch fa-spin"></i>
                     <span>{t('loading')}</span>
                   </div>
-                ) : reviewDocuments.length === 0 ? (
+                ) : filteredReviewDocuments.length === 0 ? (
                   <div className="documents-review-empty">
                     <i className="fas fa-folder-open"></i>
                     <h3>{t('no_documents_for_review')}</h3>
@@ -1404,7 +1427,7 @@ function TeacherDashboardContent() {
                         </tr>
                       </thead>
                       <tbody>
-                        {reviewDocuments.map((doc) => {
+                        {filteredReviewDocuments.map((doc) => {
                           const student = getStudent(doc.studentId);
                           const studentLabel = doc.studentName || student?.name || 'Unknown';
                           const studentIdLabel = student?.studentId || doc.studentId;

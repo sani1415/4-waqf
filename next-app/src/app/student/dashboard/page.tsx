@@ -112,7 +112,7 @@ export default function StudentDashboard() {
   const [messageTabInput, setMessageTabInput] = useState('');
   const [messageTabCategory, setMessageTabCategory] = useState<MessageCategory>('general');
   const [messagesDocumentsSubTab, setMessagesDocumentsSubTab] = useState<'chat' | 'documents'>(() => sectionFromUrl === 'documents' ? 'documents' : 'chat');
-  const [documentUploadCategory, setDocumentUploadCategory] = useState<MessageCategory>('general');
+  const [documentUploadCategory, setDocumentUploadCategory] = useState<MessageCategory | ''>('');
   const [showDayDetails, setShowDayDetails] = useState(false);
   const [dayDetailsDate, setDayDetailsDate] = useState<string | null>(null);
   const [showOverviewCalendar, setShowOverviewCalendar] = useState(false);
@@ -288,6 +288,10 @@ export default function StudentDashboard() {
 
   const handleDocumentUpload = async (file?: File) => {
     if (!file || !studentId) return;
+    if (!documentUploadCategory) {
+      alert(t('select_document_category'));
+      return;
+    }
 
     setUploadingDocument(true);
 
@@ -921,30 +925,39 @@ export default function StudentDashboard() {
                 <p className="documents-hint">{t('documents_hint')}</p>
 
                 <div className="document-upload-category-wrap" data-testid="document-upload-category-wrap">
-                  <label htmlFor="documentCategorySelect" className="document-category-label">
-                    {t('document_category')}
+                  <label htmlFor="documentCategorySelect" className="document-category-label document-category-required">
+                    {t('document_category')} <span className="required-asterisk" aria-hidden="true">*</span>
                   </label>
                   <select
                     id="documentCategorySelect"
                     value={documentUploadCategory}
-                    onChange={(e) => setDocumentUploadCategory(e.target.value as MessageCategory)}
+                    onChange={(e) => setDocumentUploadCategory((e.target.value || '') as MessageCategory | '')}
                     className="message-category-select document-category-select"
                     title={t('document_category')}
                     data-testid="document-upload-category"
+                    required
+                    aria-required="true"
                   >
+                    <option value="">{t('select_document_category')}</option>
                     {MESSAGE_CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
                     ))}
                   </select>
                 </div>
 
-                <label id="documentUploadArea" className={`document-upload-area ${uploadingDocument ? 'uploading' : ''}`} htmlFor="documentFileInput">
+                <label
+                  id="documentUploadArea"
+                  className={`document-upload-area ${uploadingDocument ? 'uploading' : ''} ${!documentUploadCategory ? 'document-upload-disabled' : ''}`}
+                  htmlFor="documentFileInput"
+                  aria-disabled={!documentUploadCategory}
+                >
                 <input
                   type="file"
                   id="documentFileInput"
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
                   className="document-file-input-hidden"
                   aria-label="Choose file"
+                  disabled={!documentUploadCategory}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {

@@ -1361,6 +1361,10 @@ body:has(.chat-container) {
     margin-left: 0.5rem;
 }
 
+.teacher-page .document-category-filter {
+    margin-bottom: 0.75rem;
+}
+
 .message-input-category-wrap {
     flex-shrink: 0;
 }

@@ -1036,10 +1036,25 @@ body:has(.teacher-dashboard) {
     margin: 0;
 }
 
+.documents-review-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.documents-review-controls .document-category-filter {
+    margin: 0;
+}
+
+.documents-review-controls .document-category-filter .message-category-filter-label {
+    margin-right: 0.5rem;
+}
+
 .documents-view-toggle {
     display: flex;
     gap: 0.5rem;
-    margin-top: 1rem;
     flex-wrap: wrap;
 }
 

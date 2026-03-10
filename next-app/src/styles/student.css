@@ -2119,6 +2119,16 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
     margin-bottom: 0.85rem;
 }
 
+.document-category-required .required-asterisk {
+    color: #DC2626;
+}
+
+.document-upload-area.document-upload-disabled {
+    opacity: 0.65;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
 .document-upload-category-wrap .document-category-select {
     min-width: 120px;
     padding: 0.4rem 0.6rem;
