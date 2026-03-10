@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '@/lib/auth-context';
@@ -66,7 +66,7 @@ function getLastDays(days: number) {
 
 const STUDENT_SECTIONS = ['today', 'tasks', 'exams', 'messages', 'records', 'profile'] as const;
 
-export default function StudentDashboard() {
+function StudentDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isLoggedIn, role, studentId, currentStudent, logout, isLoading: authLoading } = useAuth();
@@ -1480,9 +1480,13 @@ export default function StudentDashboard() {
   );
 }
 
-
-
-
+export default function StudentDashboard() {
+  return (
+    <Suspense fallback={<div className="loading-state"><i className="fas fa-spinner fa-spin"></i></div>}>
+      <StudentDashboardContent />
+    </Suspense>
+  );
+}
 
 
 
