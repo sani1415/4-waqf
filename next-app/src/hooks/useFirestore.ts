@@ -150,3 +150,36 @@ export function useQuizResults() {
 export function useSubmittedDocuments() {
   return useCollection<any>('submittedDocuments');
 }
+
+// ===== Future roadmap collections (added incrementally) =====
+export function useReports() {
+  return useCollection<any>('reports');
+}
+
+export function useFeedbackTemplates() {
+  return useCollection<any>('feedbackTemplates');
+}
+
+export function useStudentFeedback() {
+  return useCollection<any>('studentFeedback');
+}
+
+export function useStudentGroups() {
+  return useCollection<any>('studentGroups');
+}
+
+export function useCommonMistakes() {
+  return useCollection<any>('commonMistakes');
+}
+
+export function useSubmissions() {
+  return useCollection<any>('submissions');
+}
+
+export function useStudentScores() {
+  return useCollection<any>('studentScores');
+}
+
+export function useStudentScoreHistory() {
+  return useCollection<any>('studentScoreHistory');
+}

@@ -5,8 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useMessages } from '@/hooks/useFirestore';
 import { useTranslation } from '@/hooks/useTranslation';
+import type { MessageCategory } from '@/lib/types';
 import '@/styles/student.css';
 import '@/styles/messaging.css';
+
+const MESSAGE_CATEGORIES: MessageCategory[] = ['general', 'question', 'fortnight_report'];
+
 export default function StudentChat() {
   const router = useRouter();
   const { isLoggedIn, role, studentId, isLoading: authLoading } = useAuth();
@@ -15,13 +19,24 @@ export default function StudentChat() {
   const { data: messages, addItem: addMessage, updateItem: updateMessage } = useMessages();
   
   const [newMessage, setNewMessage] = useState('');
+  const [messageCategory, setMessageCategory] = useState<MessageCategory>('general');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const getCategoryLabel = (cat: MessageCategory | undefined) =>
+    cat ? t('msg_category_' + cat) : t('msg_category_general');
   // Redirect if not logged in as student
   useEffect(() => {
     if (!authLoading && (!isLoggedIn || role !== 'student')) {
       router.push('/');
     }
   }, [isLoggedIn, role, router, authLoading]);
+
+  // Single place for student messaging: always use dashboard Messages tab (no duplicate chat page)
+  useEffect(() => {
+    if (!authLoading && isLoggedIn && role === 'student') {
+      router.replace('/student/dashboard?section=messages');
+    }
+  }, [authLoading, isLoggedIn, role, router]);
 
   // Get messages for this student
   const myMessages = messages
@@ -53,7 +68,9 @@ export default function StudentChat() {
       sender: 'student',
       text: newMessage.trim(),
       timestamp: new Date().toISOString(),
-      read: false
+      read: false,
+      category: messageCategory,
+      messageType: 'text'
     });
 
     setNewMessage('');
@@ -126,11 +143,15 @@ export default function StudentChat() {
           ) : (
             myMessages.map((msg: any) => {
               const isFromStudent = String(msg.sender || '').toLowerCase() === 'student';
+              const cat = (msg.category ?? 'general') as MessageCategory;
               return (
                 <div
                   key={msg.id}
                   className={`message-bubble ${isFromStudent ? 'message-sent' : 'message-received'}`}
                 >
+                  {cat !== 'general' && (
+                    <span className="message-category-badge" title={getCategoryLabel(cat)}>{getCategoryLabel(cat)}</span>
+                  )}
                   <p className="message-text">{(msg.text ?? msg.message ?? '').toString()}</p>
                   <span className="message-time">{formatTime(msg.timestamp)}</span>
                 </div>
@@ -142,7 +163,22 @@ export default function StudentChat() {
 
         {/* Message Input */}
         <div className="message-input-container">
-          <form id="messageForm" className="message-form" onSubmit={handleSendMessage}>
+          <form id="messageForm" className="message-form message-form-with-category" onSubmit={handleSendMessage}>
+            <div className="message-input-category-wrap" data-testid="student-send-category-wrap">
+              <label htmlFor="student-msg-category" className="sr-only">{t('message_category')}</label>
+              <select
+                id="student-msg-category"
+                value={messageCategory}
+                onChange={(e) => setMessageCategory(e.target.value as MessageCategory)}
+                className="message-category-select message-category-select-inline"
+                title={t('message_category')}
+                data-testid="student-send-category"
+              >
+                {MESSAGE_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
+                ))}
+              </select>
+            </div>
             <input
               type="text"
               id="messageInput"

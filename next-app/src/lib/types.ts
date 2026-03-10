@@ -49,7 +49,32 @@ export interface Message {
   text: string;
   timestamp: string;
   read?: boolean;
+  /**
+   * Optional fields for future structured messaging.
+   * Must remain optional to keep backward compatibility with existing documents.
+   */
+  category?: MessageCategory;
+  messageType?: MessageType;
+  linkedTaskId?: string;
+  linkedReportId?: string;
+  linkedSubmissionId?: string;
+  audioUrl?: string;
+  audioDurationSec?: number;
+  status?: 'active' | 'archived';
+  teacherTags?: string[];
 }
+
+export type MessageCategory =
+  | 'general'
+  | 'question'
+  | 'weekly_report'
+  | 'fortnight_report'
+  | 'help_request'
+  | 'reflection'
+  | 'task_update'
+  | 'behavior_note';
+
+export type MessageType = 'text' | 'audio' | 'report_link' | 'template_feedback';
 
 export interface Quiz {
   id: string;
@@ -95,6 +120,146 @@ export interface SubmittedDocument {
   mimeType?: string;
   forReview: boolean;
   uploadedAt: string;
+  /**
+   * Optional fields for future expanded submissions.
+   * Keep optional to avoid breaking existing documents/logic.
+   */
+  submissionType?: SubmissionType;
+  title?: string;
+  textAnswer?: string;
+  reviewStatus?: ReviewStatus;
+  teacherFeedback?: string;
+  score?: number;
+  reviewedAt?: string;
+  linkedTaskId?: string;
+}
+
+export type SubmissionType =
+  | 'document'
+  | 'written'
+  | 'weekly_report'
+  | 'fortnight_report'
+  | 'reflection'
+  | 'photo'
+  | 'audio'
+  | 'checklist';
+
+export type ReviewStatus = 'pending' | 'reviewed' | 'needs_resubmission';
+
+export interface StudentReport {
+  id: string;
+  studentId: string;
+  reportType: 'weekly' | 'fortnight';
+  periodStart?: string; // ISO
+  periodEnd?: string; // ISO
+  completedActivities?: string;
+  learnedTopics?: string;
+  difficulties?: string;
+  repeatedMistakes?: string;
+  helpNeeded?: string;
+  nextGoals?: string;
+  submittedAt: string; // ISO
+  reviewStatus?: ReviewStatus;
+  teacherResponse?: string;
+  teacherReviewedAt?: string; // ISO
+}
+
+export interface FeedbackTemplate {
+  id: string;
+  title: string;
+  category?: string;
+  text: string;
+  createdAt: string; // ISO
+  updatedAt?: string; // ISO
+  createdBy?: string;
+  isSystemTemplate?: boolean;
+}
+
+export interface StudentFeedbackItem {
+  id: string;
+  studentId: string;
+  type: 'praise' | 'correction' | 'advice' | 'achievement';
+  title?: string;
+  text: string;
+  linkedTaskId?: string;
+  linkedReportId?: string;
+  linkedSubmissionId?: string;
+  createdAt: string; // ISO
+  createdByTeacher?: string;
+  pinned?: boolean;
+}
+
+export interface StudentGroup {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  studentIds: string[];
+  createdAt: string; // ISO
+  updatedAt?: string; // ISO
+}
+
+export interface CommonMistake {
+  id: string;
+  title: string;
+  category?: string;
+  description?: string;
+  correctForm?: string;
+  example?: string;
+  severity?: 'low' | 'medium' | 'high';
+  linkedTaskId?: string;
+  linkedQuizId?: string;
+  active: boolean;
+  createdAt: string; // ISO
+  updatedAt?: string; // ISO
+}
+
+export interface StudentSubmission {
+  id: string;
+  studentId: string;
+  submissionType: SubmissionType;
+  title?: string;
+  textAnswer?: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  mimeType?: string;
+  audioDurationSec?: number;
+  linkedTaskId?: string;
+  requestedByTeacher?: boolean;
+  reviewStatus?: ReviewStatus;
+  teacherFeedback?: string;
+  score?: number;
+  submittedAt: string; // ISO
+  reviewedAt?: string; // ISO
+}
+
+export interface StudentScore {
+  id: string;
+  studentId: string;
+  behaviorScore?: number;
+  learningScore?: number;
+  activityScore?: number;
+  consistencyScore?: number;
+  improvementScore?: number;
+  totalScore?: number;
+  rank?: number;
+  periodLabel?: string; // e.g. "2026-W10"
+  updatedAt: string; // ISO
+}
+
+export interface StudentScoreHistory {
+  id: string;
+  studentId: string;
+  behaviorScore?: number;
+  learningScore?: number;
+  activityScore?: number;
+  consistencyScore?: number;
+  improvementScore?: number;
+  totalScore?: number;
+  rank?: number;
+  periodLabel?: string;
+  createdAt: string; // ISO snapshot time
 }
 
 export interface TeacherNote {

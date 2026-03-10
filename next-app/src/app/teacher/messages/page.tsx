@@ -3,13 +3,41 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { useStudents, useMessages } from '@/hooks/useFirestore';
+import { useStudents, useMessages, useSubmittedDocuments } from '@/hooks/useFirestore';
 import { useTranslation } from '@/hooks/useTranslation';
 import TeacherSidebar from '@/components/teacher/TeacherSidebar';
 import TeacherTopBar from '@/components/teacher/TeacherTopBar';
 import { formatDateDisplay, getUseHijri } from '@/lib/date-format';
+import type { MessageCategory } from '@/lib/types';
 import '@/styles/teacher.css';
 import '@/styles/messaging.css';
+
+type SubmittedDocumentLike = {
+  id: string;
+  studentId: string;
+  fileName?: string;
+  fileUrl?: string;
+  downloadURL?: string;
+  fileSize?: number;
+  uploadedAt?: string;
+  forReview?: boolean;
+  markedForReview?: boolean;
+};
+
+function formatFileSize(bytes?: number) {
+  if (!bytes) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatShortDate(iso?: string) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+const MESSAGE_CATEGORIES: MessageCategory[] = ['general', 'question', 'fortnight_report'];
+
 export default function TeacherMessages() {
   const router = useRouter();
   const { isLoggedIn, role, isLoading: authLoading } = useAuth();
@@ -17,12 +45,21 @@ export default function TeacherMessages() {
 
   const { data: students, loading: studentsLoading } = useStudents();
   const { data: messages, addItem: addMessage, updateItem: updateMessage } = useMessages();
+  const { data: submittedDocumentsData, updateItem: updateSubmittedDocument } = useSubmittedDocuments();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [messagesDocumentsSubTab, setMessagesDocumentsSubTab] = useState<'chat' | 'documents'>('chat');
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [messageCategory, setMessageCategory] = useState<MessageCategory>('general');
+  const [filterByCategory, setFilterByCategory] = useState<MessageCategory | 'all'>('all');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const submittedDocuments = (submittedDocumentsData as SubmittedDocumentLike[]) || [];
+  const studentDocuments = selectedStudentId
+    ? submittedDocuments.filter((d) => String(d.studentId) === String(selectedStudentId))
+    : [];
 
   useEffect(() => {
     if (!authLoading && (!isLoggedIn || role !== 'teacher')) {
@@ -30,11 +67,24 @@ export default function TeacherMessages() {
     }
   }, [isLoggedIn, role, router, authLoading]);
 
+  useEffect(() => {
+    setMessagesDocumentsSubTab('chat');
+  }, [selectedStudentId]);
+
   const selectedStudent = students.find((s: any) => s.id === selectedStudentId);
 
   const studentMessages = messages
     .filter((m: any) => m.studentId === selectedStudentId)
     .sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+  /** Phase 1: filter by category (fallback: missing category = general) */
+  const displayedMessages =
+    filterByCategory === 'all'
+      ? studentMessages
+      : studentMessages.filter((m: any) => (m.category ?? 'general') === filterByCategory);
+
+  const getCategoryLabel = (cat: MessageCategory | undefined) =>
+    cat ? t('msg_category_' + cat) : t('msg_category_general');
 
   const getUnreadCount = (studentId: string) => {
     return messages.filter(
@@ -87,10 +137,21 @@ export default function TeacherMessages() {
       sender: 'teacher',
       text: newMessage.trim(),
       timestamp: new Date().toISOString(),
-      read: false
+      read: false,
+      category: messageCategory,
+      messageType: 'text'
     });
 
     setNewMessage('');
+  };
+
+  const getDocumentUrl = (doc: SubmittedDocumentLike) => doc.fileUrl || doc.downloadURL || '';
+  const markDocumentReviewed = async (doc: SubmittedDocumentLike) => {
+    await updateSubmittedDocument(doc.id, {
+      forReview: false,
+      markedForReview: false,
+      reviewedAt: new Date().toISOString()
+    });
   };
 
   const formatTime = (timestamp: string) => {
@@ -263,40 +324,165 @@ export default function TeacherMessages() {
                     </div>
                   </div>
 
-                  <div className="messages-area">
-                    {studentMessages.length === 0 ? (
-                      <div className="empty-chat">
-                        <i className="fas fa-comments"></i>
-                        <p>{t('start_conversation')}</p>
-                      </div>
-                    ) : (
-                      studentMessages.map((msg: any) => {
-                        const isFromTeacher = String(msg.sender || '').toLowerCase() === 'teacher';
-                        return (
-                          <div
-                            key={msg.id}
-                            className={`message-bubble ${isFromTeacher ? 'message-sent' : 'message-received'}`}
-                          >
-                            <p className="message-text">{getMessageBody(msg)}</p>
-                            <span className="message-time">{formatTime(msg.timestamp)}</span>
-                          </div>
-                        );
-                      })
-                    )}
-                    <div ref={messagesEndRef} />
+                  {/* Chat | Documents sub-tabs for this student */}
+                  <div className="teacher-messages-documents-subtabs" role="tablist" aria-label={t('messages_and_documents')}>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={messagesDocumentsSubTab === 'chat'}
+                      className={`teacher-messages-documents-subtab ${messagesDocumentsSubTab === 'chat' ? 'active' : ''}`}
+                      onClick={() => setMessagesDocumentsSubTab('chat')}
+                    >
+                      <i className="fas fa-comments"></i>
+                      <span>{t('sub_tab_chat')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={messagesDocumentsSubTab === 'documents'}
+                      className={`teacher-messages-documents-subtab ${messagesDocumentsSubTab === 'documents' ? 'active' : ''}`}
+                      onClick={() => setMessagesDocumentsSubTab('documents')}
+                    >
+                      <i className="fas fa-file-alt"></i>
+                      <span>{t('sub_tab_documents')}</span>
+                    </button>
                   </div>
 
-                  <form className="message-input teacher-message-form" onSubmit={handleSendMessage}>
-                    <input
-                      type="text"
-                      placeholder={t('type_message')}
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                    />
-                    <button type="submit" className="message-send-btn" disabled={!newMessage.trim()} aria-label={t('send') || 'Send'}>
-                      <i className="fas fa-paper-plane"></i>
-                    </button>
-                  </form>
+                  {messagesDocumentsSubTab === 'chat' ? (
+                    <>
+                      {/* Phase 1: filter by category */}
+                      <div className="message-category-filter" data-testid="teacher-message-category-filter">
+                        <label htmlFor="teacher-msg-filter" className="message-category-filter-label">{t('filter_by_category')}</label>
+                        <select
+                          id="teacher-msg-filter"
+                          value={filterByCategory}
+                          onChange={(e) => setFilterByCategory(e.target.value as MessageCategory | 'all')}
+                          className="message-category-select"
+                          data-testid="teacher-filter-by-category"
+                        >
+                          <option value="all">{t('all_categories')}</option>
+                          {MESSAGE_CATEGORIES.map((cat) => (
+                            <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="messages-area">
+                        {studentMessages.length === 0 ? (
+                          <div className="empty-chat">
+                            <i className="fas fa-comments"></i>
+                            <p>{t('start_conversation')}</p>
+                          </div>
+                        ) : displayedMessages.length === 0 ? (
+                          <div className="empty-chat">
+                            <i className="fas fa-filter"></i>
+                            <p>{t('no_messages_yet')}</p>
+                            <span>{t('filter_by_category')}</span>
+                          </div>
+                        ) : (
+                          displayedMessages.map((msg: any) => {
+                            const isFromTeacher = String(msg.sender || '').toLowerCase() === 'teacher';
+                            const cat = (msg.category ?? 'general') as MessageCategory;
+                            return (
+                              <div
+                                key={msg.id}
+                                className={`message-bubble ${isFromTeacher ? 'message-sent' : 'message-received'}`}
+                              >
+                                {cat !== 'general' && (
+                                  <span className="message-category-badge" title={getCategoryLabel(cat)}>{getCategoryLabel(cat)}</span>
+                                )}
+                                <p className="message-text">{getMessageBody(msg)}</p>
+                                <span className="message-time">{formatTime(msg.timestamp)}</span>
+                              </div>
+                            );
+                          })
+                        )}
+                        <div ref={messagesEndRef} />
+                      </div>
+
+                      <form className="message-input teacher-message-form" onSubmit={handleSendMessage}>
+                        <div className="message-input-category-wrap" data-testid="teacher-send-category-wrap">
+                          <label htmlFor="teacher-msg-category" className="sr-only">{t('message_category')}</label>
+                          <select
+                            id="teacher-msg-category"
+                            value={messageCategory}
+                            onChange={(e) => setMessageCategory(e.target.value as MessageCategory)}
+                            className="message-category-select message-category-select-inline"
+                            title={t('message_category')}
+                            data-testid="teacher-send-category"
+                          >
+                            {MESSAGE_CATEGORIES.map((cat) => (
+                              <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder={t('type_message')}
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                        />
+                        <button type="submit" className="message-send-btn" disabled={!newMessage.trim()} aria-label={t('send') || 'Send'}>
+                          <i className="fas fa-paper-plane"></i>
+                        </button>
+                      </form>
+                    </>
+                  ) : (
+                    <div className="teacher-documents-tab-content">
+                      {studentDocuments.length === 0 ? (
+                        <div className="empty-chat">
+                          <i className="fas fa-folder-open"></i>
+                          <p>{t('no_documents_for_review')}</p>
+                          <span>{t('no_documents_for_review_hint')}</span>
+                        </div>
+                      ) : (
+                        <div className="teacher-student-documents-list">
+                          {studentDocuments.map((doc) => {
+                            const url = getDocumentUrl(doc);
+                            const needsReview = doc.forReview || doc.markedForReview;
+                            return (
+                              <div key={doc.id} className="document-review-item">
+                                <div className="document-review-icon">
+                                  <i className="fas fa-file"></i>
+                                </div>
+                                <div className="document-review-info">
+                                  {url ? (
+                                    <a href={url} target="_blank" rel="noreferrer" className="document-review-name-link">
+                                      {doc.fileName || 'document'}
+                                    </a>
+                                  ) : (
+                                    <span className="document-review-name">{doc.fileName || 'document'}</span>
+                                  )}
+                                  <span className="document-review-meta">
+                                    {formatShortDate(doc.uploadedAt)}
+                                    {doc.fileSize ? ` - ${formatFileSize(doc.fileSize)}` : ''}
+                                  </span>
+                                </div>
+                                <div className="document-review-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                  {url ? (
+                                    <a href={url} target="_blank" rel="noreferrer" className="btn-download-doc btn-sm">
+                                      <i className="fas fa-download"></i> {t('download')}
+                                    </a>
+                                  ) : (
+                                    <span className="doc-no-url">{t('no_file_url')}</span>
+                                  )}
+                                  {needsReview && (
+                                    <button
+                                      type="button"
+                                      className="btn-secondary"
+                                      onClick={() => markDocumentReviewed(doc)}
+                                    >
+                                      <i className="fas fa-check"></i> {t('mark_reviewed')}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="no-chat-selected">

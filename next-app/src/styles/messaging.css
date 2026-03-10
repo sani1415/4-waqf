@@ -1173,6 +1173,98 @@ body:has(.chat-container) {
     opacity: 0.35;
 }
 
+/* Teacher Messages: Chat | Documents sub-tabs (per student) */
+.teacher-page .teacher-messages-documents-subtabs {
+    display: flex;
+    gap: 0.25rem;
+    margin: 0 1rem 0.75rem;
+    padding: 0.25rem;
+    background: var(--bg-primary, #f1f5f9);
+    border-radius: var(--radius-md, 10px);
+}
+
+.teacher-page .teacher-messages-documents-subtab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: var(--radius-sm, 8px);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.teacher-page .teacher-messages-documents-subtab:hover {
+    background: rgba(123, 158, 189, 0.1);
+    color: var(--text-primary);
+}
+
+.teacher-page .teacher-messages-documents-subtab.active {
+    background: white;
+    color: var(--primary-soft);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.teacher-page .teacher-documents-tab-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 1rem 1.25rem;
+}
+
+.teacher-page .teacher-student-documents-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.teacher-page .teacher-documents-tab-content .document-review-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md, 10px);
+}
+
+.teacher-page .teacher-documents-tab-content .document-review-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(123, 158, 189, 0.12);
+    border-radius: var(--radius-sm, 8px);
+    color: var(--primary-soft);
+}
+
+.teacher-page .teacher-documents-tab-content .document-review-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.teacher-page .teacher-documents-tab-content .document-review-name-link,
+.teacher-page .teacher-documents-tab-content .document-review-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.teacher-page .teacher-documents-tab-content .document-review-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
 @media (max-width: 768px) {
     .teacher-page .messages-container {
         padding: 0.5rem 0.6rem;
@@ -1183,5 +1275,96 @@ body:has(.chat-container) {
     .teacher-page .chat-list-item.active {
         border-left-width: 3px;
     }
+}
+
+/* ==========================================
+   Phase 1: Message categories (filter, badge, select)
+   ========================================== */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.message-category-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.message-category-filter-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.message-category-select {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    background: white;
+    color: var(--text-primary);
+    min-width: 120px;
+}
+
+.message-category-select-inline {
+    min-width: 100px;
+    flex-shrink: 0;
+}
+
+.message-category-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    margin-bottom: 0.35rem;
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--text-secondary);
+}
+
+.message-sent .message-category-badge {
+    background: rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.message-input-category-wrap {
+    flex-shrink: 0;
+}
+
+.message-form.message-form-with-category {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.message-form.message-form-with-category .message-category-select-inline {
+    max-width: 110px;
+}
+
+/* Student: same category dropdown as teacher (reuse message-input-category-wrap + message-category-select) */
+.chat-container .message-form.message-form-with-category {
+    flex-wrap: nowrap;
+}
+
+.chat-container .message-form.message-form-with-category .message-input-category-wrap {
+    flex-shrink: 0;
+}
+
+.chat-container .message-form.message-form-with-category .message-category-select-inline {
+    min-width: 100px;
+    max-width: 110px;
 }
 

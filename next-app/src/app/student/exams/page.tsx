@@ -522,7 +522,7 @@ export default function StudentExams() {
             <i className="fas fa-graduation-cap"></i>
             <span>{t('exams')}</span>
           </a>
-          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/chat'); }} title="Messages">
+          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/student/dashboard?section=messages'); }} title="Messages">
             <i className="fas fa-comments"></i>
             <span>{t('messages')}</span>
           </a>

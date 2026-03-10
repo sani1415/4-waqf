@@ -15,7 +15,9 @@ import {
 import { useTranslation } from '@/hooks/useTranslation';
 import { storage } from '@/lib/firebase';
 import StudentSidebar from '@/components/student/StudentSidebar';
+import type { MessageCategory } from '@/lib/types';
 import '@/styles/student.css';
+import '@/styles/messaging.css';
 type SubmittedDocumentLike = {
   id: string;
   studentId: string;
@@ -61,7 +63,7 @@ function getLastDays(days: number) {
   });
 }
 
-const STUDENT_SECTIONS = ['today', 'tasks', 'exams', 'messages', 'documents', 'records', 'profile'] as const;
+const STUDENT_SECTIONS = ['today', 'tasks', 'exams', 'messages', 'records', 'profile'] as const;
 
 export default function StudentDashboard() {
   const router = useRouter();
@@ -88,12 +90,16 @@ export default function StudentDashboard() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sectionFromUrl = searchParams.get('section');
-  const validSection = sectionFromUrl && STUDENT_SECTIONS.includes(sectionFromUrl as any) ? sectionFromUrl : 'today';
+  const validSection = sectionFromUrl === 'documents' ? 'messages' : (sectionFromUrl && STUDENT_SECTIONS.includes(sectionFromUrl as any) ? sectionFromUrl : 'today');
   const [activeSection, setActiveSection] = useState(validSection);
 
   useEffect(() => {
-    if (sectionFromUrl && STUDENT_SECTIONS.includes(sectionFromUrl as any)) {
+    if (sectionFromUrl === 'documents') {
+      setActiveSection('messages');
+      setMessagesDocumentsSubTab('documents');
+    } else if (sectionFromUrl && STUDENT_SECTIONS.includes(sectionFromUrl as any)) {
       setActiveSection(sectionFromUrl);
+      if (sectionFromUrl === 'messages') setMessagesDocumentsSubTab('chat');
     }
   }, [sectionFromUrl]);
   const [useHijri, setUseHijri] = useState(false);
@@ -103,6 +109,8 @@ export default function StudentDashboard() {
   const [changePinConfirm, setChangePinConfirm] = useState('');
   const [changePinSubmitting, setChangePinSubmitting] = useState(false);
   const [messageTabInput, setMessageTabInput] = useState('');
+  const [messageTabCategory, setMessageTabCategory] = useState<MessageCategory>('general');
+  const [messagesDocumentsSubTab, setMessagesDocumentsSubTab] = useState<'chat' | 'documents'>(() => sectionFromUrl === 'documents' ? 'documents' : 'chat');
   const [showDayDetails, setShowDayDetails] = useState(false);
   const [dayDetailsDate, setDayDetailsDate] = useState<string | null>(null);
   const [showOverviewCalendar, setShowOverviewCalendar] = useState(false);
@@ -140,10 +148,15 @@ export default function StudentDashboard() {
       sender: 'student',
       text,
       timestamp: new Date().toISOString(),
-      read: false
+      read: false,
+      category: messageTabCategory,
+      messageType: 'text'
     });
     setMessageTabInput('');
   };
+
+  const MESSAGE_CATEGORIES: MessageCategory[] = ['general', 'question', 'fortnight_report'];
+  const getCategoryLabel = (cat: MessageCategory | undefined) => cat ? t('msg_category_' + cat) : t('msg_category_general');
 
   const student = currentStudent || students.find((s: any) => s.id === studentId);
 
@@ -404,8 +417,7 @@ export default function StudentDashboard() {
             {activeSection === 'today' && `${t('marhaba')}, ${student?.name?.trim() || 'Student'}!`}
             {activeSection === 'tasks' && t('student_nav_tasks')}
             {activeSection === 'exams' && t('student_nav_exams')}
-            {activeSection === 'messages' && t('messages')}
-            {activeSection === 'documents' && t('student_nav_documents')}
+            {activeSection === 'messages' && t('messages_and_documents')}
             {activeSection === 'records' && t('tab_records')}
             {activeSection === 'profile' && t('student_nav_profile')}
           </h1>
@@ -461,7 +473,6 @@ export default function StudentDashboard() {
           <input type="radio" name="student-tab" id="tab-tasks" checked={activeSection === 'tasks'} readOnly />
           <input type="radio" name="student-tab" id="tab-exams" checked={activeSection === 'exams'} readOnly />
           <input type="radio" name="student-tab" id="tab-messages" checked={activeSection === 'messages'} readOnly />
-          <input type="radio" name="student-tab" id="tab-documents" checked={activeSection === 'documents'} readOnly />
           <input type="radio" name="student-tab" id="tab-records" checked={activeSection === 'records'} readOnly />
           <input type="radio" name="student-tab" id="tab-profile" checked={activeSection === 'profile'} readOnly />
 
@@ -480,12 +491,8 @@ export default function StudentDashboard() {
             </label>
             <label htmlFor="tab-messages" className="student-tab-label" onClick={() => handleSectionChange('messages')}>
               <i className="fas fa-comments"></i>
-              <span>{t('messages')}</span>
+              <span>{t('messages_and_documents')}</span>
               {unreadMessages > 0 && <span id="msgUnreadDot" className="tab-unread-dot" style={{ display: 'block' }}></span>}
-            </label>
-            <label htmlFor="tab-documents" className="student-tab-label" onClick={() => handleSectionChange('documents')}>
-              <i className="fas fa-file-upload"></i>
-              <span>{t('nav_documents')}</span>
             </label>
             <label htmlFor="tab-records" className="student-tab-label" onClick={() => handleSectionChange('records')}>
               <i className="fas fa-history"></i>
@@ -795,7 +802,31 @@ export default function StudentDashboard() {
           )}
 
           {activeSection === 'messages' && (
-            <section className="panel-student panel-messages">
+            <section className="panel-student panel-messages panel-messages-documents">
+              <div className="messages-documents-subtabs" role="tablist">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={messagesDocumentsSubTab === 'chat'}
+                  className={`messages-documents-subtab ${messagesDocumentsSubTab === 'chat' ? 'active' : ''}`}
+                  onClick={() => setMessagesDocumentsSubTab('chat')}
+                >
+                  <i className="fas fa-comments"></i>
+                  <span>{t('sub_tab_chat')}</span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={messagesDocumentsSubTab === 'documents'}
+                  className={`messages-documents-subtab ${messagesDocumentsSubTab === 'documents' ? 'active' : ''}`}
+                  onClick={() => setMessagesDocumentsSubTab('documents')}
+                >
+                  <i className="fas fa-file-upload"></i>
+                  <span>{t('sub_tab_documents')}</span>
+                </button>
+              </div>
+              {messagesDocumentsSubTab === 'chat' && (
+              <>
               <div className="messages-tab-area" id="messagesTabArea">
                 {messagesLoading ? (
                   <div className="loading-state">
@@ -816,12 +847,16 @@ export default function StudentDashboard() {
                       const thisDateKey = new Date(msg.timestamp).toISOString().slice(0, 10);
                       const showDateSep = prevDateKey !== thisDateKey;
                       const isSent = String(msg.sender || '').toLowerCase() === 'student';
+                      const cat = (msg.category ?? 'general') as MessageCategory;
                       return (
                         <div key={msg.id}>
                           {showDateSep && (
                             <div className="msg-date-sep">{getMessageDateLabel(msg.timestamp)}</div>
                           )}
                           <div className={`msg-bubble ${isSent ? 'sent' : 'received'}`}>
+                            {cat !== 'general' && (
+                              <span className="message-category-badge" title={getCategoryLabel(cat)}>{getCategoryLabel(cat)}</span>
+                            )}
                             <div className="msg-text">{(msg.text ?? msg.message ?? '').toString()}</div>
                             <div className="msg-time">{formatMessageTime(msg.timestamp)}</div>
                           </div>
@@ -832,7 +867,22 @@ export default function StudentDashboard() {
                   </>
                 )}
               </div>
-              <div className="messages-tab-input">
+              <div className="messages-tab-input messages-tab-input-with-category">
+                <div className="message-input-category-wrap" data-testid="student-dashboard-send-category-wrap">
+                  <label htmlFor="messageCategoryTab" className="sr-only">{t('message_category')}</label>
+                  <select
+                    id="messageCategoryTab"
+                    value={messageTabCategory}
+                    onChange={(e) => setMessageTabCategory(e.target.value as MessageCategory)}
+                    className="message-category-select message-category-select-inline"
+                    title={t('message_category')}
+                    data-testid="student-dashboard-send-category"
+                  >
+                    {MESSAGE_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
+                    ))}
+                  </select>
+                </div>
                 <input
                   id="messageInputTab"
                   type="text"
@@ -857,18 +907,17 @@ export default function StudentDashboard() {
                   <i className="fas fa-paper-plane"></i> <span>{t('send')}</span>
                 </button>
               </div>
-            </section>
-          )}
+              </>
+              )}
+              {messagesDocumentsSubTab === 'documents' && (
+              <div className="documents-tab-content">
+                <div className="section-title">
+                  <i className="fas fa-file-upload"></i>
+                  <span>{t('my_documents')}</span>
+                </div>
+                <p className="documents-hint">{t('documents_hint')}</p>
 
-          {activeSection === 'documents' && (
-            <section className="panel-student panel-documents documents-tab-section">
-              <div className="section-title">
-                <i className="fas fa-file-upload"></i>
-                <span>{t('my_documents')}</span>
-              </div>
-              <p className="documents-hint">{t('documents_hint')}</p>
-
-              <label id="documentUploadArea" className={`document-upload-area ${uploadingDocument ? 'uploading' : ''}`} htmlFor="documentFileInput">
+                <label id="documentUploadArea" className={`document-upload-area ${uploadingDocument ? 'uploading' : ''}`} htmlFor="documentFileInput">
                 <input
                   type="file"
                   id="documentFileInput"
@@ -952,21 +1001,35 @@ export default function StudentDashboard() {
                   })}
                 </div>
               )}
+              </div>
+              )}
             </section>
           )}
           {activeSection === 'records' && (
-            <section className="panel-student panel-records">
+            <section className="panel-student panel-records" aria-label={t('tab_records')}>
               <div className="records-container">
-                <div className="records-section">
-                  <div className="records-section-title">
+                <header className="records-page-header">
+                  <h2 className="records-page-title">
+                    <i className="fas fa-clipboard-list"></i>
+                    <span>{t('tab_records')}</span>
+                  </h2>
+                  <p className="records-page-subtitle">{t('records_subtitle')}</p>
+                </header>
+
+                <div className="records-section records-section-exams">
+                  <div className="records-section-header">
                     <i className="fas fa-graduation-cap"></i>
                     <span>{t('exam_history')}</span>
+                    {myQuizResults.length > 0 && (
+                      <span className="records-section-count">{myQuizResults.length}</span>
+                    )}
                   </div>
 
                   {myQuizResults.length === 0 ? (
-                    <div className="records-empty">
-                      <i className="fas fa-history"></i>
+                    <div className="records-empty records-empty-exams">
+                      <i className="fas fa-file-alt"></i>
                       <p>{t('no_exam_records')}</p>
+                      <span className="records-empty-hint">{t('no_exam_records_hint')}</span>
                     </div>
                   ) : (
                     <div className="records-exam-list">
@@ -976,62 +1039,102 @@ export default function StudentDashboard() {
                         .map((result: any) => {
                           const quiz = quizzes.find((item: any) => item.id === result.quizId);
                           const status = result.passed ? 'passed' : 'failed';
-
                           const pendingReview = (result as any).status === 'pending_review';
                           const timeTaken = (result as any).timeTaken;
+                          const pct = result.percentage ?? 0;
                           return (
-                            <div key={result.id} className="record-exam-item">
-                              <div className="record-exam-main">
+                            <article key={result.id} className="record-exam-card">
+                              <div className="record-exam-card-header">
                                 <span className="record-exam-title">{quiz?.title || t('unknown_quiz')}</span>
-                                <span className="record-exam-date">{formatShortDate(result.submittedAt, useHijri)}</span>
+                                <time className="record-exam-date" dateTime={result.submittedAt}>
+                                  {formatShortDate(result.submittedAt, useHijri)}
+                                </time>
                               </div>
-                              <div className="record-exam-details">
-                                {timeTaken != null && (
-                                  <span className="record-time">{typeof timeTaken === 'number' ? `${Math.floor(timeTaken / 60)}m ${timeTaken % 60}s` : timeTaken}</span>
+                              <div className="record-exam-card-body">
+                                <div className="record-exam-score-row">
+                                  <span className="record-exam-score-value" aria-label={`Score: ${pct}%`}>
+                                    <span className={`record-score ${status}`}>{pct}%</span>
+                                    <span className="record-score-fraction">{result.score ?? 0}/{result.totalMarks ?? 0}</span>
+                                  </span>
+                                  <span className={`record-badge ${pendingReview ? 'pending' : status}`}>
+                                    {pendingReview ? t('pending_review') : (result.passed ? t('passed') : t('failed'))}
+                                  </span>
+                                </div>
+                                {pct < 100 && (
+                                  <div className="record-exam-score-bar" role="presentation">
+                                    <div className="record-exam-score-fill" style={{ width: `${Math.min(100, pct)}%` }} data-status={status} />
+                                  </div>
                                 )}
-                                <span className={`record-score ${status}`}>{result.percentage || 0}%</span>
-                                <span className={`record-badge ${pendingReview ? 'pending' : status}`}>{pendingReview ? t('pending_review') : (result.passed ? t('passed') : t('failed'))}</span>
-                                <span className="record-time">{result.score || 0}/{result.totalMarks || 0}</span>
+                                {timeTaken != null && (
+                                  <p className="record-exam-meta">
+                                    <i className="fas fa-clock"></i>
+                                    <span>{typeof timeTaken === 'number' ? `${Math.floor(timeTaken / 60)}m ${timeTaken % 60}s` : timeTaken}</span>
+                                  </p>
+                                )}
                               </div>
-                            </div>
+                            </article>
                           );
                         })}
                     </div>
                   )}
                 </div>
 
-                <div className="records-section">
-                  <div className="records-section-title">
-                    <i className="fas fa-calendar-day"></i>
+                <div className="records-section records-section-daily">
+                  <div className="records-section-header">
+                    <i className="fas fa-calendar-check"></i>
                     <span>{t('daily_completion_history')}</span>
                   </div>
 
                   {dailyTasks.length === 0 ? (
-                    <div className="records-empty records-empty-small">
+                    <div className="records-empty records-empty-daily">
                       <i className="fas fa-calendar-day"></i>
                       <p>{t('no_daily_records')}</p>
+                      <span className="records-empty-hint">{t('no_daily_records_hint')}</span>
                     </div>
                   ) : (
-                    <div className="records-daily-grid">
-                      {dailyTasks.map((task: any) => (
-                        <div key={task.id} className="record-daily-task">
-                          <div className="record-daily-title">{task.title}</div>
-                          <div className="record-daily-days">
-                            {lastSevenDays.map((dateString) => {
-                              const completed = task.completedBy?.[studentId!]?.date === dateString;
-                              const labelDate = new Date(dateString + 'T12:00:00');
-                              const dayName = labelDate.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { weekday: 'short' }).substring(0, 2);
-                              const short = formatDateDisplayShort(labelDate, useHijri);
-
-                              return (
-                                <span key={`${task.id}-${dateString}`} className={`record-day ${completed ? 'completed' : ''}`} title={formatDateDisplay(labelDate, {}, useHijri)}>
-                                  {dayName} {short}
-                                </span>
-                              );
-                            })}
-                          </div>
+                    <div className="records-daily-wrap">
+                      <div className="records-daily-header-row">
+                        <span className="records-daily-header-task">{t('task')}</span>
+                        <div className="records-daily-header-days" aria-hidden="true">
+                          {lastSevenDays.map((dateString) => {
+                            const labelDate = new Date(dateString + 'T12:00:00');
+                            const dayName = labelDate.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { weekday: 'short' });
+                            return (
+                              <span key={dateString} className="records-daily-day-label" title={formatDateDisplay(labelDate, {}, useHijri)}>
+                                {dayName}
+                              </span>
+                            );
+                          })}
                         </div>
-                      ))}
+                        <span className="records-daily-header-done">{t('done')}</span>
+                      </div>
+                      {dailyTasks.map((task: any) => {
+                        const completedCount = lastSevenDays.filter(
+                          (d) => task.completedBy?.[studentId!]?.date === d
+                        ).length;
+                        return (
+                          <div key={task.id} className="record-daily-row">
+                            <div className="record-daily-task-name" title={task.title}>{task.title}</div>
+                            <div className="record-daily-cells">
+                              {lastSevenDays.map((dateString) => {
+                                const completed = task.completedBy?.[studentId!]?.date === dateString;
+                                const labelDate = new Date(dateString + 'T12:00:00');
+                                return (
+                                  <span
+                                    key={`${task.id}-${dateString}`}
+                                    className={`record-day-cell ${completed ? 'completed' : ''}`}
+                                    title={formatDateDisplay(labelDate, {}, useHijri)}
+                                    aria-label={completed ? t('completed') : t('not_completed')}
+                                  >
+                                    {completed ? <i className="fas fa-check"></i> : '—'}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                            <span className="record-daily-count">{completedCount}/7</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -1215,15 +1318,8 @@ export default function StudentDashboard() {
               onClick={() => handleSectionChange('messages')}
             >
               <i className="fas fa-comments"></i>
-              <span>{t('messages')}</span>
+              <span>{t('messages_and_documents')}</span>
               {unreadMessages > 0 && <span id="msgUnreadDotNav" className="nav-unread-dot" style={{ display: 'block' }}></span>}
-            </button>
-            <button
-              className={`bottom-nav-item ${activeSection === 'documents' ? 'active' : ''}`}
-              onClick={() => handleSectionChange('documents')}
-            >
-              <i className="fas fa-file-upload"></i>
-              <span>{t('nav_documents')}</span>
             </button>
             <button
               className={`bottom-nav-item ${activeSection === 'records' ? 'active' : ''}`}

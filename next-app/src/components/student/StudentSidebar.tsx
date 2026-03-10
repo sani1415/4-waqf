@@ -27,8 +27,7 @@ const navItems: NavItem[] = [
   { id: 'today', icon: 'fa-calendar-day', label: 'today', section: 'today' },
   { id: 'tasks', icon: 'fa-clipboard-list', label: 'tasks', section: 'tasks' },
   { id: 'exams', icon: 'fa-graduation-cap', label: 'nav_exams', section: 'exams' },
-  { id: 'messages', icon: 'fa-comments', label: 'messages', section: 'messages' },
-  { id: 'documents', icon: 'fa-file-upload', label: 'nav_documents', section: 'documents' },
+  { id: 'messages', icon: 'fa-comments', label: 'messages_and_documents', section: 'messages' },
   { id: 'records', icon: 'fa-history', label: 'tab_records', section: 'records' },
   { id: 'profile', icon: 'fa-user', label: 'profile', section: 'profile' },
 ];
