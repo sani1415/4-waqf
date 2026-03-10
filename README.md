@@ -1,244 +1,167 @@
-# Task Management System - Waqf
+# Waqf Task Management System
 
-A web application for managing student tasks with real-time progress tracking. **The default app is the Next.js app** (`next-app/`), deployed to **https://waqful-madinah.web.app/**.
+A web and mobile app for managing student tasks, messages, exams, and documents. Built with Next.js; deployed to **https://waqful-madinah.web.app**. Android app is built with Capacitor.
 
-## 🌟 Features
+## Features
 
-### For Teachers
-- **Dashboard Overview**: View all students' progress at a glance
-- **Task Management**: Create individual or group tasks
-- **Student Management**: Add, view, and manage students
-- **Analytics**: Track completion rates and task distribution
-- **Real-time Progress Bars**: Visual representation of each student's progress
+### Teachers
+- Dashboard with student progress, task management, and analytics
+- Student management (add, view, reset PIN/data)
+- Messages and document review
+- Exams and quiz results
 
-### For Students
-- **Personal Dashboard**: View assigned tasks and completion status
-- **Task Completion**: Simple checkbox interface to mark tasks as complete
-- **Progress Tracking**: See your overall completion percentage
-- **Deadline Tracking**: Visual indicators for upcoming and overdue tasks
-- **Search Functionality**: Quickly find your name from the student list
+### Students
+- Personal dashboard, task completion, progress tracking
+- Messages and document upload
+- Exam attempts and history
 
-## 🚀 Quick Start
+---
 
-### Run the app (Next.js – default)
+## Quick Start (development)
+
+From the **project root**:
 
 ```bash
 cd next-app
 npm install
 npm run dev
 ```
-Then open **http://localhost:3000**. This is what is deployed to https://waqful-madinah.web.app/.
 
-### Deploy to Firebase Hosting
+Open **http://localhost:3000**.
 
-From the **repo root**:
+---
+
+## Deploy (Firebase Hosting)
+
+Deploy the web app from the **repository root** (not inside `next-app/`):
 
 ```bash
 npm run deploy
 ```
 
-This runs `npm run build:next` (builds the Next app into `next-app/out`) then deploys `next-app/out` to Firebase Hosting. Your live site will serve the Next.js app.
+This will:
+1. Run `npm run build:next` – builds the Next.js app and outputs static files to `next-app/out/`
+2. Run `firebase deploy --only hosting` – uploads `next-app/out/` to Firebase Hosting
 
-### Old app (archived)
-
-The previous HTML/JS/CSS app is in **`archive-old-app/`** for reference. It is no longer deployed or run by default.
-
----
-
-## 📂 What’s in the repo root?
-
-| Item | Purpose |
-|------|--------|
-| **next-app/** | **The new application** (Next.js). All app code, UI, and logic live here. Run `npm run dev` and deploy from here. |
-| **archive-old-app/** | Archived old HTML/JS/CSS app (moved from root). Not deployed. |
-| **firebase.json**, **.firebaserc** | Firebase project config. Hosting serves **next-app/out** after `npm run deploy`. |
-| **firestore.rules**, **firestore.indexes.json** | Firestore security rules and indexes (used by the Next app when it uses Firestore). |
-| **storage.rules**, **database.rules.json** | Firebase Storage and Realtime Database rules (if you use them). |
-| **functions/** | Firebase Cloud Functions (optional; not required for the current Next.js hosting setup). |
-| **package.json** (root) | Scripts: `build:next` (build Next app), `deploy` (Firebase Hosting). Root **node_modules** is only for the Firebase CLI when you run `npm run deploy`. |
-| **0-aye_bay/** | Your other Next.js application project (separate from the waqf app). |
-| **.firebase/**, **.github/** | Firebase and GitHub metadata. |
-| **docs/**, **templates/** | Your docs or templates. Not part of the app. |
-| **README.md** | This file. |
-
-**Summary:** The app deployed to **waqful-madinah.web.app** is **next-app/**. Root no longer has `public/`, `scripts/`, or `src/` (removed as unused). Run `npm install` in **next-app** to develop; run `npm install` at root only if you need `npm run deploy`.
-
-## 📖 How to Use
-
-### Landing Page
-1. Open `index.html` in your browser
-2. Choose your role:
-   - **Teacher**: Access the teacher dashboard
-   - **Student**: View student list and select your name
-
-### Teacher Dashboard
-
-#### Creating Tasks
-1. Click "Create Task" in the sidebar
-2. Fill in task details (title, description, type, assign to students, deadline)
-3. Click "Create Task"
-
-#### Managing Students
-1. Click "Students" in the sidebar
-2. Click "Add Student" to add new students
-3. View student cards with their progress
-
-#### Viewing Analytics
-1. Click "Analytics" in the sidebar
-2. View overall completion rate and task distribution
-
-### Student Experience
-
-1. From the landing page, click "Student"
-2. Use the search box to find your name
-3. Click on your name card to enter your dashboard
-4. Click the checkbox next to a task to mark it complete
-
-## 📂 File structure (current)
-
-```
-waqf/
-├── next-app/               # ← App deployed to waqful-madinah.web.app (Next.js)
-│   ├── src/
-│   ├── out/                # Generated by npm run build (deployed to Firebase)
-│   └── package.json
-├── archive-old-app/        # Old HTML/JS/CSS app (archived)
-├── 0-aye_bay/              # Your other Next.js project
-├── firebase.json           # Firebase config (hosting points to next-app/out)
-├── firestore.rules         # Firestore rules (used by Next app)
-├── package.json            # Root scripts: build:next, deploy (node_modules = Firebase CLI only)
-└── functions/              # Optional Cloud Functions
-```
-
-## 💾 Data Storage
-
-The app supports two storage backends:
-
-| Storage | Use case |
-|---------|----------|
-| **Firebase** (default) | Production – cloud sync, multi-device |
-| **localStorage** | Offline, local testing |
-
-### Switch storage
-
-Edit `js/storage/config.js`:
-```javascript
-const DEFAULT_STORAGE_TYPE = 'firebase';   // or 'localStorage'
-
-## 🛠️ Customization
-
-### Colors
-Edit `css/common.css`:
-```css
-:root {
-    --primary-soft: #7B9EBD;
-    --secondary-soft: #B8A5D6;
-    --success-soft: #88B68D;
-    /* ... */
-}
-```
-
-### Sample data
-Edit `addSampleData()` in `js/data-manager.js`.
-
-## 🌐 Browser Support
-
-Chrome, Firefox, Safari, Edge, Opera. Requires localStorage support.
-
-## 📱 Responsive Breakpoints
-
-- **Desktop**: 1024px+
-- **Tablet**: 768px–1023px
-- **Mobile**: &lt; 768px
-
-## 👨‍💻 Technical Details
-
-- **Frontend**: Vanilla JavaScript (ES6+)
-- **Styling**: CSS3 with CSS Variables
-- **Icons**: Font Awesome 6.4.0
-- **Storage**: localStorage or Firebase Firestore
-
----
-
-**Bismillah** – Built with care for educational purposes 📚✨
-
-
-
-```
-
-### Firebase setup
-
-1. Create project at [firebase.google.com](https://firebase.google.com)
-2. Enable **Firestore** Database
-3. Enable **Storage** (for exam uploads and documents)
-4. Open `js/storage/firebase-config.js` and paste your config
-
-### Firebase Storage CORS (for Download button)
-
-If the **Download** button opens a new tab instead of downloading the file, configure CORS on your Storage bucket:
-
-1. Install [gsutil](https://cloud.google.com/storage/docs/gsutil_install)
-2. Run: `gsutil cors set firebase-storage-cors.json gs://YOUR-PROJECT-ID.appspot.com`
-3. Use the `firebase-storage-cors.json` file in this project root
-
-### Key config files
-
-| File | Purpose |
-|------|---------|
-| `js/storage/config.js` | Switch storage backend |
-| `js/storage/firebase-config.js` | Firebase credentials |
-
-## 🔥 Firebase CLI Commands
-
-All commands run from the project root.
-
-### Deploy
-
-| Command | What it does |
-|---------|--------------|
-| `firebase deploy --only hosting` | Deploy web app (builds Next app then deploys **next-app/out**) |
-| `firebase deploy --only firestore` | Deploy Firestore rules and indexes |
-| `firebase deploy` | Deploy everything |
-
-### Project
-
-| Command | What it does |
-|---------|--------------|
-| `firebase use` | Show current project |
-| `firebase use waqful-madinah` | Switch to project |
-| `firebase use --add` | Add a project and set as default |
-| `firebase projects:list` | List all projects |
-
-### Apps
-
-| Command | What it does |
-|---------|--------------|
-| `firebase apps:list` | List apps in current project |
-| `firebase apps:create WEB waqf-web` | Create a new web app |
-| `firebase apps:sdkconfig WEB <appId>` | Print web app SDK config |
-
-### Emulators (local testing)
-
-| Command | What it does |
-|---------|--------------|
-| `firebase emulators:start --only hosting` | Run Hosting emulator |
-| `firebase emulators:start --only firestore` | Run Firestore emulator |
-
-### npm scripts
-
-| Command | What it does |
-|---------|--------------|
-| `npm run build:next` | Build Next app into **next-app/out** |
-| `npm run deploy` | Build Next app + deploy to Firebase Hosting |
-| `npm run serve` | Local server on port 8000 (Python) |
-
-### Migrate to another project
-
-```bash
-firebase use <new-project-id>
-# Update js/storage/firebase-config.js with new config
-# If you have a Firestore migration script, run it from repo root
-firebase deploy --only hosting
-```
+**Requirements:**
+- Node.js and npm
+- Firebase CLI: `npm install -g firebase-tools`
+- Logged in: `firebase login`
+- Project set via `.firebaserc` and `firebase.json` at repo root
 
 **Live URL:** https://waqful-madinah.web.app
+
+### Other Firebase commands (from repo root)
+
+| Command | Purpose |
+|--------|--------|
+| `firebase deploy --only firestore` | Deploy Firestore rules and indexes |
+| `firebase deploy` | Deploy hosting + Firestore |
+| `firebase use` | Show current project |
+| `npm run build:next` | Only build Next app to `next-app/out/` (no deploy) |
+
+---
+
+## Prepare & run Android app
+
+The Android app is the same Next.js app wrapped with **Capacitor**. Build the web app, then sync and open in Android Studio.
+
+### One-time setup
+
+1. **Install dependencies and add Android platform** (if not already):
+
+   ```bash
+   cd next-app
+   npm install
+   npx cap add android
+   ```
+
+2. **Firebase (optional)** – If you use Firebase (e.g. FCM), add `google-services.json` to `next-app/android/app/` (from Firebase Console → Project settings → Your apps → Android app).
+
+### Build and open Android project
+
+From **next-app/**:
+
+```bash
+cd next-app
+npm run build
+npx cap sync
+npx cap open android
+```
+
+Or use the shortcut:
+
+```bash
+cd next-app
+npm run android
+```
+
+(`npm run android` = build + sync + open Android Studio.)
+
+### Build a release APK/AAB in Android Studio
+
+1. Open the Android project: `next-app/android` (via `npx cap open android`).
+2. **Build → Generate Signed Bundle / APK**.
+3. Create or choose a keystore, then build **Android App Bundle (AAB)** for Play Store or **APK** for direct install.
+
+### After changing the web app
+
+Whenever you change the Next.js app and want to see it in the Android app:
+
+```bash
+cd next-app
+npm run build
+npx cap sync
+```
+
+Then run the app again from Android Studio (or `npx cap open android` and run from there).
+
+---
+
+## Repository layout
+
+| Path | Purpose |
+|------|--------|
+| **next-app/** | Main app (Next.js). All app code and UI. Run `npm run dev` here; deploy from root with `npm run deploy`. |
+| **next-app/out/** | Static export output (created by `npm run build`). Used by Firebase Hosting and Capacitor. |
+| **next-app/android/** | Capacitor Android project. Open in Android Studio after `cap sync`. |
+| **firebase.json**, **.firebaserc** | Firebase project and hosting config (hosting serves `next-app/out`). |
+| **firestore.rules**, **firestore.indexes.json** | Firestore rules and indexes. |
+| **package.json** (root) | Scripts: `build:next`, `deploy`. Root `node_modules` is for Firebase CLI. |
+| **archive-old-app/** | Old HTML/JS app (archived). Not deployed. |
+
+---
+
+## App routes (Next.js)
+
+- `/` – Landing
+- `/teacher/dashboard` – Teacher dashboard
+- `/teacher/messages` – Teacher messages
+- `/teacher/exams` – Exams
+- `/teacher/student?id=<id>` – Student detail
+- `/student/dashboard` – Student dashboard
+- `/student/chat` – Student chat
+- `/student/exams` – Student exams
+
+---
+
+## Auth (defaults)
+
+- **Teacher:** ID `teacher`, PIN `5678`
+- **Student:** ID = student’s `studentId`, PIN from student record (default `1234`)
+
+---
+
+## Data (Firebase)
+
+- **Firestore:** `students`, `tasks`, `messages`, `quizzes`, `quizResults`, `submittedDocuments`
+- **Storage:** Used for document uploads
+
+---
+
+**Bismillah** – built for educational use.
+
+
+npm run android
+npm run dev
+npm run deploy
