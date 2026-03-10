@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/lib/auth-context';
+import { PushRegistration } from '@/lib/push-registration';
 import '@/styles/common.css';
 import '@/styles/landing.css';
 
@@ -23,6 +24,7 @@ export default function RootLayout({
       </head>
       <body>
         <AuthProvider>
+          <PushRegistration />
           {children}
         </AuthProvider>
       </body>

@@ -1,32 +1,76 @@
 /**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ * Cloud Functions: send push notifications when a new message or document is created.
+ * Requires FCM tokens stored in Firestore (fcmTokens) by the Capacitor Android app.
  */
 
-const {setGlobalOptions} = require("firebase-functions");
-const {onRequest} = require("firebase-functions/https");
+const {onDocumentCreated} = require("firebase-functions/v2/firestore");
+const {setGlobalOptions} = require("firebase-functions/v2");
 const logger = require("firebase-functions/logger");
+const admin = require("firebase-admin");
 
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
-setGlobalOptions({ maxInstances: 10 });
+admin.initializeApp();
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+setGlobalOptions({maxInstances: 10});
 
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+const FCM_COLLECTION = "fcmTokens";
+
+async function getTokensForTeacher() {
+  const snap = await admin.firestore().collection(FCM_COLLECTION)
+    .where("role", "==", "teacher")
+    .get();
+  return snap.docs.map((d) => d.data().token).filter(Boolean);
+}
+
+async function getTokensForStudent(studentId) {
+  const snap = await admin.firestore().collection(FCM_COLLECTION)
+    .where("role", "==", "student")
+    .where("studentId", "==", studentId)
+    .get();
+  return snap.docs.map((d) => d.data().token).filter(Boolean);
+}
+
+async function sendToTokens(tokens, title, body) {
+  if (!tokens.length) return;
+  const messaging = admin.messaging();
+  for (const token of tokens) {
+    try {
+      await messaging.send({
+        token,
+        notification: {title, body},
+        android: {priority: "high"},
+      });
+    } catch (e) {
+      logger.warn("FCM send failed for token", e.message);
+    }
+  }
+}
+
+exports.notifyOnNewMessage = onDocumentCreated("messages/{messageId}", async (event) => {
+  const data = event.data?.data();
+  if (!data) return;
+  const sender = (data.sender || "").toLowerCase();
+  const studentId = data.studentId;
+  const text = (data.text || data.message || "").toString().slice(0, 80);
+  const fromLabel = sender === "teacher" ? "Teacher" : "Student";
+
+  if (sender === "student") {
+    const tokens = await getTokensForTeacher();
+    await sendToTokens(tokens, "New message", `${fromLabel}: ${text || "New message"}`);
+  } else if (sender === "teacher" && studentId) {
+    const tokens = await getTokensForStudent(studentId);
+    await sendToTokens(tokens, "New message", `${fromLabel}: ${text || "New message"}`);
+  }
+});
+
+exports.notifyOnNewDocument = onDocumentCreated("submittedDocuments/{docId}", async (event) => {
+  const data = event.data?.data();
+  if (!data) return;
+  const studentName = data.studentName || "A student";
+  const fileName = data.fileName || "a document";
+  const tokens = await getTokensForTeacher();
+  await sendToTokens(
+    tokens,
+    "New document",
+    `${studentName} uploaded: ${fileName}`
+  );
+});

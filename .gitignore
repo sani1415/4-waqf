@@ -72,3 +72,17 @@ node_modules/
 # Edit only css/, js/, pages/, index.html in the root. Never edit public/ manually.
 /public
 /public/
+
+# Android / Capacitor
+# Ignore the whole native Android project (regenerate with: cd next-app && npx cap add android)
+# Remove the line below if you want to commit the Android project to the repo.
+next-app/android/
+
+# Uncomment to keep google-services.json out of git (each dev adds their own):
+# next-app/android/app/google-services.json
+
+# APKs and build artifacts
+*.apk
+*.aab
+.gradle/
+**/local.properties
