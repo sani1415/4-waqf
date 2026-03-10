@@ -162,6 +162,8 @@ Then run the app again from Android Studio (or `npx cap open android` and run fr
 **Bismillah** – built for educational use.
 
 
-npm run android
+
 npm run dev
 npm run deploy
+cd next-app
+npm run android
