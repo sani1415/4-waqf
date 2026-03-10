@@ -244,13 +244,12 @@ export default function TeacherMessages() {
         />
 
         <div className="messages-container content-with-bottom-nav">
-          <div className="messages-header">
-            <h2>{t('student_conversations')}</h2>
-            <p>{t('click_student_to_chat')}</p>
-          </div>
-
           <div className="messaging-container">
             <div className={`chat-list ${selectedStudentId ? 'hidden-mobile' : ''}`}>
+              <div className="chat-list-inner-header">
+                <h2>{t('student_conversations')}</h2>
+                <p>{t('click_student_to_chat')}</p>
+              </div>
               <div className="search-box">
                 <i className="fas fa-search"></i>
                 <input

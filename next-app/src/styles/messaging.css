@@ -885,17 +885,22 @@ body:has(.chat-container) {
 @media (max-width: 768px) {
     .messaging-container {
         position: relative;
+        /* Ensure container has height so absolute child (student list) is visible */
+        min-height: 280px;
     }
 
     .chat-list {
         position: absolute;
         inset: 0;
         width: 100%;
-        z-index: 10;
+        z-index: 11;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
     }
 
     .chat-list.hidden-mobile {
-        display: none;
+        display: none !important;
     }
 
     .chat-area {
@@ -906,7 +911,7 @@ body:has(.chat-container) {
     }
 
     .chat-area.hidden-mobile {
-        display: none;
+        display: none !important;
     }
 
     .chat-area .chat-header .back-btn {
@@ -999,9 +1004,10 @@ body:has(.chat-container) {
 }
 
 @media (max-width: 768px) {
+    /* No extra 4.5rem here – messages-container already has padding-bottom for bottom nav */
     .message-input.teacher-message-form {
         padding: 0.6rem 1rem;
-        padding-bottom: calc(0.6rem + 4.5rem + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px));
     }
     .message-input.teacher-message-form input {
         padding: 0.6rem 1rem;
@@ -1029,24 +1035,38 @@ body:has(.chat-container) {
     background: linear-gradient(180deg, #f0f4f8 0%, #e6ecf2 100%);
 }
 
-.teacher-page .messages-header {
+/* Header inside the conversation (chat list) panel – no separate top block */
+.chat-list-inner-header {
     flex-shrink: 0;
-    margin-bottom: 1rem;
-    padding: 0.75rem 0;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    background: white;
 }
 
-.teacher-page .messages-header h2 {
-    font-size: 1.35rem;
+.chat-list-inner-header h2 {
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin: 0 0 0.25rem 0;
+    margin: 0 0 0.2rem 0;
     letter-spacing: -0.02em;
 }
 
-.teacher-page .messages-header p {
-    font-size: 0.9rem;
+.chat-list-inner-header p {
+    font-size: 0.85rem;
     color: var(--text-secondary);
     margin: 0;
+}
+
+.teacher-page .chat-list-inner-header {
+    padding: 0.85rem 1rem;
+}
+
+.teacher-page .chat-list-inner-header h2 {
+    font-size: 1.15rem;
+}
+
+.teacher-page .chat-list-inner-header p {
+    font-size: 0.8rem;
 }
 
 .teacher-page .messaging-container {
@@ -1266,11 +1286,20 @@ body:has(.chat-container) {
 }
 
 @media (max-width: 768px) {
+    /* So the student list is visible: give messaging area a real height on mobile */
     .teacher-page .messages-container {
         padding: 0.5rem 0.6rem;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
     }
     .teacher-page .messaging-container {
         border-radius: 12px;
+        flex: 1;
+        min-height: 0;
+        /* Fallback so student list panel always has visible height even if flex chain fails */
+        min-height: min(60vh, calc(100vh - 220px));
     }
     .teacher-page .chat-list-item.active {
         border-left-width: 3px;
