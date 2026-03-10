@@ -118,6 +118,98 @@ Then run the app again from Android Studio (or `npx cap open android` and run fr
 
 ---
 
+## Push notifications (Android)
+
+When a student sends a message or uploads a document, teachers get a push notification on the Android app (and vice versa for teacher → student messages). This uses **Firebase Cloud Messaging (FCM)** and **Cloud Functions**.
+
+### Checks that were run
+
+| Check | Result |
+|-------|--------|
+| **Firebase project** | `waqful-madinah` (current) ✓ |
+| **Cloud Functions** | `notifyOnNewMessage` and `notifyOnNewDocument` are **deployed** ✓ |
+| **App ID vs google-services.json** | Both use `com.waqful.madinah` ✓ |
+| **Android** | `firebase-messaging` dependency and `POST_NOTIFICATIONS` permission present ✓ |
+| **Firestore fcmTokens** | Must be checked in Firebase Console (see below). |
+
+### Verify FCM tokens (Firebase Console)
+
+1. Open [Firebase Console](https://console.firebase.google.com) → project **waqful-madinah**.
+2. Go to **Firestore Database** → **Data**.
+3. Open the **fcmTokens** collection.
+4. After opening the **Android app**, logging in, and allowing notifications, you should see at least one document per device (with `role`, `platform: "android"`, and `token`).  
+   If **fcmTokens** is empty, the device is not registering; ensure the app was built from this project and notifications are allowed.
+
+### Deploy or update Cloud Functions
+
+From the **repository root**:
+
+```bash
+firebase deploy --only functions
+```
+
+### Optional: list FCM tokens from your machine
+
+From the **functions** folder, with [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials) set (e.g. `gcloud auth application-default login`):
+
+```bash
+cd functions
+node check-fcm-tokens.js
+```
+
+---
+
+## Custom in-app updater (APK users)
+
+When users install the app from an APK (not Play Store), the app can check for a new version and show an **“Update available”** dialog with a **Download** button. No manual APK sharing needed after the first install.
+
+### How it works
+
+- On launch (Android only), the app reads Firestore document **`appUpdates/android`**.
+- If the document’s **`versionCode`** is greater than the installed app’s version code, a modal appears: **“Update available (version X)”** with **Download** and **Later**.
+- **Download** opens the **`downloadUrl`** in the browser so the user can download the APK and install it.
+
+### One-time setup
+
+1. **Deploy Firestore rules** (so the app can read `appUpdates` without login):
+
+   ```bash
+   firebase deploy --only firestore
+   ```
+
+2. **Create the Firestore document** (Firebase Console → Firestore → **Start collection** or add document):
+   - Collection ID: **`appUpdates`**
+   - Document ID: **`android`**
+   - Fields (for the **first** release, or leave empty until you publish an update):
+     - `versionCode` (number): same as in `next-app/android/app/build.gradle` (e.g. `1`)
+     - `versionName` (string): e.g. `"1.0"`
+     - `downloadUrl` (string): public URL of the APK (see “Publishing an update” below)
+     - `releaseNotes` (string, optional): short text shown in the dialog
+
+### Publishing an update
+
+1. **Bump version** in `next-app/android/app/build.gradle`:
+   - `versionCode`: increase by 1 (e.g. `1` → `2`)
+   - `versionName`: e.g. `"1.1"`
+
+2. **Build a release APK** in Android Studio (Build → Generate Signed Bundle / APK → APK).
+
+3. **Upload the APK** to Firebase Storage:
+   - Firebase Console → **Storage** → create a folder e.g. **`app-updates/android`**
+   - Upload the APK (e.g. `Waqf-1.1.apk`)
+   - Click the file → **Get download URL** (or make the object **public** and use the object’s URL)
+
+4. **Update Firestore**:
+   - Firestore → **appUpdates** → **android**
+   - Set **`versionCode`** to the new value (e.g. `2`)
+   - Set **`versionName`** (e.g. `"1.1"`)
+   - Set **`downloadUrl`** to the APK URL from step 3
+   - Optionally set **`releaseNotes`**
+
+5. **Rebuild and distribute** the current APK (so it includes the updater logic). From then on, when you publish a newer version (steps 1–4), existing users will see the update dialog and can download the new APK.
+
+---
+
 ## Repository layout
 
 | Path | Purpose |
@@ -154,16 +246,9 @@ Then run the app again from Android Studio (or `npx cap open android` and run fr
 
 ## Data (Firebase)
 
-- **Firestore:** `students`, `tasks`, `messages`, `quizzes`, `quizResults`, `submittedDocuments`
-- **Storage:** Used for document uploads
+- **Firestore:** `students`, `tasks`, `messages`, `quizzes`, `quizResults`, `submittedDocuments`, `fcmTokens` (push), `appUpdates` (in-app updater)
+- **Storage:** Document uploads; optional folder `app-updates/android` for APK files
 
 ---
 
 **Bismillah** – built for educational use.
-
-
-
-npm run dev
-npm run deploy
-cd next-app
-npm run android

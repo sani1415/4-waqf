@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/lib/auth-context';
 import { PushRegistration } from '@/lib/push-registration';
+import { AppUpdateChecker } from '@/components/AppUpdateChecker';
 import '@/styles/common.css';
 import '@/styles/landing.css';
 
@@ -25,6 +26,7 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <PushRegistration />
+          <AppUpdateChecker />
           {children}
         </AuthProvider>
       </body>
