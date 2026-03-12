@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useMessages, useStudents } from '@/hooks/useFirestore';
+import { clearDeviceMode, getDeviceMode, type DeviceMode } from '@/lib/device-mode';
 import { Student } from '@/lib/types';
 
 type LandingMessage = {
@@ -65,6 +66,12 @@ const translations: Record<string, Record<string, string>> = {
     message_priority_teacher: 'Teacher inbox',
     message_priority_student: 'Student inbox',
     no_waiting_messages: 'No waiting messages',
+    student_device_title: 'Shared student device',
+    teacher_device_title: 'Teacher device',
+    student_device_desc: 'This device opens directly to the student list. Each student still signs in with their own PIN.',
+    teacher_device_desc: 'This device stays in teacher mode and opens teacher-first every time.',
+    change_device_mode: 'Change device mode',
+    back_to_role_selection: 'Back to role selection',
   },
   bn: {
     landing_welcome: 'মারহাবা - কাজ ম্যানেজার',
@@ -113,6 +120,12 @@ const translations: Record<string, Record<string, string>> = {
     message_priority_teacher: 'শিক্ষক ইনবক্স',
     message_priority_student: 'ছাত্র ইনবক্স',
     no_waiting_messages: 'এখন কোনো অপেক্ষমান মেসেজ নেই',
+    student_device_title: 'শেয়ারড স্টুডেন্ট ডিভাইস',
+    teacher_device_title: 'শিক্ষক ডিভাইস',
+    student_device_desc: 'এই ডিভাইস সরাসরি ছাত্র তালিকায় যাবে। তবে প্রত্যেক ছাত্র নিজ নিজ পিন দিয়ে আলাদা লগইন করবে।',
+    teacher_device_desc: 'এই ডিভাইস শিক্ষক মোডে থাকবে এবং প্রতিবার teacher-first flow খুলবে।',
+    change_device_mode: 'ডিভাইস মোড পরিবর্তন করুন',
+    back_to_role_selection: 'রোল নির্বাচন পেজে ফিরে যান',
   }
 };
 
@@ -137,6 +150,7 @@ export default function LandingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [studentSearch, setStudentSearch] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [deviceMode, setRememberedDeviceMode] = useState<DeviceMode>('unset');
 
   // Translation function
   const t = (key: string) => translations[lang]?.[key] || key;
@@ -147,6 +161,7 @@ export default function LandingPage() {
     if (savedLang === 'bn' || savedLang === 'en') {
       setLang(savedLang);
     }
+    setRememberedDeviceMode(getDeviceMode());
   }, []);
 
   // Save language
@@ -239,6 +254,18 @@ export default function LandingPage() {
     setLoginError('');
   };
 
+  const resetDeviceMode = () => {
+    clearDeviceMode();
+    setRememberedDeviceMode('unset');
+    setShowModal(false);
+    setLoginRole('teacher');
+    setLoginId('');
+    setLoginPin('');
+    setLoginError('');
+    setStudentSearch('');
+    setSelectedStudentId(null);
+  };
+
   useEffect(() => {
     if (
       showModal &&
@@ -253,6 +280,15 @@ export default function LandingPage() {
       setLoginId(firstStudent.studentId || firstStudent.name || '');
     }
   }, [showModal, loginRole, studentsReady, studentMessagingList, selectedStudentId, loginId]);
+
+  useEffect(() => {
+    if (isLoggedIn || showModal) return;
+    if (deviceMode === 'teacher') {
+      openLoginModal('teacher');
+    } else if (deviceMode === 'student') {
+      openLoginModal('student');
+    }
+  }, [deviceMode, isLoggedIn, showModal]);
 
   const getTeacherCardLabel = (count: number) =>
     `${count} ${t('teacher_messages_waiting')}`;
@@ -269,6 +305,9 @@ export default function LandingPage() {
 
   const modalSubtitle =
     loginRole === 'teacher' ? t('teacher_login_hint') : t('login_priority_hint');
+
+  const rememberedModeDescription =
+    deviceMode === 'teacher' ? t('teacher_device_desc') : t('student_device_desc');
 
   const handleStudentSelect = (student: Student) => {
     setSelectedStudentId(student.id);
@@ -319,7 +358,7 @@ export default function LandingPage() {
 
   return (
     <>
-      <div className="landing-container">
+      <div className={`landing-container ${deviceMode !== 'unset' && !isLoggedIn ? 'landing-container-remembered' : ''}`}>
         <div className="welcome-section">
           <div className="logo-area">
             <i className="fas fa-graduation-cap"></i>
@@ -344,8 +383,21 @@ export default function LandingPage() {
           </div>
           <h1 className="main-title">{t('landing_welcome')}</h1>
           <p className="subtitle">{t('landing_subtitle')}</p>
+          {deviceMode !== 'unset' && !isLoggedIn && (
+            <div className="remembered-device-banner">
+              <div className="remembered-device-banner-head">
+                <i className={`fas ${deviceMode === 'teacher' ? 'fa-chalkboard-teacher' : 'fa-user-graduate'}`}></i>
+                <strong>{deviceMode === 'teacher' ? t('teacher_device_title') : t('student_device_title')}</strong>
+              </div>
+              <p>{rememberedModeDescription}</p>
+              <button type="button" className="remembered-device-reset" onClick={resetDeviceMode}>
+                {t('back_to_role_selection')}
+              </button>
+            </div>
+          )}
         </div>
 
+        {deviceMode === 'unset' && !isLoggedIn ? (
         <div className="selection-cards">
           <div 
             className="role-card teacher-card" 
@@ -411,6 +463,7 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+        ) : null}
 
         <div className="footer-note">
           <p>{t('landing_select_role')}</p>
@@ -428,7 +481,7 @@ export default function LandingPage() {
             <button 
               type="button" 
               className="login-modal-close" 
-              onClick={closeModal}
+              onClick={deviceMode !== 'unset' && !isLoggedIn ? resetDeviceMode : closeModal}
               aria-label="Close"
             >
               <i className="fas fa-times"></i>
@@ -444,6 +497,11 @@ export default function LandingPage() {
                   <div className="student-login-list-header">
                     <h3>{t('student_list_title')}</h3>
                     <p>{t('student_list_hint')}</p>
+                    {deviceMode === 'student' ? (
+                      <button type="button" className="modal-mode-reset" onClick={resetDeviceMode}>
+                        {t('change_device_mode')}
+                      </button>
+                    ) : null}
                   </div>
 
                   <div className="login-form-group">
@@ -467,7 +525,7 @@ export default function LandingPage() {
                     </div>
                   ) : (
                     <div className="student-login-list">
-                      {studentMessagingList.map(({ student, unreadCount, latestTeacherMessage, teacherMessageCount }) => (
+                      {studentMessagingList.map(({ student, unreadCount, latestTeacherMessage }) => (
                         <button
                           key={student.id}
                           type="button"
@@ -571,6 +629,11 @@ export default function LandingPage() {
               </div>
             ) : (
               <form onSubmit={handleLogin}>
+                {deviceMode === 'teacher' ? (
+                  <button type="button" className="modal-mode-reset modal-mode-reset-inline" onClick={resetDeviceMode}>
+                    {t('change_device_mode')}
+                  </button>
+                ) : null}
                 <div className="teacher-login-summary">
                   <div className="teacher-login-summary-icon">
                     <i className="fas fa-inbox"></i>

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { TEACHER_CREDENTIALS, AuthState, Student } from './types';
+import { setDeviceMode } from './device-mode';
 
 interface AuthContextType extends AuthState {
   loginAsTeacher: (id: string, pin: string) => boolean;
@@ -60,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: 'teacher',
       isLoggedIn: true
     });
+    setDeviceMode('teacher');
     setCurrentStudent(null);
     return true;
   };
@@ -81,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       studentId: student.id,
       isLoggedIn: true
     });
+    setDeviceMode('student');
     setCurrentStudent(student);
     return true;
   };

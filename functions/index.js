@@ -29,6 +29,13 @@ async function getTokensForStudent(studentId) {
   return snap.docs.map((d) => d.data().token).filter(Boolean);
 }
 
+async function getGenericTokens() {
+  const snap = await admin.firestore().collection(FCM_COLLECTION)
+    .where("role", "==", "generic")
+    .get();
+  return snap.docs.map((d) => d.data().token).filter(Boolean);
+}
+
 async function sendToTokens(tokens, title, body) {
   if (!tokens.length) return;
   const messaging = admin.messaging();
@@ -52,6 +59,13 @@ exports.notifyOnNewMessage = onDocumentCreated("messages/{messageId}", async (ev
   const studentId = data.studentId;
   const text = (data.text || data.message || "").toString().slice(0, 80);
   const fromLabel = sender === "teacher" ? "Teacher" : "Student";
+  const genericTokens = await getGenericTokens();
+
+  await sendToTokens(
+    genericTokens,
+    "New activity in Waqf",
+    "Open the app to view new messages."
+  );
 
   if (sender === "student") {
     const tokens = await getTokensForTeacher();
@@ -67,7 +81,13 @@ exports.notifyOnNewDocument = onDocumentCreated("submittedDocuments/{docId}", as
   if (!data) return;
   const studentName = data.studentName || "A student";
   const fileName = data.fileName || "a document";
+  const genericTokens = await getGenericTokens();
   const tokens = await getTokensForTeacher();
+  await sendToTokens(
+    genericTokens,
+    "New activity in Waqf",
+    "Open the app to view new updates."
+  );
   await sendToTokens(
     tokens,
     "New document",
