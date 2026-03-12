@@ -14,6 +14,9 @@
     animation: fadeIn 0.8s ease;
     position: relative;
     box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
 }
 
 /* Language switcher: small, centered under the logo */
@@ -42,6 +45,8 @@
 .welcome-section {
     text-align: center;
     margin-bottom: 3rem;
+    max-width: 760px;
+    width: 100%;
 }
 
 .logo-area {
@@ -88,6 +93,7 @@
     gap: 2rem;
     max-width: 800px;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .role-card {
@@ -100,6 +106,41 @@
     box-shadow: var(--shadow-sm);
     position: relative;
     overflow: hidden;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.role-card-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 0.55rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    box-shadow: 0 10px 24px rgba(220, 38, 38, 0.28);
+}
+
+.role-card-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 1rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    background: #FEF2F2;
+    color: #B91C1C;
+    font-size: 0.82rem;
+    font-weight: 600;
+    max-width: 100%;
+    text-align: center;
 }
 
 .role-card::before {
@@ -239,6 +280,7 @@
         justify-content: flex-start;
         min-height: 100vh;
         min-height: 100dvh;
+        overflow-x: hidden;
     }
 
     .landing-container .lang-switcher {
@@ -276,7 +318,7 @@
     .selection-cards {
         grid-template-columns: 1fr;
         gap: 0.6rem;
-        max-width: 320px;
+        max-width: 100%;
         width: 100%;
     }
 
@@ -305,6 +347,23 @@
         font-size: 0.72rem;
         margin-bottom: 0.5rem;
         line-height: 1.3;
+    }
+
+    .role-card-badge {
+        top: 0.75rem;
+        right: 0.75rem;
+        min-width: 1.75rem;
+        height: 1.75rem;
+        font-size: 0.78rem;
+    }
+
+    .role-card-meta {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.72rem;
+        margin-bottom: 0.6rem;
     }
 
     .role-card .card-arrow {
@@ -336,6 +395,9 @@
     justify-content: center;
     z-index: 9999;
     padding: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 .login-modal {
@@ -346,6 +408,9 @@
     width: 100%;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
     position: relative;
+    box-sizing: border-box;
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
 }
 
 .login-modal-close {
@@ -370,6 +435,267 @@
     color: var(--text-primary);
 }
 
+.login-modal-subtitle {
+    margin: -0.5rem 0 1.25rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.teacher-login-summary {
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+    padding: 0.95rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #EFF6FF, #F8FAFC);
+    border: 1px solid #DBEAFE;
+}
+
+.teacher-login-summary-icon {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #DBEAFE;
+    color: #2563EB;
+    flex-shrink: 0;
+}
+
+.teacher-login-summary-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.teacher-login-summary-content strong {
+    color: #1E3A8A;
+    font-size: 0.95rem;
+}
+
+.teacher-login-summary-content span {
+    color: #2563EB;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.teacher-login-summary-content small {
+    color: #64748B;
+    line-height: 1.45;
+}
+
+.login-modal.login-modal-student {
+    max-width: 960px;
+    padding: 1.5rem;
+}
+
+.student-login-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.9fr);
+    gap: 1.25rem;
+    align-items: stretch;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.student-login-list-panel,
+.student-login-form-panel {
+    background: #FAFBFC;
+    border: 1px solid #E5E7EB;
+    border-radius: 14px;
+    padding: 1rem;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.student-login-list-header {
+    margin-bottom: 0.9rem;
+}
+
+.student-login-list-header h3 {
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+}
+
+.student-login-list-header p,
+.student-login-form-hint {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.student-login-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 420px;
+    overflow: auto;
+    padding-right: 0.25rem;
+}
+
+.student-login-row {
+    width: 100%;
+    border: 1px solid #E5E7EB;
+    background: white;
+    border-radius: 12px;
+    padding: 0.9rem;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.student-login-row:hover,
+.student-login-row.active {
+    border-color: var(--primary-soft);
+    box-shadow: 0 10px 22px rgba(59, 130, 246, 0.12);
+    transform: translateY(-1px);
+}
+
+.student-login-row.active {
+    background: linear-gradient(135deg, #F8FBFF, #FFFFFF);
+}
+
+.student-login-row-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.student-login-row-primary {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+}
+
+.student-login-row-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.student-login-row-id {
+    color: #475569;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.14rem 0.46rem;
+    border-radius: 999px;
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.student-login-row-status-badges {
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.student-login-row-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.9rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.student-login-row-status.unread {
+    background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+    color: #1D4ED8;
+}
+
+.student-login-row-side {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.35rem;
+    gap: 0.5rem;
+}
+
+.student-login-row-status-text {
+    font-size: 0.8rem;
+    color: #64748B;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.student-login-row-preview {
+    margin-top: 0.55rem;
+    display: flex;
+    gap: 0.3rem;
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+}
+
+.student-login-row-preview-label {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.student-login-row-preview-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.student-login-empty {
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.student-login-empty i {
+    font-size: 1.8rem;
+    color: var(--primary-soft);
+}
+
+.login-selected-student {
+    margin-bottom: 1rem;
+    padding: 0.8rem 0.9rem;
+    border-radius: 12px;
+    background: #EFF6FF;
+    color: #1D4ED8;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.login-selected-student-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.login-selected-student-id {
+    color: #2563EB;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
 .login-form-group {
     margin-bottom: 1.25rem;
 }
@@ -388,6 +714,7 @@
     border: 1px solid var(--border-color);
     border-radius: 10px;
     font-size: 1rem;
+    box-sizing: border-box;
 }
 
 .login-form-group input:focus {
@@ -424,5 +751,130 @@
 .login-submit-btn:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+    .student-login-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .login-modal.login-modal-student {
+        max-width: 640px;
+    }
+
+    .student-login-list {
+        max-height: 260px;
+    }
+}
+
+@media (max-width: 640px) {
+    .login-modal-overlay {
+        align-items: flex-start;
+        padding: 0.75rem;
+    }
+
+    .login-modal,
+    .login-modal.login-modal-student {
+        width: 100%;
+        max-width: 100%;
+        padding: 1rem;
+        border-radius: 14px;
+        max-height: calc(100dvh - 1.5rem);
+    }
+
+    .login-modal-title {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+        padding-right: 1.5rem;
+    }
+
+    .login-modal-subtitle {
+        margin: -0.35rem 0 1rem;
+        font-size: 0.88rem;
+        line-height: 1.4;
+    }
+
+    .teacher-login-summary {
+        padding: 0.8rem 0.85rem;
+        gap: 0.7rem;
+    }
+
+    .teacher-login-summary-icon {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .student-login-list-panel,
+    .student-login-form-panel {
+        padding: 0.85rem;
+    }
+
+    .student-login-list {
+        max-height: min(38dvh, 320px);
+    }
+
+    .student-login-row {
+        padding: 0.8rem;
+    }
+
+    .student-login-row-main {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.45rem;
+    }
+
+    .student-login-row-primary {
+        width: 100%;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .student-login-row-status-badges {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .student-login-row-side {
+        margin-top: 0.45rem;
+    }
+
+    .student-login-row-status-text {
+        font-size: 0.76rem;
+    }
+
+    .student-login-row-preview {
+        font-size: 0.78rem;
+    }
+
+    .student-login-row-preview-text {
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}
+
+@media (max-width: 420px) {
+    .landing-container {
+        padding-left: 0.65rem;
+        padding-right: 0.65rem;
+    }
+
+    .main-title {
+        font-size: 1.15rem;
+    }
+
+    .subtitle {
+        font-size: 0.76rem;
+    }
+
+    .role-card {
+        padding: 0.75rem 0.85rem;
+    }
+
+    .student-login-list-header h3 {
+        font-size: 0.98rem;
+    }
 }
 
