@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { jsPDF } from 'jspdf';
 import { useAuth } from '@/lib/auth-context';
 import {
   useStudents,
@@ -30,6 +31,16 @@ type SubmittedDocumentLike = {
   forReview?: boolean;
   markedForReview?: boolean;
   category?: MessageCategory;
+};
+
+type UploadDraft = {
+  files: File[];
+  title: string;
+};
+
+type SingleImageChoice = {
+  file: File;
+  title: string;
 };
 
 function normalizeTaskType(type: string) {
@@ -113,8 +124,12 @@ function StudentDashboardContent() {
   const [messageTabCategory, setMessageTabCategory] = useState<MessageCategory>('general');
   const [filterByCategory, setFilterByCategory] = useState<MessageCategory | 'all' | 'documents_only'>('all');
   const [documentUploadCategory, setDocumentUploadCategory] = useState<MessageCategory | ''>('');
+  const [uploadDraft, setUploadDraft] = useState<UploadDraft | null>(null);
+  const [singleImageChoice, setSingleImageChoice] = useState<SingleImageChoice | null>(null);
+  const [uploadDialogError, setUploadDialogError] = useState('');
   const messageTabTextareaRef = useRef<HTMLTextAreaElement>(null);
   const studentDocumentFileInputRef = useRef<HTMLInputElement>(null);
+  const studentAdditionalImagesInputRef = useRef<HTMLInputElement>(null);
   const MIN_INPUT_ROWS = 1;
   const EXPANDED_ROWS = 4; /* WhatsApp-style: expand when focused */
   const MAX_INPUT_ROWS = 6;
@@ -186,6 +201,106 @@ function StudentDashboardContent() {
 
   const MESSAGE_CATEGORIES: MessageCategory[] = ['general', 'question', 'fortnight_report'];
   const getCategoryLabel = (cat: MessageCategory | undefined) => cat ? t('msg_category_' + cat) : t('msg_category_general');
+  const isImageFile = (file: File) => file.type.startsWith('image/');
+
+  const getBaseFileName = (name: string) => name.replace(/\.[^.]+$/, '').trim();
+
+  const buildNamedFileName = (title: string, file: File, forcePdf = false) => {
+    const cleaned = title.trim().replace(/[\\/:*?"<>|]/g, ' ').replace(/\s+/g, ' ').trim();
+    const extension = forcePdf
+      ? 'pdf'
+      : (() => {
+          const parts = file.name.split('.');
+          return parts.length > 1 ? parts.pop() || '' : '';
+        })();
+    return extension ? `${cleaned}.${extension}` : cleaned;
+  };
+
+  const readFileAsDataUrl = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+
+  const loadImageDimensions = (src: string) =>
+    new Promise<{ width: number; height: number }>((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve({ width: image.naturalWidth || image.width, height: image.naturalHeight || image.height });
+      image.onerror = () => reject(new Error('Failed to load image'));
+      image.src = src;
+    });
+
+  const createPdfFromImages = async (files: File[], title: string) => {
+    const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+
+    for (let index = 0; index < files.length; index += 1) {
+      const dataUrl = await readFileAsDataUrl(files[index]);
+      const { width, height } = await loadImageDimensions(dataUrl);
+      const imageFormat = files[index].type.includes('png') ? 'PNG' : 'JPEG';
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const scale = Math.min(pageWidth / width, pageHeight / height);
+      const renderWidth = width * scale;
+      const renderHeight = height * scale;
+      const x = (pageWidth - renderWidth) / 2;
+      const y = (pageHeight - renderHeight) / 2;
+
+      if (index > 0) pdf.addPage();
+      pdf.addImage(dataUrl, imageFormat, x, y, renderWidth, renderHeight, undefined, 'FAST');
+    }
+
+    const blob = pdf.output('blob');
+    return new File([blob], `${title.trim()}.pdf`, { type: 'application/pdf' });
+  };
+
+  const resetUploadDraft = () => {
+    setUploadDraft(null);
+    setSingleImageChoice(null);
+    setUploadDialogError('');
+  };
+
+  const handleDocumentPickerChange = (fileList?: FileList | null) => {
+    const files = Array.from(fileList || []);
+    if (files.length === 0) return;
+    const defaultTitle =
+      files.length === 1
+        ? getBaseFileName(files[0].name) || 'document'
+        : `${getBaseFileName(files[0].name) || 'submission'} pages`;
+    if (files.length === 1 && isImageFile(files[0])) {
+      setSingleImageChoice({ file: files[0], title: defaultTitle });
+      setUploadDraft(null);
+    } else {
+      setUploadDraft({ files, title: defaultTitle });
+      setSingleImageChoice(null);
+    }
+    setUploadDialogError('');
+  };
+
+  const handleAdditionalImagesChange = (fileList?: FileList | null) => {
+    if (!singleImageChoice) return;
+    const extraFiles = Array.from(fileList || []).filter(isImageFile);
+    if (extraFiles.length === 0) return;
+    setUploadDraft({
+      files: [singleImageChoice.file, ...extraFiles],
+      title: `${singleImageChoice.title} pages`,
+    });
+    setSingleImageChoice(null);
+    setUploadDialogError('');
+  };
+
+  const chooseSingleImageUpload = () => {
+    if (!singleImageChoice) return;
+    setUploadDraft({ files: [singleImageChoice.file], title: singleImageChoice.title });
+    setSingleImageChoice(null);
+    setUploadDialogError('');
+  };
+
+  const chooseMultiImageUpload = () => {
+    if (!singleImageChoice) return;
+    studentAdditionalImagesInputRef.current?.click();
+  };
 
   const student = currentStudent || students.find((s: any) => s.id === studentId);
 
@@ -360,7 +475,9 @@ function StudentDashboardContent() {
         studentId,
         studentName: student?.name || '',
         fileName: file.name,
+        title: getBaseFileName(file.name),
         fileType: file.type || '',
+        mimeType: file.type || '',
         fileSize: file.size,
         fileUrl,
         downloadURL: fileUrl,
@@ -373,6 +490,44 @@ function StudentDashboardContent() {
       alert(t('upload_failed'));
     } finally {
       setUploadingDocument(false);
+    }
+  };
+
+  const confirmDocumentUpload = async () => {
+    if (!uploadDraft) {
+      setUploadDialogError(t('upload_choose_file_first'));
+      return;
+    }
+
+    const title = uploadDraft.title.trim();
+    if (!title) {
+      setUploadDialogError(t('upload_title_required'));
+      return;
+    }
+
+    const files = uploadDraft.files;
+    const allImages = files.every(isImageFile);
+    if (files.length > 1 && !allImages) {
+      setUploadDialogError(t('upload_dialog_invalid_mix'));
+      return;
+    }
+
+    try {
+      let uploadFile: File;
+      if (files.length > 1 && allImages) {
+        uploadFile = await createPdfFromImages(files, title);
+      } else {
+        const sourceFile = files[0];
+        uploadFile = new File([sourceFile], buildNamedFileName(title, sourceFile), {
+          type: sourceFile.type || undefined,
+          lastModified: sourceFile.lastModified,
+        });
+      }
+
+      await handleDocumentUpload(uploadFile, messageTabCategory);
+      resetUploadDraft();
+    } catch (error) {
+      setUploadDialogError(t('upload_failed'));
     }
   };
 
@@ -880,7 +1035,6 @@ function StudentDashboardContent() {
                   <option value="documents_only">{t('documents_only') || 'Documents only'}</option>
                 </select>
               </div>
-
               <div className="messages-tab-area" id="messagesTabArea">
                 {messagesLoading || documentsLoading ? (
                   <div className="loading-state">
@@ -1014,17 +1168,130 @@ function StudentDashboardContent() {
                     ref={studentDocumentFileInputRef}
                     type="file"
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+                    multiple
                     className="student-dashboard-file-input"
                     aria-label="Choose file"
                     onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) void handleDocumentUpload(file, messageTabCategory);
+                      handleDocumentPickerChange(e.target.files);
+                      e.currentTarget.value = '';
+                    }}
+                  />
+                  <input
+                    ref={studentAdditionalImagesInputRef}
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.gif"
+                    multiple
+                    className="student-dashboard-file-input"
+                    aria-label="Choose additional images"
+                    onChange={(e) => {
+                      handleAdditionalImagesChange(e.target.files);
                       e.currentTarget.value = '';
                     }}
                   />
                 </div>
               </div>
             </section>
+          )}
+          {singleImageChoice && (
+            <div className="student-upload-overlay" onClick={() => resetUploadDraft()}>
+              <div className="student-upload-modal student-upload-choice-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="student-upload-modal-header">
+                  <h3>{t('upload_image_choice_title')}</h3>
+                  <button type="button" className="student-upload-close" onClick={() => resetUploadDraft()} aria-label={t('cancel')}>
+                    <i className="fas fa-times"></i>
+                  </button>
+                </div>
+                <p className="student-upload-hint">{t('upload_image_choice_hint')}</p>
+                <div className="student-upload-summary">
+                  <strong>{t('upload_dialog_selected_file')}</strong>
+                  <span>{singleImageChoice.file.name}</span>
+                </div>
+                <div className="student-upload-actions student-upload-actions-stacked">
+                  <button type="button" className="btn-primary student-upload-confirm" onClick={chooseSingleImageUpload}>
+                    <i className="fas fa-image"></i>
+                    <span>{t('upload_image_choice_single')}</span>
+                  </button>
+                  <button type="button" className="btn-secondary student-upload-cancel" onClick={chooseMultiImageUpload}>
+                    <i className="fas fa-file-pdf"></i>
+                    <span>{t('upload_image_choice_multi')}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {uploadDraft && (
+            <div className="student-upload-overlay" onClick={() => resetUploadDraft()}>
+              <div className="student-upload-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="student-upload-modal-header">
+                  <h3>{t('upload_dialog_title')}</h3>
+                  <button type="button" className="student-upload-close" onClick={() => resetUploadDraft()} aria-label={t('cancel')}>
+                    <i className="fas fa-times"></i>
+                  </button>
+                </div>
+                <p className="student-upload-hint">
+                  {uploadDraft.files.length > 1 && uploadDraft.files.every((file) => file.type.startsWith('image/'))
+                    ? t('upload_dialog_hint_multi_image')
+                    : t('upload_dialog_hint_single')}
+                </p>
+                <div className="student-upload-summary">
+                  <strong>
+                    {uploadDraft.files.length > 1 ? t('upload_dialog_selected_files') : t('upload_dialog_selected_file')}
+                  </strong>
+                  <span>
+                    {uploadDraft.files.length > 1
+                      ? `${uploadDraft.files.length} ${t('upload_dialog_files_selected')}`
+                      : uploadDraft.files[0]?.name}
+                  </span>
+                </div>
+                <div className="student-upload-files-list">
+                  {uploadDraft.files.map((file, index) => (
+                    <div key={`${file.name}-${index}`} className="student-upload-file-chip">
+                      <i className={`fas ${file.type.startsWith('image/') ? 'fa-image' : 'fa-file-alt'}`}></i>
+                      <span>{file.name}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="login-form-group">
+                  <label htmlFor="studentUploadTitle">{t('upload_title_label')}</label>
+                  <input
+                    id="studentUploadTitle"
+                    type="text"
+                    value={uploadDraft.title}
+                    onChange={(e) => {
+                      setUploadDraft((current) => current ? { ...current, title: e.target.value } : current);
+                      if (uploadDialogError) setUploadDialogError('');
+                    }}
+                    placeholder={t('upload_title_placeholder')}
+                    autoFocus
+                  />
+                </div>
+                {uploadDialogError ? (
+                  <p className="login-error" style={{ display: 'block' }}>
+                    {uploadDialogError}
+                  </p>
+                ) : null}
+                <div className="student-upload-actions">
+                  <button type="button" className="btn-secondary student-upload-cancel" onClick={() => resetUploadDraft()}>
+                    {t('cancel')}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-primary student-upload-confirm"
+                    onClick={() => void confirmDocumentUpload()}
+                    disabled={uploadingDocument}
+                  >
+                    <i className="fas fa-file-upload"></i>
+                    <span>
+                      {uploadingDocument
+                        ? t('uploading')
+                        : uploadDraft.files.length > 1 && uploadDraft.files.every((file) => file.type.startsWith('image/'))
+                          ? t('upload_dialog_convert_pdf')
+                          : t('upload_dialog_keep_original')}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
           {activeSection === 'records' && (
             <section className="panel-student panel-records" aria-label={t('tab_records')}>
