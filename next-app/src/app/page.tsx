@@ -72,6 +72,10 @@ const translations: Record<string, Record<string, string>> = {
     teacher_device_desc: 'This device stays in teacher mode and opens teacher-first every time.',
     change_device_mode: 'Change device mode',
     back_to_role_selection: 'Back to role selection',
+    continue_as_teacher: 'Continue as teacher',
+    continue_as_student: 'Continue as student',
+    remembered_teacher_hint: 'Only teacher login is shown on this device.',
+    remembered_student_hint: 'Only student login is shown on this device.',
   },
   bn: {
     landing_welcome: 'মারহাবা - কাজ ম্যানেজার',
@@ -126,6 +130,10 @@ const translations: Record<string, Record<string, string>> = {
     teacher_device_desc: 'এই ডিভাইস শিক্ষক মোডে থাকবে এবং প্রতিবার teacher-first flow খুলবে।',
     change_device_mode: 'ডিভাইস মোড পরিবর্তন করুন',
     back_to_role_selection: 'রোল নির্বাচন পেজে ফিরে যান',
+    continue_as_teacher: 'শিক্ষক হিসেবে চালিয়ে যান',
+    continue_as_student: 'ছাত্র হিসেবে চালিয়ে যান',
+    remembered_teacher_hint: 'এই ডিভাইসে শুধু শিক্ষক লগইনই দেখানো হবে।',
+    remembered_student_hint: 'এই ডিভাইসে শুধু ছাত্র লগইনই দেখানো হবে।',
   }
 };
 
@@ -281,15 +289,6 @@ export default function LandingPage() {
     }
   }, [showModal, loginRole, studentsReady, studentMessagingList, selectedStudentId, loginId]);
 
-  useEffect(() => {
-    if (isLoggedIn || showModal) return;
-    if (deviceMode === 'teacher') {
-      openLoginModal('teacher');
-    } else if (deviceMode === 'student') {
-      openLoginModal('student');
-    }
-  }, [deviceMode, isLoggedIn, showModal]);
-
   const getTeacherCardLabel = (count: number) =>
     `${count} ${t('teacher_messages_waiting')}`;
 
@@ -308,6 +307,9 @@ export default function LandingPage() {
 
   const rememberedModeDescription =
     deviceMode === 'teacher' ? t('teacher_device_desc') : t('student_device_desc');
+
+  const rememberedModeHint =
+    deviceMode === 'teacher' ? t('remembered_teacher_hint') : t('remembered_student_hint');
 
   const handleStudentSelect = (student: Student) => {
     setSelectedStudentId(student.id);
@@ -397,6 +399,62 @@ export default function LandingPage() {
           )}
         </div>
 
+        {deviceMode !== 'unset' && !isLoggedIn ? (
+        <div className="selection-cards selection-cards-remembered">
+          {deviceMode === 'teacher' ? (
+            <div
+              className="role-card teacher-card role-card-remembered"
+              onClick={() => openLoginModal('teacher')}
+            >
+              {teacherUnreadCount > 0 && (
+                <span className="role-card-badge" aria-label={getTeacherCardLabel(teacherUnreadCount)}>
+                  {teacherUnreadCount}
+                </span>
+              )}
+              <div className="card-icon">
+                <i className="fas fa-chalkboard-teacher"></i>
+              </div>
+              <h2>{t('continue_as_teacher')}</h2>
+              <p>{rememberedModeHint}</p>
+              {teacherUnreadCount > 0 && (
+                <div className="role-card-meta">
+                  <i className="fas fa-bell"></i>
+                  <span>{getTeacherCardLabel(teacherUnreadCount)}</span>
+                </div>
+              )}
+              <div className="card-arrow">
+                <i className="fas fa-arrow-right"></i>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="role-card student-card role-card-remembered"
+              onClick={() => openLoginModal('student')}
+            >
+              {studentUnreadCount > 0 && (
+                <span className="role-card-badge" aria-label={getStudentCardLabel(studentUnreadCount)}>
+                  {studentUnreadCount}
+                </span>
+              )}
+              <div className="card-icon">
+                <i className="fas fa-user-graduate"></i>
+              </div>
+              <h2>{t('continue_as_student')}</h2>
+              <p>{rememberedModeHint}</p>
+              {studentUnreadCount > 0 && (
+                <div className="role-card-meta">
+                  <i className="fas fa-bell"></i>
+                  <span>{getStudentCardLabel(studentUnreadCount)}</span>
+                </div>
+              )}
+              <div className="card-arrow">
+                <i className="fas fa-arrow-right"></i>
+              </div>
+            </div>
+          )}
+        </div>
+        ) : null}
+
         {deviceMode === 'unset' && !isLoggedIn ? (
         <div className="selection-cards">
           <div 
@@ -466,7 +524,7 @@ export default function LandingPage() {
         ) : null}
 
         <div className="footer-note">
-          <p>{t('landing_select_role')}</p>
+          <p>{deviceMode === 'unset' ? t('landing_select_role') : rememberedModeHint}</p>
         </div>
       </div>
 
@@ -481,7 +539,7 @@ export default function LandingPage() {
             <button 
               type="button" 
               className="login-modal-close" 
-              onClick={deviceMode !== 'unset' && !isLoggedIn ? resetDeviceMode : closeModal}
+              onClick={closeModal}
               aria-label="Close"
             >
               <i className="fas fa-times"></i>

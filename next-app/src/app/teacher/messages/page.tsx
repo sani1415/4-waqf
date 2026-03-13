@@ -56,6 +56,7 @@ export default function TeacherMessages() {
   const [filterByCategory, setFilterByCategory] = useState<MessageCategory | 'all' | 'documents_only'>('all');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const hasOpenedConversationRef = useRef(false);
 
   const MIN_INPUT_ROWS = 1;
   const EXPANDED_ROWS = 4; /* WhatsApp-style: expand when focused so typing is comfortable */
@@ -140,8 +141,17 @@ export default function TeacherMessages() {
   });
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [displayedTimeline]);
+    hasOpenedConversationRef.current = false;
+  }, [selectedStudentId]);
+
+  useEffect(() => {
+    if (!selectedStudentId || !messagesEndRef.current) return;
+    messagesEndRef.current?.scrollIntoView({
+      behavior: hasOpenedConversationRef.current ? 'smooth' : 'auto',
+      block: 'end',
+    });
+    hasOpenedConversationRef.current = true;
+  }, [selectedStudentId, displayedTimeline]);
 
   useEffect(() => {
     if (selectedStudentId) {

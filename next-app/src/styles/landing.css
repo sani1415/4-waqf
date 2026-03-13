@@ -153,6 +153,15 @@
     box-sizing: border-box;
 }
 
+.selection-cards-remembered {
+    max-width: 420px;
+}
+
+.role-card-remembered {
+    max-width: 420px;
+    margin: 0 auto;
+}
+
 .role-card {
     background: white;
     border-radius: var(--radius-xl);
@@ -386,6 +395,11 @@
         gap: 0.6rem;
         max-width: 100%;
         width: 100%;
+    }
+
+    .selection-cards-remembered,
+    .role-card-remembered {
+        max-width: 100%;
     }
 
     .role-card {

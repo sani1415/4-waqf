@@ -227,6 +227,7 @@ function StudentDashboardContent() {
   const messagesTabEndRef = useRef<HTMLDivElement>(null);
   const overviewStripRef = useRef<HTMLDivElement>(null);
   const lastOverviewCellRef = useRef<HTMLButtonElement>(null);
+  const hasOpenedMessagesTabRef = useRef(false);
 
   useEffect(() => {
     if (activeSection !== 'today') return;
@@ -268,7 +269,18 @@ function StudentDashboardContent() {
   }, [combinedTimeline, filterByCategory]);
 
   useEffect(() => {
-    if (activeSection === 'messages') messagesTabEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (activeSection !== 'messages') {
+      hasOpenedMessagesTabRef.current = false;
+    }
+  }, [activeSection]);
+
+  useEffect(() => {
+    if (activeSection !== 'messages' || !messagesTabEndRef.current) return;
+    messagesTabEndRef.current?.scrollIntoView({
+      behavior: hasOpenedMessagesTabRef.current ? 'smooth' : 'auto',
+      block: 'end',
+    });
+    hasOpenedMessagesTabRef.current = true;
   }, [activeSection, displayedTimeline]);
 
   const myQuizResults = useMemo(() => {
