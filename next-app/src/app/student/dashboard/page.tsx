@@ -1033,8 +1033,8 @@ function StudentDashboardContent() {
 
           {activeSection === 'messages' && (
             <section className="panel-student panel-messages panel-messages-documents student-message-shell">
-              <div className="student-message-shell-card">
-                <div className="student-messages-toolbar" data-testid="student-message-category-filter">
+              <div className="student-message-shell-card message-shell-card">
+                <div className="student-messages-toolbar message-shell-header" data-testid="student-message-category-filter">
                   <span className="student-messages-toolbar-label">
                     {filterByCategory === 'all'
                       ? t('all_categories')
@@ -1082,7 +1082,7 @@ function StudentDashboardContent() {
                   </div>
                 </div>
 
-                <div className="messages-tab-area" id="messagesTabArea">
+                <div className="student-message-tab-area message-shell-body" id="messagesTabArea">
                   {messagesLoading || documentsLoading ? (
                     <div className="loading-state">
                       <i className="fas fa-spinner fa-spin"></i>
@@ -1154,7 +1154,7 @@ function StudentDashboardContent() {
                   )}
                 </div>
 
-                <div className="messages-tab-input message-input-single-box">
+                <div className="student-message-tab-input message-input-single-box message-shell-composer">
                   {showMessageActions && (
                     <div className="student-message-actions-tray">
                       <div className="student-message-actions-title">{t('message_category')}</div>
@@ -1182,16 +1182,6 @@ function StudentDashboardContent() {
                         <i className="fas fa-file-upload"></i>
                         <span>{t('upload_document') || 'Upload document'}</span>
                       </button>
-                    </div>
-                  )}
-                  {filterByCategory !== 'all' && (
-                    <div className="active-filter-hint">
-                      <i className="fas fa-filter"></i>
-                      <span>
-                        {filterByCategory === 'documents_only'
-                          ? (t('documents_only') || 'Documents')
-                          : getCategoryLabel(filterByCategory)}
-                      </span>
                     </div>
                   )}
                   <div className="message-input-single-box-inner">

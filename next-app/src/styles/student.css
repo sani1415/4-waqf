@@ -1815,22 +1815,14 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
 }
 
 .student-message-shell-card {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
     border-radius: 0;
-    overflow: hidden;
     background: transparent;
     box-shadow: none;
 }
 
-.messages-tab-area {
+.student-message-tab-area {
     flex: 1;
     min-height: 0; /* Required for flex child to scroll */
-    overflow-y: auto;
-    background: radial-gradient(ellipse at top, rgba(123, 158, 189, 0.04) 0%, transparent 60%),
-      linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
     border-radius: 12px;
     border: 1px solid var(--border-color);
     padding: 1rem 1rem 0.9rem;
@@ -1839,12 +1831,11 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
     flex-direction: column;
 }
 
-.student-message-shell .messages-tab-area {
+.student-message-shell .student-message-tab-area {
     border: none;
     border-radius: 0;
     box-shadow: none;
     margin-bottom: 0;
-    padding: 1.1rem 1.25rem 1rem;
 }
 
 .student-messages-toolbar {
@@ -1867,15 +1858,11 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
 }
 
 .student-message-shell .student-messages-toolbar {
-    margin-bottom: 0;
-    padding: 1rem 1.25rem 0.75rem;
-    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
     border-top-left-radius: 14px;
     border-top-right-radius: 14px;
 }
 
-.messages-tab-input {
+.student-message-tab-input {
     flex-shrink: 0;
     display: flex;
     gap: 0.5rem;
@@ -1883,10 +1870,7 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
     margin-bottom: 0;
 }
 
-.student-message-shell .messages-tab-input {
-    margin-top: 0;
-    border-top: 1px solid var(--border-color);
-    background: white;
+.student-message-shell .student-message-tab-input {
     border-bottom-left-radius: 14px;
     border-bottom-right-radius: 14px;
 }
@@ -1959,58 +1943,6 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
 .student-message-upload-trigger:disabled {
     opacity: 0.65;
     cursor: not-allowed;
-}
-
-.messages-tab-input input {
-    flex: 1;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 0.95rem;
-}
-
-.messages-tab-input input:focus {
-    outline: none;
-    border-color: var(--primary-soft);
-}
-
-.messages-tab-input button {
-    padding: 0.75rem 1.5rem;
-    background: var(--primary-soft);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: background 0.2s ease;
-}
-
-.messages-tab-input button:hover {
-  background: #6B8CAD;
-}
-
-.messages-tab-input-with-category {
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.messages-tab-input-with-category .message-input-category-wrap {
-  flex-shrink: 0;
-}
-
-.messages-tab-input-with-category .message-category-select,
-.messages-tab-input-with-category .message-category-select-inline {
-  min-width: 100px;
-  padding: 0.4rem 0.6rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  font-size: 0.9rem;
-  background: white;
-  color: var(--text-primary);
 }
 
 /* Messages & Documents: sub-tabs (Chat | Documents) */
@@ -3590,7 +3522,7 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
     }
     
     /* Messages area - scroll only list, keep input at bottom */
-    .panel-messages .messages-tab-area {
+    .panel-messages .student-message-tab-area {
         min-height: 0;
         padding: 0.75rem;
     }
@@ -3609,21 +3541,8 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
         font-size: 0.95rem;
     }
     
-    .messages-tab-input {
+    .student-message-tab-input {
         gap: 0.35rem;
-    }
-    
-    .messages-tab-input input {
-        padding: 0.6rem 0.75rem;
-        font-size: 0.9rem;
-    }
-    
-    .messages-tab-input button {
-        padding: 0.6rem 0.75rem;
-    }
-    
-    .messages-tab-input button span {
-        display: none;
     }
     
     .msg-bubble {
@@ -3720,27 +3639,12 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
         display: none !important;
     }
 
-    .tab-wrap-student:has(input#tab-messages:checked) .messages-tab-area {
+    .tab-wrap-student:has(input#tab-messages:checked) .student-message-tab-area {
         padding: 0.8rem 0.85rem 0.75rem;
         margin-bottom: 0;
     }
 
     .tab-wrap-student:has(input#tab-messages:checked) .student-messages-toolbar {
-        margin-bottom: 0;
-    }
-
-    .student-message-shell .student-messages-toolbar {
-        padding: 0.85rem 1rem 0.65rem;
-    }
-
-    .student-message-shell .messages-tab-area {
-        padding: 0.9rem 1rem 0.85rem;
-    }
-
-    .student-message-shell .messages-tab-input.message-input-single-box {
-        padding-bottom: 0.1rem;
-        padding-left: 0.65rem;
-        padding-right: 0.65rem;
         margin-bottom: 0;
     }
 

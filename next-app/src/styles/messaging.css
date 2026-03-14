@@ -1043,6 +1043,20 @@ body:has(.chat-container) {
 }
 
 @media (max-width: 768px) {
+    .message-shell-header {
+        padding: 0.85rem 1rem 0.65rem;
+    }
+
+    .message-shell-body {
+        padding: 0.9rem 1rem 0.85rem;
+    }
+
+    .message-shell-composer.message-input-single-box {
+        padding-left: 0.65rem;
+        padding-right: 0.65rem;
+        padding-bottom: 0.1rem;
+    }
+
     /* No extra 4.5rem here – messages-container already has padding-bottom for bottom nav */
     .message-input.teacher-message-form {
         padding: 0.6rem 1rem;
@@ -1189,10 +1203,44 @@ body:has(.chat-container) {
     flex-direction: column;
 }
 
+.message-shell-card {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.message-shell-header {
+    flex-shrink: 0;
+    margin-bottom: 0;
+    padding: 1rem 1.25rem 0.75rem;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.message-shell-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    background: radial-gradient(ellipse at top, rgba(123, 158, 189, 0.04) 0%, transparent 60%),
+                linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    padding: 1.1rem 1.25rem 1rem;
+}
+
+.message-shell-composer {
+    flex-shrink: 0;
+}
+
+.message-shell-composer.message-input-single-box {
+    margin-top: 0;
+    margin-bottom: 0;
+    border-top: 1px solid var(--border-color);
+    background: white;
+}
+
 .teacher-page .chat-area .chat-header {
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border-color);
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
 
 .teacher-page .chat-area .chat-header .chat-avatar {
@@ -1207,8 +1255,6 @@ body:has(.chat-container) {
 }
 
 .teacher-page .chat-area .messages-area {
-    background: radial-gradient(ellipse at top, rgba(123, 158, 189, 0.04) 0%, transparent 60%),
-                linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
     padding: 1.25rem 1.5rem;
 }
 
@@ -1276,16 +1322,6 @@ body:has(.chat-container) {
 
 .teacher-page .message-input-single-box-inner {
     padding-left: 1rem;
-}
-
-.active-filter-hint {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    margin: 0 0 0.45rem 0.35rem;
-    color: var(--primary-soft);
-    font-size: 0.8rem;
-    font-weight: 700;
 }
 
 .teacher-sidebar-return-btn {

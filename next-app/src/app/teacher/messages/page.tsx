@@ -397,10 +397,10 @@ export default function TeacherMessages() {
               </div>
             </div>
 
-            <div className={`chat-area ${!selectedStudentId ? 'hidden-mobile' : ''}`}>
+            <div className={`chat-area message-shell-card ${!selectedStudentId ? 'hidden-mobile' : ''}`}>
               {selectedStudentId && selectedStudent ? (
                 <>
-                  <div className="chat-header">
+                  <div className="chat-header message-shell-header">
                     <button className="back-btn mobile-only" onClick={() => setSelectedStudentId(null)}>
                       <i className="fas fa-arrow-left"></i>
                     </button>
@@ -437,7 +437,7 @@ export default function TeacherMessages() {
                     </div>
                   </div>
 
-                  <div className="messages-area">
+                  <div className="messages-area message-shell-body">
                     {combinedTimeline.length === 0 ? (
                       <div className="empty-chat">
                         <i className="fas fa-comments"></i>
@@ -503,13 +503,7 @@ export default function TeacherMessages() {
                     <div ref={messagesEndRef} />
                   </div>
 
-                  <form className="message-input teacher-message-form message-input-single-box" onSubmit={handleSendMessage}>
-                    {filterByCategory !== 'all' && (
-                      <div className="active-filter-hint">
-                        <i className="fas fa-filter"></i>
-                        <span>{getFilterLabel(filterByCategory)}</span>
-                      </div>
-                    )}
+                  <form className="message-input teacher-message-form message-input-single-box message-shell-composer" onSubmit={handleSendMessage}>
                     <div className="message-input-single-box-inner">
                       <textarea
                         ref={messageTextareaRef}
