@@ -93,7 +93,7 @@ Or use the shortcut:
 
 ```bash
 cd next-app
-they sat on the little
+npm run android
 ```
 
 (`npm run android` = build + sync + open Android Studio.)
