@@ -113,8 +113,6 @@ export default function TeacherMessages() {
     return getCategoryLabel(value);
   };
 
-  const activeFilterLabel = filterByCategory === 'all' ? '' : getFilterLabel(filterByCategory);
-
   const getUnreadCount = (studentId: string) => {
     return messages.filter(
       (m: any) => m.studentId === studentId && m.sender === 'student' && !m.read
@@ -319,9 +317,19 @@ export default function TeacherMessages() {
           <div className="messaging-container">
             <div className={`chat-list ${selectedStudentId ? 'hidden-mobile' : ''}`}>
               <div className="chat-list-inner-header">
-                <div>
+                <div className="chat-list-header-row">
+                  <button
+                    type="button"
+                    className="message-filter-menu-btn teacher-sidebar-return-btn mobile-only"
+                    onClick={toggleSidebar}
+                    aria-label={t('nav_menu')}
+                  >
+                    <i className="fas fa-bars"></i>
+                  </button>
+                  <div>
                   <h2>{t('student_conversations')}</h2>
                   <p>{t('click_student_to_chat')}</p>
+                  </div>
                 </div>
               </div>
               <div className="search-box">
@@ -442,14 +450,7 @@ export default function TeacherMessages() {
                         <span>{t('filter_by_category')}</span>
                       </div>
                     ) : (
-                      <>
-                        {activeFilterLabel ? (
-                          <div className="timeline-filter-indicator" title={activeFilterLabel}>
-                            <i className="fas fa-filter"></i>
-                            <span>{activeFilterLabel}</span>
-                          </div>
-                        ) : null}
-                        {displayedTimeline.map((item: any) => {
+                      displayedTimeline.map((item: any) => {
                         if (item.type === 'document') {
                           const url = getDocumentUrl(item);
                           const cat = (item.category ?? 'general') as MessageCategory;
@@ -497,13 +498,18 @@ export default function TeacherMessages() {
                             <span className="message-time">{formatTime(item.timestamp)}</span>
                           </div>
                         );
-                      })}
-                      </>
+                      })
                     )}
                     <div ref={messagesEndRef} />
                   </div>
 
                   <form className="message-input teacher-message-form message-input-single-box" onSubmit={handleSendMessage}>
+                    {filterByCategory !== 'all' && (
+                      <div className="active-filter-hint">
+                        <i className="fas fa-filter"></i>
+                        <span>{getFilterLabel(filterByCategory)}</span>
+                      </div>
+                    )}
                     <div className="message-input-single-box-inner">
                       <textarea
                         ref={messageTextareaRef}

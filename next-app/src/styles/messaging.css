@@ -470,6 +470,10 @@ body:has(.chat-container) {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .teacher-page .main-content {
+        padding-bottom: 0.5rem !important;
+    }
+
     .messages-container,
     .content-with-bottom-nav {
         padding: 0.5rem 0.75rem;
@@ -941,6 +945,18 @@ body:has(.chat-container) {
         width: 38px;
         height: 38px;
     }
+
+    .teacher-page .messages-container {
+        padding-bottom: 0.5rem;
+    }
+
+    .teacher-page .chat-area .chat-header {
+        padding: 0.85rem 1rem;
+    }
+
+    .teacher-page .chat-area .messages-area {
+        padding: 1rem;
+    }
 }
 
 @media (min-width: 769px) {
@@ -961,6 +977,15 @@ body:has(.chat-container) {
     background: white;
     border-top: 1px solid var(--border-color);
     flex-shrink: 0;
+}
+
+.message-input.teacher-message-form.message-input-single-box {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.3rem;
+    padding: 0.35rem 0.75rem;
+    padding-bottom: max(0.2rem, env(safe-area-inset-bottom, 0px));
 }
 
 .message-input.teacher-message-form input {
@@ -1027,6 +1052,11 @@ body:has(.chat-container) {
         padding: 0.6rem 1rem;
         font-size: 0.9rem;
     }
+
+    .message-input.teacher-message-form.message-input-single-box {
+        padding: 0.3rem 0.65rem;
+        padding-bottom: max(0.15rem, env(safe-area-inset-bottom, 0px));
+    }
     .message-send-btn {
         width: 40px;
         height: 40px;
@@ -1073,6 +1103,12 @@ body:has(.chat-container) {
 
 .teacher-page .chat-list-inner-header {
     padding: 0.85rem 1rem;
+}
+
+.chat-list-header-row {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
 }
 
 .teacher-page .teacher-messages-focus-layout {
@@ -1240,6 +1276,20 @@ body:has(.chat-container) {
 
 .teacher-page .message-input-single-box-inner {
     padding-left: 1rem;
+}
+
+.active-filter-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0 0 0.45rem 0.35rem;
+    color: var(--primary-soft);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.teacher-sidebar-return-btn {
+    flex-shrink: 0;
 }
 
 .teacher-page .message-bubble {
@@ -1653,42 +1703,24 @@ body:has(.chat-container) {
 
 /* Single box: one message input area – category + text + send inside one field (teacher & student) */
 .message-input-single-box {
-    padding: 0.35rem 0.85rem;
-    padding-bottom: max(0.35rem, env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.35rem 0.75rem;
+    padding-bottom: max(0.2rem, env(safe-area-inset-bottom, 0px));
     background: white;
     border-top: 1px solid var(--border-color);
 }
-
-.timeline-filter-indicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    align-self: center;
-    max-width: min(100%, 260px);
-    margin: 0 auto 0.75rem;
-    padding: 0.32rem 0.65rem;
-    border-radius: 999px;
-    background: rgba(123, 158, 189, 0.12);
-    color: var(--primary-soft);
-    font-size: 0.8rem;
-    font-weight: 700;
-}
-
-.timeline-filter-indicator span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 .message-input-single-box-inner {
     display: flex;
-    align-items: flex-end;
-    gap: 0.2rem;
-    min-height: 42px;
-    padding: 0 0.35rem 0 0.6rem;
+    align-items: center;
+    gap: 0.1rem;
+    min-height: 0;
+    padding: 0 0.2rem 0 0.45rem;
     border: 2px solid var(--border-color);
     border-radius: 24px;
     background: var(--bg-primary);
+    overflow: hidden;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .message-input-single-box-inner:focus-within {
@@ -1726,13 +1758,15 @@ body:has(.chat-container) {
 .message-input-text-in-box {
     flex: 1;
     min-width: 0;
+    min-height: 36px !important;
     border: none !important;
     background: transparent !important;
-    padding: 0.4rem 0.35rem 0.4rem 0.2rem !important;
+    padding: 0.45rem 0.1rem 0.45rem 0.05rem !important;
     box-shadow: none !important;
     margin: 0 !important;
-    line-height: 1.4;
+    line-height: 1.25;
     resize: none;
+    overflow-y: auto;
 }
 .message-input-text-in-box::placeholder {
     color: var(--text-secondary);
@@ -1741,26 +1775,30 @@ body:has(.chat-container) {
     flex-shrink: 0;
     width: 36px;
     height: 36px;
+    min-width: 36px !important;
+    min-height: 36px !important;
     padding: 0;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0.18rem 0 0.18rem 0.1rem;
+    margin: 0 0 0 0.1rem;
 }
 .message-send-btn-in-box:not(:disabled):hover {
     transform: scale(1.05);
 }
 .message-action-btn-in-box {
     flex-shrink: 0;
-    min-width: 34px;
+    width: 36px;
+    min-width: 36px !important;
     height: 36px;
-    padding: 0 0.45rem;
+    min-height: 36px !important;
+    padding: 0;
     border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0.18rem 0.08rem 0.18rem 0;
+    margin: 0;
 }
 
 .message-action-btn-in-box.active {

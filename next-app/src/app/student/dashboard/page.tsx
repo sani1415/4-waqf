@@ -1032,228 +1032,235 @@ function StudentDashboardContent() {
           )}
 
           {activeSection === 'messages' && (
-            <section className="panel-student panel-messages panel-messages-documents">
-              <div className="student-messages-toolbar" data-testid="student-message-category-filter">
-                <span className="student-messages-toolbar-label">
-                  {filterByCategory === 'all'
-                    ? t('all_categories')
-                    : filterByCategory === 'documents_only'
-                      ? (t('documents_only') || 'Documents')
-                      : getCategoryLabel(filterByCategory)}
-                </span>
-                <div className="message-filter-menu-wrap">
-                  <button
-                    type="button"
-                    className={`message-filter-menu-btn ${filterByCategory !== 'all' ? 'active' : ''}`}
-                    onClick={() => setShowFilterMenu((prev) => !prev)}
-                    aria-label={t('filter_by_category')}
-                  >
-                    <i className="fas fa-bars"></i>
-                  </button>
-                  {showFilterMenu && (
-                    <div className="message-filter-menu-popover">
-                      <button
-                        type="button"
-                        className={`message-filter-menu-item ${filterByCategory === 'all' ? 'active' : ''}`}
-                        onClick={() => applyMessageFilter('all')}
-                      >
-                        {t('all_categories')}
-                      </button>
-                      {MESSAGE_CATEGORIES.map((cat) => (
+            <section className="panel-student panel-messages panel-messages-documents student-message-shell">
+              <div className="student-message-shell-card">
+                <div className="student-messages-toolbar" data-testid="student-message-category-filter">
+                  <span className="student-messages-toolbar-label">
+                    {filterByCategory === 'all'
+                      ? t('all_categories')
+                      : filterByCategory === 'documents_only'
+                        ? (t('documents_only') || 'Documents')
+                        : getCategoryLabel(filterByCategory)}
+                  </span>
+                  <div className="message-filter-menu-wrap">
+                    <button
+                      type="button"
+                      className={`message-filter-menu-btn ${filterByCategory !== 'all' ? 'active' : ''}`}
+                      onClick={() => setShowFilterMenu((prev) => !prev)}
+                      aria-label={t('filter_by_category')}
+                    >
+                      <i className="fas fa-bars"></i>
+                    </button>
+                    {showFilterMenu && (
+                      <div className="message-filter-menu-popover">
                         <button
-                          key={cat}
                           type="button"
-                          className={`message-filter-menu-item ${filterByCategory === cat ? 'active' : ''}`}
-                          onClick={() => applyMessageFilter(cat)}
+                          className={`message-filter-menu-item ${filterByCategory === 'all' ? 'active' : ''}`}
+                          onClick={() => applyMessageFilter('all')}
                         >
-                          {getCategoryLabel(cat)}
+                          {t('all_categories')}
                         </button>
-                      ))}
-                      <button
-                        type="button"
-                        className={`message-filter-menu-item ${filterByCategory === 'documents_only' ? 'active' : ''}`}
-                        onClick={() => applyMessageFilter('documents_only')}
-                      >
-                        {t('documents_only') || 'Documents'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="messages-tab-area" id="messagesTabArea">
-                {messagesLoading || documentsLoading ? (
-                  <div className="loading-state">
-                    <i className="fas fa-spinner fa-spin"></i>
-                    <p>{t('loading')}</p>
-                  </div>
-                ) : combinedTimeline.length === 0 ? (
-                  <div className="no-messages-placeholder">
-                    <i className="fas fa-comments"></i>
-                    <p>{t('no_messages_yet')}</p>
-                    <span>{t('send_message_to_teacher')}</span>
-                  </div>
-                ) : displayedTimeline.length === 0 ? (
-                  <div className="no-messages-placeholder">
-                    <i className="fas fa-filter"></i>
-                    <p>{t('no_messages_yet')}</p>
-                    <span>{t('filter_by_category')}</span>
-                  </div>
-                ) : (
-                  <>
-                    {filterByCategory !== 'all' ? (
-                      <div className="timeline-filter-indicator" title={filterByCategory === 'documents_only' ? (t('documents_only') || 'Documents') : getCategoryLabel(filterByCategory)}>
-                        <i className="fas fa-filter"></i>
-                        <span>{filterByCategory === 'documents_only' ? (t('documents_only') || 'Documents') : getCategoryLabel(filterByCategory)}</span>
+                        {MESSAGE_CATEGORIES.map((cat) => (
+                          <button
+                            key={cat}
+                            type="button"
+                            className={`message-filter-menu-item ${filterByCategory === cat ? 'active' : ''}`}
+                            onClick={() => applyMessageFilter(cat)}
+                          >
+                            {getCategoryLabel(cat)}
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          className={`message-filter-menu-item ${filterByCategory === 'documents_only' ? 'active' : ''}`}
+                          onClick={() => applyMessageFilter('documents_only')}
+                        >
+                          {t('documents_only') || 'Documents'}
+                        </button>
                       </div>
-                    ) : null}
-                    {displayedTimeline.map((item: any, idx: number) => {
-                      if (item.type === 'document') {
-                        const fileUrl = item.fileUrl || item.downloadURL;
+                    )}
+                  </div>
+                </div>
+
+                <div className="messages-tab-area" id="messagesTabArea">
+                  {messagesLoading || documentsLoading ? (
+                    <div className="loading-state">
+                      <i className="fas fa-spinner fa-spin"></i>
+                      <p>{t('loading')}</p>
+                    </div>
+                  ) : combinedTimeline.length === 0 ? (
+                    <div className="no-messages-placeholder">
+                      <i className="fas fa-comments"></i>
+                      <p>{t('no_messages_yet')}</p>
+                      <span>{t('send_message_to_teacher')}</span>
+                    </div>
+                  ) : displayedTimeline.length === 0 ? (
+                    <div className="no-messages-placeholder">
+                      <i className="fas fa-filter"></i>
+                      <p>{t('no_messages_yet')}</p>
+                      <span>{t('filter_by_category')}</span>
+                    </div>
+                  ) : (
+                    <>
+                      {displayedTimeline.map((item: any, idx: number) => {
+                        if (item.type === 'document') {
+                          const fileUrl = item.fileUrl || item.downloadURL;
+                          const cat = (item.category ?? 'general') as MessageCategory;
+                          return (
+                            <div key={`doc-${item.id}`} className="student-doc-bubble-wrap">
+                              <div
+                                className="msg-bubble sent student-doc-bubble"
+                                role={fileUrl ? 'link' : undefined}
+                                onClick={() => fileUrl && window.open(fileUrl, '_blank')}
+                                title={fileUrl ? t('download') : t('no_file_url')}
+                              >
+                                <span className="student-doc-bubble-icon"><i className="fas fa-file-alt"></i></span>
+                                <div className="student-doc-bubble-body">
+                                  <span className="student-doc-bubble-name">{item.fileName || 'document'}</span>
+                                  {cat !== 'general' && (
+                                    <span className="message-category-badge student-doc-category" title={getCategoryLabel(cat)}>{getCategoryLabel(cat)}</span>
+                                  )}
+                                  <span className="student-doc-bubble-time">{item.uploadedAt ? formatMessageTime(item.uploadedAt) : ''}</span>
+                                </div>
+                                {fileUrl && <span className="student-doc-bubble-dl"><i className="fas fa-download"></i></span>}
+                              </div>
+                            </div>
+                          );
+                        }
+                        const prev = displayedTimeline[idx - 1];
+                        const prevSort = prev ? (prev.timestamp || (prev as any).uploadedAt) : '';
+                        const prevDateKey = prevSort ? new Date(prevSort).toISOString().slice(0, 10) : '';
+                        const thisDateKey = new Date(item.timestamp).toISOString().slice(0, 10);
+                        const showDateSep = prevDateKey !== thisDateKey;
+                        const isSent = String(item.sender || '').toLowerCase() === 'student';
                         const cat = (item.category ?? 'general') as MessageCategory;
                         return (
-                          <div key={`doc-${item.id}`} className="student-doc-bubble-wrap">
-                            <div
-                              className="msg-bubble sent student-doc-bubble"
-                              role={fileUrl ? 'link' : undefined}
-                              onClick={() => fileUrl && window.open(fileUrl, '_blank')}
-                              title={fileUrl ? t('download') : t('no_file_url')}
-                            >
-                              <span className="student-doc-bubble-icon"><i className="fas fa-file-alt"></i></span>
-                              <div className="student-doc-bubble-body">
-                                <span className="student-doc-bubble-name">{item.fileName || 'document'}</span>
-                                {cat !== 'general' && (
-                                  <span className="message-category-badge student-doc-category" title={getCategoryLabel(cat)}>{getCategoryLabel(cat)}</span>
-                                )}
-                                <span className="student-doc-bubble-time">{item.uploadedAt ? formatMessageTime(item.uploadedAt) : ''}</span>
-                              </div>
-                              {fileUrl && <span className="student-doc-bubble-dl"><i className="fas fa-download"></i></span>}
+                          <div key={item.id}>
+                            {showDateSep && (
+                              <div className="msg-date-sep">{getMessageDateLabel(item.timestamp)}</div>
+                            )}
+                            <div className={`msg-bubble ${isSent ? 'sent' : 'received'}`}>
+                              {cat !== 'general' && (
+                                <span className="message-category-badge" title={getCategoryLabel(cat)}>{getCategoryLabel(cat)}</span>
+                              )}
+                              <div className="msg-text">{(item.text ?? item.message ?? '').toString()}</div>
+                              <div className="msg-time">{formatMessageTime(item.timestamp)}</div>
                             </div>
                           </div>
                         );
-                      }
-                      const prev = displayedTimeline[idx - 1];
-                      const prevSort = prev ? (prev.timestamp || (prev as any).uploadedAt) : '';
-                      const prevDateKey = prevSort ? new Date(prevSort).toISOString().slice(0, 10) : '';
-                      const thisDateKey = new Date(item.timestamp).toISOString().slice(0, 10);
-                      const showDateSep = prevDateKey !== thisDateKey;
-                      const isSent = String(item.sender || '').toLowerCase() === 'student';
-                      const cat = (item.category ?? 'general') as MessageCategory;
-                      return (
-                        <div key={item.id}>
-                          {showDateSep && (
-                            <div className="msg-date-sep">{getMessageDateLabel(item.timestamp)}</div>
-                          )}
-                          <div className={`msg-bubble ${isSent ? 'sent' : 'received'}`}>
-                            {cat !== 'general' && (
-                              <span className="message-category-badge" title={getCategoryLabel(cat)}>{getCategoryLabel(cat)}</span>
-                            )}
-                            <div className="msg-text">{(item.text ?? item.message ?? '').toString()}</div>
-                            <div className="msg-time">{formatMessageTime(item.timestamp)}</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <div ref={messagesTabEndRef} />
-                  </>
-                )}
-              </div>
+                      })}
+                      <div ref={messagesTabEndRef} />
+                    </>
+                  )}
+                </div>
 
-              <div className="messages-tab-input message-input-single-box">
-                {showMessageActions && (
-                  <div className="student-message-actions-tray">
-                    <div className="student-message-actions-title">{t('message_category')}</div>
-                    <div className="student-message-actions-categories">
-                      {MESSAGE_CATEGORIES.map((cat) => (
-                        <button
-                          key={cat}
-                          type="button"
-                          className={`student-message-category-chip ${messageTabCategory === cat ? 'active' : ''}`}
-                          onClick={() => handleMessageCategoryPick(cat)}
-                        >
-                          {getCategoryLabel(cat)}
-                        </button>
-                      ))}
+                <div className="messages-tab-input message-input-single-box">
+                  {showMessageActions && (
+                    <div className="student-message-actions-tray">
+                      <div className="student-message-actions-title">{t('message_category')}</div>
+                      <div className="student-message-actions-categories">
+                        {MESSAGE_CATEGORIES.map((cat) => (
+                          <button
+                            key={cat}
+                            type="button"
+                            className={`student-message-category-chip ${messageTabCategory === cat ? 'active' : ''}`}
+                            onClick={() => handleMessageCategoryPick(cat)}
+                          >
+                            {getCategoryLabel(cat)}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        className="student-message-upload-trigger"
+                        onClick={() => {
+                          setShowMessageActions(false);
+                          studentDocumentFileInputRef.current?.click();
+                        }}
+                        disabled={uploadingDocument}
+                      >
+                        <i className="fas fa-file-upload"></i>
+                        <span>{t('upload_document') || 'Upload document'}</span>
+                      </button>
                     </div>
+                  )}
+                  {filterByCategory !== 'all' && (
+                    <div className="active-filter-hint">
+                      <i className="fas fa-filter"></i>
+                      <span>
+                        {filterByCategory === 'documents_only'
+                          ? (t('documents_only') || 'Documents')
+                          : getCategoryLabel(filterByCategory)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="message-input-single-box-inner">
+                    <textarea
+                      ref={messageTabTextareaRef}
+                      className="prototype-textarea message-input-text-in-box"
+                      id="messageInputTab"
+                      placeholder={t('type_message')}
+                      value={messageTabInput}
+                      onChange={handleMessageTabInputChange}
+                      onFocus={handleMessageTabInputFocus}
+                      onBlur={handleMessageTabInputBlur}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          sendMessageFromTab();
+                        }
+                      }}
+                      rows={MIN_INPUT_ROWS}
+                      aria-label={t('type_message')}
+                      data-testid="student-dashboard-message-input"
+                    />
                     <button
                       type="button"
-                      className="student-message-upload-trigger"
-                      onClick={() => {
-                        setShowMessageActions(false);
-                        studentDocumentFileInputRef.current?.click();
-                      }}
+                      className={`btn-primary message-action-btn-in-box ${showMessageActions || messageTabCategory !== 'general' ? 'active' : ''}`}
+                      onClick={() => setShowMessageActions((prev) => !prev)}
                       disabled={uploadingDocument}
+                      title={t('message_category')}
                     >
-                      <i className="fas fa-file-upload"></i>
-                      <span>{t('upload_document') || 'Upload document'}</span>
+                      <i className="fas fa-plus"></i>
+                    </button>
+                    <button
+                      id="messageSendBtnTab"
+                      type="button"
+                      className="btn-primary message-action-btn-in-box"
+                      onClick={() => sendMessageFromTab()}
+                      disabled={!messageTabInput.trim()}
+                      title={t('send')}
+                      aria-label={t('send')}
+                    >
+                      <i className="fas fa-paper-plane"></i>
                     </button>
                   </div>
-                )}
-                <div className="message-input-single-box-inner">
-                  <textarea
-                    ref={messageTabTextareaRef}
-                    className="prototype-textarea message-input-text-in-box"
-                    id="messageInputTab"
-                    placeholder={t('type_message')}
-                    value={messageTabInput}
-                    onChange={handleMessageTabInputChange}
-                    onFocus={handleMessageTabInputFocus}
-                    onBlur={handleMessageTabInputBlur}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessageFromTab();
-                      }
-                    }}
-                    rows={MIN_INPUT_ROWS}
-                    aria-label={t('type_message')}
-                    data-testid="student-dashboard-message-input"
-                  />
-                  <button
-                    type="button"
-                    className={`btn-primary message-action-btn-in-box ${showMessageActions || messageTabCategory !== 'general' ? 'active' : ''}`}
-                    onClick={() => setShowMessageActions((prev) => !prev)}
-                    disabled={uploadingDocument}
-                    title={t('message_category')}
-                  >
-                    <i className="fas fa-plus"></i>
-                  </button>
-                  <button
-                    id="messageSendBtnTab"
-                    type="button"
-                    className="btn-primary message-action-btn-in-box"
-                    onClick={() => sendMessageFromTab()}
-                    disabled={!messageTabInput.trim()}
-                    title={t('send')}
-                    aria-label={t('send')}
-                  >
-                    <i className="fas fa-paper-plane"></i>
-                  </button>
-                </div>
-                <div className="student-file-input-wrapper" aria-hidden>
-                  <input
-                    ref={studentDocumentFileInputRef}
-                    type="file"
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
-                    multiple
-                    className="student-dashboard-file-input"
-                    aria-label="Choose file"
-                    onChange={(e) => {
-                      handleDocumentPickerChange(e.target.files);
-                      e.currentTarget.value = '';
-                    }}
-                  />
-                  <input
-                    ref={studentAdditionalImagesInputRef}
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.gif"
-                    multiple
-                    className="student-dashboard-file-input"
-                    aria-label="Choose additional images"
-                    onChange={(e) => {
-                      handleAdditionalImagesChange(e.target.files);
-                      e.currentTarget.value = '';
-                    }}
-                  />
+                  <div className="student-file-input-wrapper" aria-hidden>
+                    <input
+                      ref={studentDocumentFileInputRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+                      multiple
+                      className="student-dashboard-file-input"
+                      aria-label="Choose file"
+                      onChange={(e) => {
+                        handleDocumentPickerChange(e.target.files);
+                        e.currentTarget.value = '';
+                      }}
+                    />
+                    <input
+                      ref={studentAdditionalImagesInputRef}
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.gif"
+                      multiple
+                      className="student-dashboard-file-input"
+                      aria-label="Choose additional images"
+                      onChange={(e) => {
+                        handleAdditionalImagesChange(e.target.files);
+                        e.currentTarget.value = '';
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </section>
@@ -1641,6 +1648,7 @@ function StudentDashboardContent() {
 
 
         </div>
+        {activeSection !== 'messages' && (
         <div className="student-bottom-nav-wrapper bottom-nav-wrapper">
           <div className="bottom-nav-fade bottom-nav-fade-left" id="studentNavFadeLeft">
             <i className="fas fa-chevron-left"></i>
@@ -1694,6 +1702,7 @@ function StudentDashboardContent() {
             <i className="fas fa-chevron-right"></i>
           </div>
         </div>
+        )}
       </main>
 
       {/* Day details modal (when clicking a date in overview) */}
