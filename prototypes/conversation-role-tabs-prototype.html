@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conversation Role Tabs Prototype</title>
+  <style>
+    :root {
+      --bg: #eef4fb;
+      --surface: #ffffff;
+      --surface-soft: #f6f9fd;
+      --line: #dae6f2;
+      --text: #21324d;
+      --muted: #6d7d93;
+      --brand: #7ea6cf;
+      --brand-strong: #648eb9;
+      --brand-soft: rgba(126, 166, 207, 0.14);
+      --warn-soft: #fff1df;
+      --warn-text: #a76b17;
+      --danger-soft: #ffe8e5;
+      --danger-text: #bc5a51;
+      --ok-soft: #e7f7ef;
+      --ok-text: #2f805c;
+      --shadow: 0 22px 64px rgba(43, 67, 108, 0.14);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(126, 166, 207, 0.22), transparent 26%),
+        radial-gradient(circle at bottom right, rgba(126, 166, 207, 0.18), transparent 28%),
+        var(--bg);
+    }
+
+    .page {
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 30px 22px 60px;
+    }
+
+    .hero {
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 960px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .hero-note {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.85);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .shell {
+      background: rgba(255, 255, 255, 0.56);
+      border: 1px solid rgba(218, 230, 242, 0.9);
+      border-radius: 28px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .mode-input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .mode-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .mode-tabs label {
+      padding: 11px 15px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.86);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    #mode-a:checked ~ .mode-tabs label[for="mode-a"],
+    #mode-b:checked ~ .mode-tabs label[for="mode-b"],
+    #mode-c:checked ~ .mode-tabs label[for="mode-c"],
+    #mode-d:checked ~ .mode-tabs label[for="mode-d"] {
+      background: linear-gradient(180deg, #8ab0d7, #769fc9);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 12px 24px rgba(101, 144, 193, 0.28);
+    }
+
+    .panel {
+      display: none;
+      grid-template-columns: minmax(280px, 350px) minmax(320px, 420px) minmax(320px, 420px) minmax(280px, 350px);
+      gap: 20px;
+      align-items: start;
+    }
+
+    #mode-a:checked ~ .panel-a,
+    #mode-b:checked ~ .panel-b,
+    #mode-c:checked ~ .panel-c,
+    #mode-d:checked ~ .panel-d {
+      display: grid;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.88);
+      border-radius: 22px;
+      padding: 16px;
+    }
+
+    .card h2, .card h3 {
+      margin: 0 0 8px;
+      line-height: 1.25;
+    }
+
+    .card h2 {
+      font-size: 22px;
+    }
+
+    .card h3 {
+      font-size: 16px;
+    }
+
+    .card p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .detail-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .detail {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 12px 13px;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .detail strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .recommend {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: var(--brand-soft);
+      border: 1px solid rgba(126, 166, 207, 0.22);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .phone {
+      width: 100%;
+      max-width: 400px;
+      min-height: 780px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #fcfeff, #f3f7fb);
+      border: 10px solid #f8fbff;
+      border-radius: 34px;
+      overflow: hidden;
+      box-shadow: 0 20px 52px rgba(37, 55, 87, 0.18);
+    }
+
+    .status {
+      height: 16px;
+      background: linear-gradient(180deg, #fbfdff, #f2f6fb);
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.82);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #9ec0e1, #7ea6cf);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .id {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .id strong {
+      display: block;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .id span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .subtabs {
+      display: flex;
+      gap: 8px;
+      padding: 10px 12px 8px;
+      background: rgba(255, 255, 255, 0.65);
+      border-bottom: 1px solid rgba(218, 230, 242, 0.84);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .subtabs::-webkit-scrollbar { display: none; }
+
+    .subtab {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .subtab.active {
+      background: #fff;
+      color: var(--brand-strong);
+      border: 1px solid rgba(218, 230, 242, 0.95);
+      box-shadow: 0 8px 18px rgba(76, 104, 146, 0.08);
+    }
+
+    .subtab.warn {
+      background: var(--warn-soft);
+      color: var(--warn-text);
+      border: 1px solid rgba(204, 170, 109, 0.28);
+    }
+
+    .subtab.danger {
+      background: var(--danger-soft);
+      color: var(--danger-text);
+      border: 1px solid rgba(203, 149, 142, 0.28);
+    }
+
+    .timeline {
+      min-height: 510px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.5), rgba(243,247,251,0.82)),
+        radial-gradient(circle at top, rgba(152,185,220,0.11), transparent 36%);
+    }
+
+    .sep {
+      align-self: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .bubble {
+      max-width: 80%;
+      padding: 12px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.45;
+      box-shadow: 0 10px 22px rgba(76, 104, 146, 0.08);
+    }
+
+    .bubble.in {
+      align-self: flex-start;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .bubble.out {
+      align-self: flex-end;
+      background: linear-gradient(180deg, #8db3d8, #759ec8);
+      color: white;
+    }
+
+    .time {
+      margin-top: 6px;
+      font-size: 11px;
+      opacity: 0.72;
+    }
+
+    .flow-card {
+      border-radius: 18px;
+      border: 1px solid rgba(218, 230, 242, 0.95);
+      background: rgba(255, 255, 255, 0.96);
+      padding: 12px;
+      box-shadow: 0 10px 24px rgba(73, 100, 141, 0.08);
+    }
+
+    .flow-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .meta {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .tag-row, .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .action-row {
+      margin-top: 12px;
+    }
+
+    .action {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .action.primary {
+      background: linear-gradient(180deg, #8ab0d7, #78a0ca);
+      color: white;
+      border-color: transparent;
+    }
+
+    .badge {
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.warn {
+      background: var(--warn-soft);
+      color: var(--warn-text);
+    }
+
+    .badge.danger {
+      background: var(--danger-soft);
+      color: var(--danger-text);
+    }
+
+    .badge.ok {
+      background: var(--ok-soft);
+      color: var(--ok-text);
+    }
+
+    .badge.info {
+      background: var(--brand-soft);
+      color: var(--brand-strong);
+    }
+
+    .composer {
+      margin: 8px 10px 10px;
+      padding: 8px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.96);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .send {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #97badb, #7fa4cb);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 1450px) {
+      .panel {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .panel {
+        grid-template-columns: 1fr;
+      }
+
+      .page {
+        padding: 20px 14px 40px;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="hero">
+      <h1>Teacher vs Student Conversation Modes</h1>
+      <p>
+        This second prototype explores how a message-centered app can use different conversation tabs or modes for teachers and students.
+        The goal is not only visual beauty. The goal is to help you decide what each role should actually see inside a thread, what should
+        stay simple like WhatsApp, and what should become a structured workflow card.
+      </p>
+      <div class="hero-note">
+        <div class="chip">Focused on role differences</div>
+        <div class="chip">Detailed product notes included</div>
+        <div class="chip">For decision-making before implementation</div>
+      </div>
+    </div>
+
+    <section class="shell">
+      <input class="mode-input" type="radio" id="mode-a" name="role-mode" checked>
+      <input class="mode-input" type="radio" id="mode-b" name="role-mode">
+      <input class="mode-input" type="radio" id="mode-c" name="role-mode">
+      <input class="mode-input" type="radio" id="mode-d" name="role-mode">
+
+      <div class="mode-tabs">
+        <label for="mode-a">Mode A: Teacher Rich / Student Simple</label>
+        <label for="mode-b">Mode B: Same Core Tabs for Both</label>
+        <label for="mode-c">Mode C: Teacher Action Center / Student Journey</label>
+        <label for="mode-d">Mode D: One Timeline + Role Sheets</label>
+      </div>
+
+      <div class="panel panel-a">
+        <div class="card">
+          <h2>Mode A: Teacher Rich / Student Simple</h2>
+          <p>
+            This direction accepts that teachers and students should not see the same conversation controls. Teachers need operational
+            power. Students need clarity and calm. So the teacher thread gets richer conversation tabs, while the student thread stays light.
+          </p>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Teacher tabs</strong>
+              `All`, `Action Needed`, `Docs`, `Results`
+            </div>
+            <div class="detail">
+              <strong>Student tabs</strong>
+              `All`, `Tasks`, `Docs`
+            </div>
+            <div class="detail">
+              <strong>Why this can be strong</strong>
+              It respects that teacher work is more operational and student work is more guided.
+            </div>
+            <div class="detail">
+              <strong>Main risk</strong>
+              If the difference becomes too large, teacher and student may feel like two separate apps.
+            </div>
+          </div>
+          <div class="recommend">
+            <strong>Pro tip:</strong> if you choose this, keep the visual language similar even when the tab sets differ. The card shapes,
+            composer, and message rhythm should still feel like one product family.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Teacher View</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">T</div>
+              <div class="id">
+                <strong>Abdul Karim</strong>
+                <span>2 pending items</span>
+              </div>
+              <div class="icon">≡</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab active">All</div>
+              <div class="subtab warn">Action Needed (2)</div>
+              <div class="subtab">Docs</div>
+              <div class="subtab">Results</div>
+            </div>
+            <div class="timeline">
+              <div class="sep">Today</div>
+              <div class="bubble out">
+                Please submit your corrected fortnight report tonight.
+                <div class="time">6:11 PM</div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Document Workflow</span>
+                  <span class="badge warn">Needs review</span>
+                </div>
+                <div class="meta">Last upload: 3 pages combined PDF</div>
+                <div class="tag-row">
+                  <div class="tag">fortnight report</div>
+                  <div class="tag">resubmission possible</div>
+                </div>
+                <div class="action-row">
+                  <div class="action primary">Review now</div>
+                  <div class="action">Request correction</div>
+                </div>
+              </div>
+              <div class="bubble in">
+                I will send it after I rename the file properly.
+                <div class="time">6:14 PM</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Type a message or send workflow card...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Student View</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">S</div>
+              <div class="id">
+                <strong>Teacher</strong>
+                <span>guided conversation</span>
+              </div>
+              <div class="icon">☰</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab active">All</div>
+              <div class="subtab">Tasks</div>
+              <div class="subtab">Docs</div>
+            </div>
+            <div class="timeline">
+              <div class="sep">Today</div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Task Card</span>
+                  <span class="badge info">From teacher</span>
+                </div>
+                <div class="meta">Submit fortnight report with clear file name</div>
+                <div class="action-row">
+                  <div class="action primary">Upload now</div>
+                  <div class="action">Ask question</div>
+                </div>
+              </div>
+              <div class="bubble out">
+                Should I combine all 3 pages as one PDF?
+                <div class="time">6:20 PM</div>
+              </div>
+              <div class="bubble in">
+                Yes, combine and give it a proper title.
+                <div class="time">6:22 PM</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Reply or upload document...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Detailed Pro Tips</h3>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>When this works best</strong>
+              Choose this if you want teacher productivity to be high, but do not want to overload students with too many operational views.
+            </div>
+            <div class="detail">
+              <strong>Teacher benefit</strong>
+              The teacher can quickly switch to unresolved work without leaving the thread.
+            </div>
+            <div class="detail">
+              <strong>Student benefit</strong>
+              The student only sees the views that help complete work, not every administrative state.
+            </div>
+            <div class="detail">
+              <strong>Best long-term use</strong>
+              Good for madrasa workflow where teacher action density is naturally higher than student action density.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-b">
+        <div class="card">
+          <h2>Mode B: Same Core Tabs for Both</h2>
+          <p>
+            This is the most symmetrical option. Both teacher and student see the same main tabs: `All`, `Action Needed`, and `Docs`.
+            The difference is not in the tabs themselves, but in what appears inside those tabs for each role.
+          </p>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Why this is attractive</strong>
+              Very easy to understand and easier to maintain as one consistent system.
+            </div>
+            <div class="detail">
+              <strong>Main risk</strong>
+              Some student tabs may feel less useful unless the student-specific content is simplified carefully.
+            </div>
+            <div class="detail">
+              <strong>Design principle</strong>
+              Same outer structure, different inner content emphasis.
+            </div>
+          </div>
+          <div class="recommend">
+            <strong>Pro tip:</strong> this is the easiest model if later you want both teacher and student to learn the same mental pattern.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Teacher View</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">T</div>
+              <div class="id">
+                <strong>Abdullah</strong>
+                <span>same core tabs model</span>
+              </div>
+              <div class="icon">≡</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab">All</div>
+              <div class="subtab active warn">Action Needed</div>
+              <div class="subtab">Docs</div>
+            </div>
+            <div class="timeline">
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Pending Teacher Action</span>
+                  <span class="badge danger">Review overdue</span>
+                </div>
+                <div class="meta">Student uploaded report yesterday</div>
+                <div class="action-row">
+                  <div class="action primary">Open file</div>
+                  <div class="action">Send note</div>
+                </div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Quiz Result Not Sent</span>
+                  <span class="badge warn">Needs feedback</span>
+                </div>
+                <div class="meta">Score exists, teacher comment still missing</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Send instruction or feedback...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Student View</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">S</div>
+              <div class="id">
+                <strong>Teacher</strong>
+                <span>same core tabs model</span>
+              </div>
+              <div class="icon">☰</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab">All</div>
+              <div class="subtab active warn">Action Needed</div>
+              <div class="subtab">Docs</div>
+            </div>
+            <div class="timeline">
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Your next step</span>
+                  <span class="badge warn">Upload required</span>
+                </div>
+                <div class="meta">Fortnight report still not submitted</div>
+                <div class="action-row">
+                  <div class="action primary">Upload now</div>
+                  <div class="action">Ask teacher</div>
+                </div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Result available</span>
+                  <span class="badge ok">Ready</span>
+                </div>
+                <div class="meta">Weekly tajweed result can be opened</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Reply about pending work...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Detailed Pro Tips</h3>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Why it is strong</strong>
+              The app feels coherent. If you teach someone one thread, they understand the whole message system.
+            </div>
+            <div class="detail">
+              <strong>Big implementation advantage</strong>
+              Easier to design and code because both roles use one tab architecture.
+            </div>
+            <div class="detail">
+              <strong>Important caution</strong>
+              Student “Action Needed” must be simplified to clear next steps. Do not fill it with too many statuses or teacher-only concepts.
+            </div>
+            <div class="detail">
+              <strong>Best if</strong>
+              You want a balanced, scalable system and you value consistency more than role specialization.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-c">
+        <div class="card">
+          <h2>Mode C: Teacher Action Center / Student Journey</h2>
+          <p>
+            Here the teacher and student conversations are intentionally different in philosophy. The teacher thread becomes a control center.
+            The student thread becomes a guided journey. This is more opinionated, but very powerful if executed well.
+          </p>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Teacher tabs</strong>
+              `Queue`, `All`, `Docs`, `Results`
+            </div>
+            <div class="detail">
+              <strong>Student tabs</strong>
+              `Today`, `All`, `Completed`
+            </div>
+            <div class="detail">
+              <strong>Main risk</strong>
+              The difference is large, so it must be conceptually intentional.
+            </div>
+          </div>
+          <div class="recommend">
+            <strong>Pro tip:</strong> choose this only if you are confident that teacher and student should truly have different “jobs” inside the same conversation.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Teacher View</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">T</div>
+              <div class="id">
+                <strong>Teacher Queue View</strong>
+                <span>work-first mode</span>
+              </div>
+              <div class="icon">≡</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab active danger">Queue</div>
+              <div class="subtab">All</div>
+              <div class="subtab">Docs</div>
+              <div class="subtab">Results</div>
+            </div>
+            <div class="timeline">
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Review Queue Item</span>
+                  <span class="badge danger">First priority</span>
+                </div>
+                <div class="meta">Student report uploaded, waiting 16 hours</div>
+                <div class="action-row">
+                  <div class="action primary">Review</div>
+                  <div class="action">Snooze</div>
+                </div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Feedback Queue Item</span>
+                  <span class="badge warn">Second</span>
+                </div>
+                <div class="meta">Quiz score ready but comment missing</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Send action or feedback...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Student View</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">S</div>
+              <div class="id">
+                <strong>Student Journey View</strong>
+                <span>guided progress mode</span>
+              </div>
+              <div class="icon">☰</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab active">Today</div>
+              <div class="subtab">All</div>
+              <div class="subtab ok">Completed</div>
+            </div>
+            <div class="timeline">
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Do this now</span>
+                  <span class="badge warn">Today</span>
+                </div>
+                <div class="meta">Upload report with custom name</div>
+                <div class="action-row">
+                  <div class="action primary">Start upload</div>
+                </div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>After that</span>
+                  <span class="badge info">Next</span>
+                </div>
+                <div class="meta">Check teacher note on last correction</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Ask a question or update teacher...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Detailed Pro Tips</h3>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Teacher advantage</strong>
+              Very high efficiency. Teachers open the thread and immediately know what work is waiting.
+            </div>
+            <div class="detail">
+              <strong>Student advantage</strong>
+              Students get a simpler “what should I do now?” flow instead of browsing many data-heavy tabs.
+            </div>
+            <div class="detail">
+              <strong>Product warning</strong>
+              This is not the most WhatsApp-like. It is stronger as an education workflow product than as a pure chat metaphor.
+            </div>
+            <div class="detail">
+              <strong>Best if</strong>
+              You want the app to become a task-guided communication platform, not just a chat-centered portal.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-d">
+        <div class="card">
+          <h2>Mode D: One Timeline + Role Sheets</h2>
+          <p>
+            This is the closest to WhatsApp simplicity. Both teacher and student mostly see one main conversation timeline. Instead of visible
+            tabs, role-specific extra views open from a top-right drawer or bottom sheet. Teachers might open `Queue`, students might open
+            `Today` or `Uploads`, but the main screen remains one shared timeline.
+          </p>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Why many people will love this</strong>
+              Visually calm, emotionally simple, and the thread stays dominant.
+            </div>
+            <div class="detail">
+              <strong>Main risk</strong>
+              Discoverability. Some users may not realize how much power is hidden inside the menu sheet.
+            </div>
+            <div class="detail">
+              <strong>Best philosophy</strong>
+              Chat first, deeper tools second.
+            </div>
+          </div>
+          <div class="recommend">
+            <strong>Pro tip:</strong> if your dream is “WhatsApp for madrasa workflow,” this is probably the closest philosophical direction.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Teacher View</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">T</div>
+              <div class="id">
+                <strong>Teacher Timeline</strong>
+                <span>menu opens queue / docs / results</span>
+              </div>
+              <div class="icon">☰</div>
+            </div>
+            <div class="timeline">
+              <div class="sep">Today</div>
+              <div class="bubble out">
+                I reviewed your last upload and also updated your score.
+                <div class="time">9:12 PM</div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Document Submitted</span>
+                  <span class="badge warn">Pending review</span>
+                </div>
+                <div class="meta">Tap card or open queue from menu</div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Result Published</span>
+                  <span class="badge ok">18 / 20</span>
+                </div>
+                <div class="meta">Teacher note included</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Type a message...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Student View</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">S</div>
+              <div class="id">
+                <strong>Student Timeline</strong>
+                <span>menu opens today / uploads / completed</span>
+              </div>
+              <div class="icon">☰</div>
+            </div>
+            <div class="timeline">
+              <div class="sep">Today</div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Teacher Request</span>
+                  <span class="badge info">Open details</span>
+                </div>
+                <div class="meta">Submit corrected PDF before tonight</div>
+              </div>
+              <div class="bubble out">
+                I will upload the corrected version soon.
+                <div class="time">9:18 PM</div>
+              </div>
+              <div class="bubble in">
+                Good. Please name it clearly before sending.
+                <div class="time">9:19 PM</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Type a message or upload...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Detailed Pro Tips</h3>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Biggest strength</strong>
+              The app feels most like one true messaging product. Very little visual clutter.
+            </div>
+            <div class="detail">
+              <strong>How to make it successful</strong>
+              Inbox previews must become smart, because users will depend more on conversation summaries to know what is waiting.
+            </div>
+            <div class="detail">
+              <strong>Important design need</strong>
+              Structured message cards must be very clear, because the role tabs are no longer visibly teaching the user where things are.
+            </div>
+            <div class="detail">
+              <strong>Best if</strong>
+              Your final ambition is not “chat plus features,” but truly “all workflow lives around conversation.”
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

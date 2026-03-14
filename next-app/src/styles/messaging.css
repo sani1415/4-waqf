@@ -1044,11 +1044,11 @@ body:has(.chat-container) {
 
 @media (max-width: 768px) {
     .message-shell-header {
-        padding: 0.85rem 1rem 0.65rem;
+        padding: 0.6rem 0.9rem 0.4rem;
     }
 
     .message-shell-body {
-        padding: 0.9rem 1rem 0.85rem;
+        padding: 0.45rem 0.9rem 0.85rem;
     }
 
     .message-shell-composer.message-input-single-box {
@@ -1214,7 +1214,7 @@ body:has(.chat-container) {
 .message-shell-header {
     flex-shrink: 0;
     margin-bottom: 0;
-    padding: 1rem 1.25rem 0.75rem;
+    padding: 0.72rem 1rem 0.45rem;
     border-bottom: 1px solid rgba(226, 232, 240, 0.9);
     background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
@@ -1225,7 +1225,7 @@ body:has(.chat-container) {
     overflow-y: auto;
     background: radial-gradient(ellipse at top, rgba(123, 158, 189, 0.04) 0%, transparent 60%),
                 linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-    padding: 1.1rem 1.25rem 1rem;
+    padding: 0.6rem 1rem 1rem;
 }
 
 .message-shell-composer {

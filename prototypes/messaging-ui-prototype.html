@@ -3,89 +3,186 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Messaging UI Prototype</title>
+  <title>Conversation Tabs Prototype</title>
   <style>
     :root {
-      --bg: #eef3fb;
+      --bg: #ecf2fb;
       --surface: #ffffff;
-      --surface-soft: #f7f9fd;
-      --line: #dbe5f2;
+      --surface-soft: #f6f9fd;
+      --surface-tint: rgba(255, 255, 255, 0.76);
+      --line: #d9e5f2;
       --text: #21324d;
-      --muted: #6b7a90;
+      --muted: #6f7f96;
       --brand: #7ea6cf;
-      --brand-strong: #6a95c2;
-      --accent: #98b9dc;
-      --bubble-in: #ffffff;
-      --bubble-out: linear-gradient(180deg, #8ab0d6, #78a0c8);
-      --shadow: 0 20px 50px rgba(44, 68, 110, 0.12);
-      --radius: 22px;
+      --brand-strong: #648eb9;
+      --brand-soft: rgba(126, 166, 207, 0.14);
+      --danger-soft: #ffe8e6;
+      --danger-text: #bf5b52;
+      --ok-soft: #e7f7ef;
+      --ok-text: #2b7d57;
+      --shadow: 0 22px 60px rgba(40, 63, 105, 0.14);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
     }
 
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(126, 166, 207, 0.22), transparent 28%),
-        radial-gradient(circle at bottom right, rgba(152, 185, 220, 0.18), transparent 24%),
-        var(--bg);
       color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(126, 166, 207, 0.24), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(135, 173, 215, 0.18), transparent 28%),
+        var(--bg);
     }
 
     .page {
-      max-width: 1440px;
+      max-width: 1500px;
       margin: 0 auto;
-      padding: 32px 24px 56px;
+      padding: 32px 24px 60px;
     }
 
     .hero {
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .hero h1 {
-      margin: 0 0 8px;
-      font-size: 32px;
+      margin: 0 0 10px;
+      font-size: 34px;
       letter-spacing: -0.03em;
     }
 
     .hero p {
       margin: 0;
-      max-width: 820px;
+      max-width: 860px;
       color: var(--muted);
-      line-height: 1.6;
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    .top-note {
+      margin-top: 14px;
+      display: inline-flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .top-chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
     }
 
     .concept {
-      background: rgba(255, 255, 255, 0.5);
-      border: 1px solid rgba(219, 229, 242, 0.9);
-      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.54);
+      border: 1px solid rgba(217, 229, 242, 0.92);
+      border-radius: 30px;
       padding: 18px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
     }
 
-    .concept h2 {
-      margin: 0 0 6px;
-      font-size: 20px;
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
     }
 
-    .concept p {
-      margin: 0 0 16px;
+    .tabs input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .tabs label {
+      padding: 11px 15px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.85);
       color: var(--muted);
-      line-height: 1.5;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    #tab-a:checked ~ .tabs label[for="tab-a"],
+    #tab-b:checked ~ .tabs label[for="tab-b"],
+    #tab-c:checked ~ .tabs label[for="tab-c"],
+    #tab-d:checked ~ .tabs label[for="tab-d"],
+    #tab-e:checked ~ .tabs label[for="tab-e"] {
+      background: linear-gradient(180deg, #89b0d8, #77a0ca);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 10px 24px rgba(101, 144, 193, 0.28);
+    }
+
+    .panel-grid {
+      display: none;
+      grid-template-columns: minmax(260px, 330px) minmax(280px, 420px) minmax(260px, 330px);
+      gap: 22px;
+      align-items: start;
+    }
+
+    #tab-a:checked ~ .panel-a,
+    #tab-b:checked ~ .panel-b,
+    #tab-c:checked ~ .panel-c,
+    #tab-d:checked ~ .panel-d,
+    #tab-e:checked ~ .panel-e {
+      display: grid;
+    }
+
+    .variant-block h2 {
+      margin: 0 0 8px;
+      font-size: 21px;
+    }
+
+    .variant-block p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.6;
       font-size: 14px;
+    }
+
+    .bullets {
+      display: grid;
+      gap: 10px;
+    }
+
+    .bullet {
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.86);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .bullet strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+      font-size: 13px;
     }
 
     .phone {
       width: 100%;
-      max-width: 390px;
-      min-height: 780px;
+      max-width: 400px;
+      min-height: 800px;
       margin: 0 auto;
-      background: linear-gradient(180deg, #fdfefe, #f4f7fb);
+      background: linear-gradient(180deg, #fcfeff, #f3f7fb);
       border: 10px solid #f8fbff;
       border-radius: 34px;
       overflow: hidden;
-      box-shadow: 0 18px 48px rgba(39, 54, 88, 0.18);
+      box-shadow: 0 20px 52px rgba(37, 55, 87, 0.2);
       position: relative;
     }
 
@@ -94,82 +191,32 @@
       background: linear-gradient(180deg, #fbfdff, #f2f6fb);
     }
 
-    .design-variants {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 22px;
-      align-items: start;
-    }
-
-    .variant-block h3 {
-      margin: 0 0 6px;
-      font-size: 16px;
-    }
-
-    .variant-block p {
-      margin: 0 0 14px;
-      color: var(--muted);
-      line-height: 1.5;
-      font-size: 13px;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 16px 10px;
-      background: rgba(255, 255, 255, 0.88);
-      border-bottom: 1px solid var(--line);
-    }
-
-    .topbar.compact { padding-bottom: 12px; }
-
-    .left, .right {
+    .chat-head {
       display: flex;
       align-items: center;
       gap: 10px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.82);
+      border-bottom: 1px solid var(--line);
     }
 
-    .icon-btn, .pill, .mini-btn {
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
       border: 1px solid var(--line);
       background: #fff;
-      color: var(--text);
-      border-radius: 999px;
-      min-width: 38px;
-      height: 38px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      color: var(--text);
       font-size: 14px;
-    }
-
-    .title {
-      font-weight: 700;
-      font-size: 18px;
-    }
-
-    .chat-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
-      background: rgba(255, 255, 255, 0.78);
-      border-bottom: 1px solid var(--line);
-    }
-
-    .chat-header.tight {
-      padding: 10px 14px;
-      gap: 10px;
-    }
-
-    .chat-header.ultra-tight {
-      padding: 8px 12px;
-      gap: 9px;
+      flex-shrink: 0;
     }
 
     .avatar {
-      width: 42px;
-      height: 42px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: linear-gradient(180deg, #9ec0e1, #7ea6cf);
       color: white;
@@ -187,141 +234,100 @@
 
     .identity strong {
       display: block;
-      font-size: 17px;
+      font-size: 16px;
       line-height: 1.2;
     }
 
     .identity span {
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
     }
 
-    .filter-row {
-      padding: 10px 16px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.6);
-    }
-
-    .filter-row.hidden-style {
+    .subtabs {
       display: flex;
-      justify-content: flex-end;
-      padding: 10px 14px 0;
-      background: transparent;
-      border-bottom: 0;
-    }
-
-    .filter-row.compact-inline {
-      padding: 8px 12px 0;
-      border-bottom: 0;
-      background: transparent;
-    }
-
-    .filter-row.minimal-right {
-      display: flex;
-      justify-content: flex-end;
-      padding: 6px 12px 0;
-      border-bottom: 0;
-      background: transparent;
-    }
-
-    .filter-pill {
-      border: 1px solid var(--line);
-      background: #fff;
-      border-radius: 999px;
-      color: var(--muted);
-      padding: 8px 12px;
-      font-size: 13px;
-      display: inline-flex;
-      align-items: center;
       gap: 8px;
+      padding: 10px 12px 8px;
+      background: rgba(255, 255, 255, 0.62);
+      border-bottom: 1px solid rgba(217, 229, 242, 0.85);
+      overflow-x: auto;
+      scrollbar-width: none;
     }
 
-    .filter-icon-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 1px solid var(--line);
-      background: #fff;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+    .subtabs::-webkit-scrollbar { display: none; }
+
+    .subtab {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid transparent;
       color: var(--muted);
+      background: transparent;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .subtab.active {
+      background: #fff;
+      color: var(--brand-strong);
+      border-color: rgba(217, 229, 242, 0.95);
       box-shadow: 0 8px 18px rgba(76, 104, 146, 0.08);
     }
 
-    .filter-chip-soft {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 11px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.86);
-      border: 1px solid rgba(219, 229, 242, 0.9);
-      color: var(--muted);
-      font-size: 12px;
+    .subtab.warn {
+      background: var(--danger-soft);
+      color: var(--danger-text);
+      border-color: rgba(223, 168, 162, 0.35);
+    }
+
+    .subtab.ok {
+      background: var(--ok-soft);
+      color: var(--ok-text);
+      border-color: rgba(107, 177, 139, 0.25);
     }
 
     .messages {
-      min-height: 490px;
-      padding: 16px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.55), rgba(244,247,251,0.78)),
-        radial-gradient(circle at top, rgba(152,185,220,0.12), transparent 34%);
+      min-height: 510px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
       gap: 12px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.5), rgba(243,247,251,0.82)),
+        radial-gradient(circle at top, rgba(152,185,220,0.12), transparent 36%);
     }
 
-    .messages.fuller { min-height: 570px; }
+    .messages.airy { min-height: 540px; }
+    .messages.tight { min-height: 495px; gap: 10px; }
 
     .date-sep {
       align-self: center;
-      font-size: 12px;
-      color: var(--muted);
-      background: rgba(255,255,255,0.9);
-      border: 1px solid var(--line);
-      border-radius: 999px;
       padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .bubble {
-      max-width: 76%;
-      border-radius: 18px;
+      max-width: 80%;
       padding: 12px 14px;
-      font-size: 15px;
+      border-radius: 18px;
+      font-size: 14px;
       line-height: 1.45;
       box-shadow: 0 10px 22px rgba(76, 104, 146, 0.08);
     }
 
     .bubble.in {
       align-self: flex-start;
-      background: var(--bubble-in);
+      background: #fff;
       border: 1px solid var(--line);
     }
 
     .bubble.out {
       align-self: flex-end;
+      background: linear-gradient(180deg, #8db3d8, #759ec8);
       color: white;
-      background: var(--bubble-out);
-    }
-
-    .bubble.file {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .file-ico {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      background: rgba(126, 166, 207, 0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      color: var(--brand-strong);
-      font-weight: 700;
     }
 
     .time {
@@ -330,247 +336,642 @@
       opacity: 0.72;
     }
 
-    .composer {
-      margin: 8px 12px 12px;
-      padding: 10px;
+    .card {
+      border-radius: 18px;
+      border: 1px solid rgba(217, 229, 242, 0.96);
+      background: rgba(255, 255, 255, 0.95);
+      padding: 12px;
+      box-shadow: 0 10px 24px rgba(73, 100, 141, 0.08);
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .meta {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 0;
+    }
+
+    .tag {
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: var(--surface-soft);
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.95);
-      border-radius: 22px;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .action.primary {
+      background: linear-gradient(180deg, #8ab0d6, #78a0c8);
+      color: white;
+      border-color: transparent;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .list-item strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 13px;
+    }
+
+    .badge {
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.warn {
+      background: var(--danger-soft);
+      color: var(--danger-text);
+    }
+
+    .badge.ok {
+      background: var(--ok-soft);
+      color: var(--ok-text);
+    }
+
+    .badge.info {
+      background: var(--brand-soft);
+      color: var(--brand-strong);
+    }
+
+    .composer {
+      margin: 8px 10px 10px;
+      padding: 8px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.96);
       display: flex;
       align-items: center;
       gap: 8px;
-    }
-
-    .composer.slim {
-      margin-top: 0;
-      border-radius: 18px;
-      padding: 8px;
-    }
-
-    .composer.tighter {
-      margin: 6px 10px 10px;
-      padding: 7px;
-      border-radius: 18px;
-    }
-
-    .dropdown {
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 10px 12px;
-      font-size: 13px;
-      color: var(--muted);
-      white-space: nowrap;
-      background: var(--surface-soft);
     }
 
     .input {
       flex: 1;
       padding: 10px 12px;
       border-radius: 999px;
-      background: #f7f9fd;
-      color: #6d7990;
-      font-size: 14px;
+      background: var(--surface-soft);
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .send {
-      width: 42px;
-      height: 42px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      background: linear-gradient(180deg, #9abadd, #7da3c9);
+      background: linear-gradient(180deg, #97badb, #7fa4cb);
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
+      font-weight: 800;
       flex-shrink: 0;
     }
 
-    .bottom-nav {
-      height: 62px;
-      border-top: 1px solid var(--line);
-      background: rgba(255,255,255,0.96);
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      align-items: center;
-      text-align: center;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .nav-item.active {
-      color: var(--brand-strong);
-      font-weight: 700;
-    }
-
-    .note {
-      margin-top: 14px;
-      padding: 12px 14px;
+    .sheet-hint {
+      margin: 0 10px 8px;
+      padding: 10px 12px;
       border-radius: 16px;
-      background: #fff;
+      border: 1px dashed rgba(126, 166, 207, 0.48);
+      background: rgba(126, 166, 207, 0.08);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .summary {
+      padding: 14px 15px;
+      border-radius: 18px;
       border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.88);
       color: var(--muted);
       font-size: 13px;
-      line-height: 1.55;
+      line-height: 1.6;
+    }
+
+    .summary strong {
+      color: var(--text);
+    }
+
+    @media (max-width: 1180px) {
+      .panel-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .variant-block h2 {
+        margin-top: 4px;
+      }
     }
 
     @media (max-width: 900px) {
-      .page { padding: 20px 14px 40px; }
-      .hero h1 { font-size: 26px; }
+      .page {
+        padding: 20px 14px 40px;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="page">
     <div class="hero">
-      <h1>Messaging UI Prototype Directions</h1>
+      <h1>Conversation Tabs Prototype Directions</h1>
       <p>
-        This prototype now focuses only on Design A. The goal is to make the conversation feel bigger by removing the extra top bar
-        and treating message category in a lighter, more contextual way.
+        This prototype explores different ways to place a tab or mode system inside a single conversation so your app can become
+        more message-centered without turning the thread into a messy mixed feed. Each design below keeps chat as the main thing,
+        but organizes tasks, documents, results, and attention-needed items differently.
       </p>
+      <div class="top-note">
+        <div class="top-chip">Single HTML/CSS prototype</div>
+        <div class="top-chip">Different ideas in tabs</div>
+        <div class="top-chip">Focused on WhatsApp-like simplicity</div>
+      </div>
     </div>
 
     <section class="concept">
-        <h2>Design A: Focused Chat Mode</h2>
-        <p>
-          Updated with your direction: no separate top bar, and no permanent category dropdown blocking space. Below are cleaner variants.
-        </p>
-        <div class="design-variants">
-          <div class="variant-block">
-            <h3>A1: Teacher Chat Without Visible Category</h3>
-            <p>Best teacher mode. No permanent category control at all. Category can live inside a hidden menu or sheet when needed.</p>
-            <div class="phone">
-              <div class="status"></div>
-              <div class="chat-header ultra-tight">
-                <div class="icon-btn">←</div>
-                <div class="avatar">A</div>
-                <div class="identity">
-                  <strong>আব্দুল মুকীত</strong>
-                  <span>waqf-006</span>
-                </div>
-                <div class="icon-btn">⋯</div>
-              </div>
-              <div class="messages fuller">
-                <div class="date-sep">Today</div>
-                <div class="bubble out">
-                  Salam
-                  <div class="time">01:07 AM</div>
-                </div>
-                <div class="bubble in file">
-                  <div class="file-ico">PDF</div>
-                  <div>
-                    a.pdf
-                    <div class="time">01:09 AM</div>
-                  </div>
-                </div>
-                <div class="bubble in">
-                  Please review page 3 again and send the corrected version.
-                  <div class="time">01:11 AM</div>
-                </div>
-              </div>
-              <div class="composer tighter">
-                <div class="input">Type a message...</div>
-                <div class="icon-btn">＋</div>
-                <div class="send">➤</div>
-              </div>
+      <input type="radio" id="tab-a" name="prototype-tabs" checked>
+      <input type="radio" id="tab-b" name="prototype-tabs">
+      <input type="radio" id="tab-c" name="prototype-tabs">
+      <input type="radio" id="tab-d" name="prototype-tabs">
+      <input type="radio" id="tab-e" name="prototype-tabs">
+
+      <div class="tabs">
+        <label for="tab-a">Design A: Simple Segmented Tabs</label>
+        <label for="tab-b">Design B: Action Needed First</label>
+        <label for="tab-c">Design C: Floating Pills</label>
+        <label for="tab-d">Design D: Side Sheet Details</label>
+        <label for="tab-e">Design E: Hidden Modes Drawer</label>
+      </div>
+
+      <div class="panel-grid panel-a">
+        <div class="variant-block">
+          <h2>Design A: Simple Segmented Tabs</h2>
+          <p>
+            This is the safest version. It feels familiar, clean, and easy to understand. The conversation keeps one small
+            segmented row under the header: <strong>All</strong>, <strong>Action Needed</strong>, and <strong>Docs</strong>.
+          </p>
+          <div class="bullets">
+            <div class="bullet">
+              <strong>Best for</strong>
+              A first message-centered version of your app without making the conversation feel too experimental.
+            </div>
+            <div class="bullet">
+              <strong>Strong point</strong>
+              Students and teachers can quickly switch views, but still feel like they are in one chat.
+            </div>
+            <div class="bullet">
+              <strong>Risk</strong>
+              If you add too many tabs later, it can start looking like a mini-dashboard inside chat.
             </div>
           </div>
+        </div>
 
-          <div class="variant-block">
-            <h3>A2: Teacher Chat With Category In Header Menu</h3>
-            <p>For teacher only. Category is not always shown. It is accessed from the top-right menu, so the conversation stays dominant.</p>
-            <div class="phone">
-              <div class="status"></div>
-              <div class="chat-header ultra-tight">
-                <div class="icon-btn">←</div>
-                <div class="avatar">A</div>
-                <div class="identity">
-                  <strong>আব্দুল মুকীত</strong>
-                  <span>waqf-006</span>
-                </div>
-                <div class="icon-btn">⋯</div>
+        <div class="variant-block">
+          <div class="phone">
+            <div class="status"></div>
+            <div class="chat-head">
+              <div class="icon-btn">←</div>
+              <div class="avatar">A</div>
+              <div class="identity">
+                <strong>Abdul Mukit</strong>
+                <span>waqf-006</span>
               </div>
-              <div class="filter-row minimal-right">
-                <div class="filter-chip-soft">Category: hidden in menu</div>
+              <div class="icon-btn">≡</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab active">All</div>
+              <div class="subtab">Action Needed</div>
+              <div class="subtab">Docs</div>
+            </div>
+            <div class="messages airy">
+              <div class="date-sep">Today</div>
+              <div class="bubble out">
+                Please send your fortnight report after Maghrib.
+                <div class="time">7:10 PM</div>
               </div>
-              <div class="messages fuller">
-                <div class="date-sep">Today</div>
-                <div class="bubble out">
-                  Salam
-                  <div class="time">01:07 AM</div>
+              <div class="card">
+                <div class="card-title">
+                  <span>Task Card: Report Submission</span>
+                  <span class="badge warn">Pending</span>
                 </div>
-                <div class="bubble in file">
-                  <div class="file-ico">PDF</div>
-                  <div>
-                    a.pdf
-                    <div class="time">01:09 AM</div>
-                  </div>
+                <div class="meta">Due today before 10:00 PM</div>
+                <div class="tag-row">
+                  <div class="tag">fortnight report</div>
+                  <div class="tag">teacher request</div>
                 </div>
-                <div class="bubble in">
-                  Please review page 3 again and send the corrected version.
-                  <div class="time">01:11 AM</div>
+                <div class="action-row">
+                  <div class="action primary">Upload now</div>
+                  <div class="action">Ask question</div>
                 </div>
               </div>
-              <div class="composer tighter">
-                <div class="dropdown">Normal ▾</div>
-                <div class="input">Type a message...</div>
-                <div class="icon-btn">＋</div>
-                <div class="send">➤</div>
+              <div class="bubble in">
+                I have prepared 3 pages. Should I combine them into one PDF?
+                <div class="time">7:14 PM</div>
               </div>
             </div>
+            <div class="composer">
+              <div class="icon-btn">＋</div>
+              <div class="input">Type a message...</div>
+              <div class="send">➤</div>
+            </div>
           </div>
+        </div>
 
-          <div class="variant-block">
-            <h3>A3: Student Chat With Temporary Category Picker</h3>
-            <p>Better for students than a permanent dropdown. Category appears only after tapping the plus/attach action, then disappears again.</p>
-            <div class="phone">
-              <div class="status"></div>
-              <div class="chat-header ultra-tight">
-                <div class="icon-btn">←</div>
-                <div class="avatar">A</div>
-                <div class="identity">
-                  <strong>আব্দুল মুকীত</strong>
-                  <span>waqf-006</span>
-                </div>
-                <div class="icon-btn">⌕</div>
+        <div class="variant-block">
+          <div class="summary">
+            <strong>Recommendation:</strong> this is probably the best starting point for your real app. It feels close to WhatsApp,
+            but still gives space for education workflow cards.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-grid panel-b">
+        <div class="variant-block">
+          <h2>Design B: Action Needed First</h2>
+          <p>
+            In this direction, the conversation gives special importance to things that need attention. For teachers, this can be
+            very powerful because the tab row itself highlights urgency.
+          </p>
+          <div class="bullets">
+            <div class="bullet">
+              <strong>Best for</strong>
+              Teacher-heavy workflows where unread text is less important than unresolved actions.
+            </div>
+            <div class="bullet">
+              <strong>Strong point</strong>
+              It pushes the app beyond normal chat and makes the thread a real work center.
+            </div>
+            <div class="bullet">
+              <strong>Risk</strong>
+              It can feel less emotionally simple than WhatsApp if the “action” view becomes too dominant.
+            </div>
+          </div>
+        </div>
+
+        <div class="variant-block">
+          <div class="phone">
+            <div class="status"></div>
+            <div class="chat-head">
+              <div class="icon-btn">←</div>
+              <div class="avatar">S</div>
+              <div class="identity">
+                <strong>Sabit Ibn Omar</strong>
+                <span>2 items waiting</span>
               </div>
-              <div class="messages fuller">
-                <div class="date-sep">Today</div>
-                <div class="bubble out">
-                  Salam
-                  <div class="time">01:07 AM</div>
+              <div class="icon-btn">⋯</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab warn active">Action Needed (2)</div>
+              <div class="subtab">All</div>
+              <div class="subtab">Results</div>
+            </div>
+            <div class="messages tight">
+              <div class="card">
+                <div class="card-title">
+                  <span>Document Review Requested</span>
+                  <span class="badge warn">Needs fix</span>
                 </div>
-                <div class="bubble in file">
-                  <div class="file-ico">PDF</div>
-                  <div>
-                    a.pdf
-                    <div class="time">01:09 AM</div>
-                  </div>
-                </div>
-                <div class="bubble in">
-                  Please review page 3 again and send the corrected version.
-                  <div class="time">01:11 AM</div>
+                <div class="meta">Teacher note: page 2 image is blurry</div>
+                <div class="action-row">
+                  <div class="action primary">Re-upload</div>
+                  <div class="action">Open file</div>
                 </div>
               </div>
-              <div class="filter-row compact-inline">
-                <div class="filter-chip-soft">Normal selected after tapping +</div>
+              <div class="card">
+                <div class="card-title">
+                  <span>Weekly Quiz</span>
+                  <span class="badge warn">Not completed</span>
+                </div>
+                <div class="meta">Assigned yesterday. Estimated time: 10 min</div>
+                <div class="action-row">
+                  <div class="action primary">Start now</div>
+                  <div class="action">Remind later</div>
+                </div>
               </div>
-              <div class="composer tighter">
-                <div class="input">Type a message...</div>
-                <div class="icon-btn">＋</div>
-                <div class="send">➤</div>
+              <div class="bubble.in">
+                Brother, after you finish these two items, I will review your progress again.
+                <div class="time">8:02 PM</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon-btn">＋</div>
+              <div class="input">Reply about pending items...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="variant-block">
+          <div class="summary">
+            <strong>Recommendation:</strong> excellent for teachers, maybe slightly heavy for students if used as the only design.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-grid panel-c">
+        <div class="variant-block">
+          <h2>Design C: Floating Pills</h2>
+          <p>
+            This keeps the chat visually dominant. Instead of a full tab row, small floating pills sit above the timeline like a
+            light filter system. It feels more modern and less “app dashboard.”
+          </p>
+          <div class="bullets">
+            <div class="bullet">
+              <strong>Best for</strong>
+              If you want something elegant and lighter than normal tabs.
+            </div>
+            <div class="bullet">
+              <strong>Strong point</strong>
+              Keeps the conversation feeling big and immersive.
+            </div>
+            <div class="bullet">
+              <strong>Risk</strong>
+              Some users may not immediately realize these are important navigation modes.
+            </div>
+          </div>
+        </div>
+
+        <div class="variant-block">
+          <div class="phone">
+            <div class="status"></div>
+            <div class="chat-head">
+              <div class="icon-btn">←</div>
+              <div class="avatar">R</div>
+              <div class="identity">
+                <strong>Rafsan</strong>
+                <span>focused conversation</span>
+              </div>
+              <div class="icon-btn">≡</div>
+            </div>
+            <div class="sheet-hint">
+              Floating pills live inside the conversation area, not as a heavy permanent bar.
+            </div>
+            <div class="messages airy">
+              <div class="tag-row">
+                <div class="subtab active">All</div>
+                <div class="subtab">Tasks</div>
+                <div class="subtab">Docs</div>
+                <div class="subtab ok">Results</div>
+              </div>
+              <div class="date-sep">Today</div>
+              <div class="bubble out">
+                I have checked your recitation score.
+                <div class="time">5:34 PM</div>
+              </div>
+              <div class="card">
+                <div class="card-title">
+                  <span>Result Card</span>
+                  <span class="badge ok">18 / 20</span>
+                </div>
+                <div class="meta">Teacher feedback: much better on pronunciation.</div>
+                <div class="tag-row">
+                  <div class="tag">tajweed</div>
+                  <div class="tag">weekly quiz</div>
+                </div>
+              </div>
+              <div class="bubble in">
+                Alhamdulillah. I will practice the last part again.
+                <div class="time">5:37 PM</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon-btn">＋</div>
+              <div class="input">Type a message...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="variant-block">
+          <div class="summary">
+            <strong>Recommendation:</strong> visually beautiful, but use it only if you want a more premium, subtle UI.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-grid panel-d">
+        <div class="variant-block">
+          <h2>Design D: Side Sheet Details</h2>
+          <p>
+            This design keeps <strong>All</strong> as the only visible conversation mode. Instead of many tabs, tapping a task or
+            document opens a side sheet or bottom sheet for details. So the thread stays clean.
+          </p>
+          <div class="bullets">
+            <div class="bullet">
+              <strong>Best for</strong>
+              If you want the strongest WhatsApp feeling while still supporting complex features.
+            </div>
+            <div class="bullet">
+              <strong>Strong point</strong>
+              One main conversation timeline, less visible complexity.
+            </div>
+            <div class="bullet">
+              <strong>Risk</strong>
+              Harder to see all documents or all tasks at a glance unless you add a secondary sheet list.
+            </div>
+          </div>
+        </div>
+
+        <div class="variant-block">
+          <div class="phone">
+            <div class="status"></div>
+            <div class="chat-head">
+              <div class="icon-btn">←</div>
+              <div class="avatar">H</div>
+              <div class="identity">
+                <strong>Hasib</strong>
+                <span>All activity in one thread</span>
+              </div>
+              <div class="icon-btn">⋯</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab active">All</div>
+              <div class="subtab">Open drawer</div>
+            </div>
+            <div class="messages">
+              <div class="bubble out">
+                I assigned the memorization task and also checked your last upload.
+                <div class="time">4:02 PM</div>
+              </div>
+              <div class="card">
+                <div class="card-title">
+                  <span>Task Assigned</span>
+                  <span class="badge info">Tap to expand</span>
+                </div>
+                <div class="meta">Surah Mulk verses 1-8</div>
+              </div>
+              <div class="card">
+                <div class="card-title">
+                  <span>Document Submitted</span>
+                  <span class="badge warn">Review pending</span>
+                </div>
+                <div class="meta">Fortnight report PDF</div>
+              </div>
+              <div class="bubble in">
+                I will complete both tonight, in sha Allah.
+                <div class="time">4:08 PM</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon-btn">＋</div>
+              <div class="input">Type a message...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="variant-block">
+          <div class="list">
+            <div class="list-item">
+              <div>
+                <strong>Drawer idea</strong>
+                Open “Tasks”, “Docs”, or “Results” as a sheet from one menu button.
+              </div>
+            </div>
+            <div class="list-item">
+              <div>
+                <strong>Why this matters</strong>
+                The chat remains emotionally simple while structured data still exists.
               </div>
             </div>
           </div>
         </div>
-        <div class="note">
-          My strongest recommendation now is:
-          <strong>A1 or A2 for teacher</strong>, because teacher chat should stay clean and category should not occupy permanent space.
-          <strong>A3 for student</strong>, if you still want category support but only as a temporary action after tapping attach/plus.
+      </div>
+
+      <div class="panel-grid panel-e">
+        <div class="variant-block">
+          <h2>Design E: Hidden Modes Drawer</h2>
+          <p>
+            In this direction, there is no permanent row of tabs at all. A single button inside the conversation header opens a
+            modes drawer: <strong>All</strong>, <strong>Action Needed</strong>, <strong>Docs</strong>, <strong>Tasks</strong>,
+            <strong>Results</strong>. This keeps the main UI minimal.
+          </p>
+          <div class="bullets">
+            <div class="bullet">
+              <strong>Best for</strong>
+              Maximum visual simplicity.
+            </div>
+            <div class="bullet">
+              <strong>Strong point</strong>
+              The conversation stays very clean and close to WhatsApp.
+            </div>
+            <div class="bullet">
+              <strong>Risk</strong>
+              Discoverability is lower. Users may not notice the extra modes quickly.
+            </div>
+          </div>
         </div>
-      </section>
+
+        <div class="variant-block">
+          <div class="phone">
+            <div class="status"></div>
+            <div class="chat-head">
+              <div class="icon-btn">←</div>
+              <div class="avatar">M</div>
+              <div class="identity">
+                <strong>Mubashshir</strong>
+                <span>mode: all activity</span>
+              </div>
+              <div class="icon-btn">☰</div>
+            </div>
+            <div class="sheet-hint">
+              Tap the top-right button to open a mode drawer with: All, Action Needed, Docs, Tasks, Results.
+            </div>
+            <div class="messages airy">
+              <div class="date-sep">Today</div>
+              <div class="bubble out">
+                I have sent your updated task and result in this conversation.
+                <div class="time">9:01 PM</div>
+              </div>
+              <div class="card">
+                <div class="card-title">
+                  <span>Mixed Timeline</span>
+                  <span class="badge info">Cleaner UI</span>
+                </div>
+                <div class="meta">Everything stays in one feed unless the user opens another mode.</div>
+                <div class="tag-row">
+                  <div class="tag">task</div>
+                  <div class="tag">result</div>
+                  <div class="tag">document</div>
+                </div>
+              </div>
+              <div class="bubble in">
+                This feels closest to WhatsApp, but maybe the other modes should still exist inside the menu.
+                <div class="time">9:06 PM</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon-btn">＋</div>
+              <div class="input">Type a message...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="variant-block">
+          <div class="summary">
+            <strong>Recommendation:</strong> beautiful if you want a pure chat-first product, but probably best as a later refinement,
+            not the first implementation.
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </body>
 </html>

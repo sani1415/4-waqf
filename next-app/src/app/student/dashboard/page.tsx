@@ -1035,6 +1035,9 @@ function StudentDashboardContent() {
             <section className="panel-student panel-messages panel-messages-documents student-message-shell">
               <div className="student-message-shell-card message-shell-card">
                 <div className="student-messages-toolbar message-shell-header" data-testid="student-message-category-filter">
+                  <button type="button" className="mobile-menu-btn student-message-menu-btn" onClick={toggleSidebar} aria-label={t('menu')}>
+                    <i className="fas fa-bars"></i>
+                  </button>
                   <span className="student-messages-toolbar-label">
                     {filterByCategory === 'all'
                       ? t('all_categories')

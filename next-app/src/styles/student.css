@@ -543,6 +543,14 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
     overflow-x: hidden;
 }
 
+.student-main-content:has(.tab-wrap-student input#tab-messages:checked) {
+    padding-top: 0.9rem;
+}
+
+.student-main-content:has(.tab-wrap-student input#tab-messages:checked) .student-header {
+    display: none;
+}
+
 .student-header {
     background: white;
     border-radius: var(--radius-lg);
@@ -1568,6 +1576,17 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
     max-width: 100%;
 }
 
+.tab-wrap-student:has(input#tab-messages:checked) {
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.tab-wrap-student:has(input#tab-messages:checked) .tab-labels-student,
+.tab-wrap-student:has(input#tab-messages:checked) .tab-labels-desktop {
+    display: none !important;
+}
+
 /* Hide radio inputs */
 .tab-wrap-student input[type="radio"] {
     position: absolute;
@@ -1798,13 +1817,13 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
 .tab-wrap-student input#tab-messages:checked ~ .panels-student .panel-messages {
     display: flex !important;
     flex-direction: column;
-    min-height: min(70vh, calc(100vh - 200px));
-    height: min(70vh, calc(100vh - 200px));
+    min-height: min(82vh, calc(100vh - 150px));
+    height: min(82vh, calc(100vh - 150px));
     overflow: hidden;
 }
 
 .tab-wrap-student:has(input#tab-messages:checked) .panels-student {
-    padding: 0.35rem 0.35rem 0.5rem;
+    padding: 0.15rem 0.15rem 0.25rem;
     background: transparent;
 }
 
@@ -1845,6 +1864,11 @@ body:has(#tab-profile:checked) .student-sidebar label[for="tab-profile"]::before
     gap: 0.75rem;
     margin-bottom: 0.35rem;
     padding: 0.25rem 0.15rem 0.1rem;
+}
+
+.student-message-menu-btn {
+    flex-shrink: 0;
+    margin-right: 0.1rem;
 }
 
 .student-messages-toolbar-label {

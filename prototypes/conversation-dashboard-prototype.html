@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conversation Dashboard Prototype</title>
+  <style>
+    :root {
+      --bg: #eef4fb;
+      --surface: #ffffff;
+      --surface-soft: #f6f9fd;
+      --surface-muted: #f2f6fb;
+      --line: #d8e3ef;
+      --text: #21324d;
+      --muted: #6e7e95;
+      --brand: #7ea6cf;
+      --brand-strong: #638cb7;
+      --brand-soft: rgba(126, 166, 207, 0.14);
+      --success-soft: #e7f7ef;
+      --success-text: #2c7d58;
+      --warning-soft: #fff3df;
+      --warning-text: #a96e1b;
+      --danger-soft: #ffe8e5;
+      --danger-text: #bc5a51;
+      --shadow: 0 24px 70px rgba(41, 65, 105, 0.14);
+      --radius-xl: 30px;
+      --radius-lg: 24px;
+      --radius-md: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(126, 166, 207, 0.22), transparent 25%),
+        radial-gradient(circle at bottom right, rgba(126, 166, 207, 0.16), transparent 30%),
+        var(--bg);
+    }
+
+    .page {
+      max-width: 1640px;
+      margin: 0 auto;
+      padding: 30px 22px 64px;
+    }
+
+    .hero {
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 36px;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 1080px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 15px;
+    }
+
+    .hero-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.86);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .shell {
+      background: rgba(255, 255, 255, 0.56);
+      border: 1px solid rgba(216, 227, 239, 0.92);
+      border-radius: 30px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .mode-input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .mode-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .mode-tabs label {
+      padding: 11px 15px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.86);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    #design-a:checked ~ .mode-tabs label[for="design-a"],
+    #design-b:checked ~ .mode-tabs label[for="design-b"],
+    #design-c:checked ~ .mode-tabs label[for="design-c"],
+    #design-d:checked ~ .mode-tabs label[for="design-d"],
+    #design-e:checked ~ .mode-tabs label[for="design-e"] {
+      background: linear-gradient(180deg, #8ab0d7, #769fc9);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 12px 24px rgba(101, 144, 193, 0.3);
+    }
+
+    .panel {
+      display: none;
+      grid-template-columns: minmax(290px, 360px) minmax(320px, 430px) minmax(320px, 430px) minmax(290px, 360px);
+      gap: 20px;
+      align-items: start;
+    }
+
+    #design-a:checked ~ .panel-a,
+    #design-b:checked ~ .panel-b,
+    #design-c:checked ~ .panel-c,
+    #design-d:checked ~ .panel-d,
+    #design-e:checked ~ .panel-e {
+      display: grid;
+    }
+
+    .info-card {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+    }
+
+    .info-card h2,
+    .info-card h3 {
+      margin: 0 0 8px;
+      line-height: 1.25;
+    }
+
+    .info-card h2 { font-size: 23px; }
+    .info-card h3 { font-size: 16px; }
+
+    .info-card p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .detail-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .detail {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.94);
+      padding: 12px 13px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.58;
+    }
+
+    .detail strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .decision {
+      margin-top: 10px;
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: var(--brand-soft);
+      border: 1px solid rgba(126, 166, 207, 0.22);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .decision strong {
+      color: var(--text);
+    }
+
+    .phone {
+      width: 100%;
+      max-width: 410px;
+      min-height: 820px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #fcfeff, #f3f7fb);
+      border: 10px solid #f8fbff;
+      border-radius: 34px;
+      overflow: hidden;
+      box-shadow: 0 20px 52px rgba(37, 55, 87, 0.2);
+      position: relative;
+    }
+
+    .status {
+      height: 16px;
+      background: linear-gradient(180deg, #fbfdff, #f2f6fb);
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.84);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #9ec0e1, #7ea6cf);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .id {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .id strong {
+      display: block;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .id span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .subtabs {
+      display: flex;
+      gap: 8px;
+      padding: 10px 12px 8px;
+      background: rgba(255, 255, 255, 0.65);
+      border-bottom: 1px solid rgba(216, 227, 239, 0.84);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .subtabs::-webkit-scrollbar { display: none; }
+
+    .subtab {
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+      background: transparent;
+      border: 1px solid transparent;
+    }
+
+    .subtab.active {
+      background: #fff;
+      color: var(--brand-strong);
+      border-color: rgba(216, 227, 239, 0.96);
+      box-shadow: 0 8px 18px rgba(76, 104, 146, 0.08);
+    }
+
+    .subtab.warn {
+      background: var(--warning-soft);
+      color: var(--warning-text);
+      border-color: rgba(204, 170, 109, 0.26);
+    }
+
+    .subtab.ok {
+      background: var(--success-soft);
+      color: var(--success-text);
+      border-color: rgba(107, 177, 139, 0.24);
+    }
+
+    .subtab.danger {
+      background: var(--danger-soft);
+      color: var(--danger-text);
+      border-color: rgba(203, 149, 142, 0.24);
+    }
+
+    .timeline {
+      min-height: 500px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.5), rgba(243,247,251,0.82)),
+        radial-gradient(circle at top, rgba(152,185,220,0.11), transparent 36%);
+    }
+
+    .timeline.tight { min-height: 470px; gap: 10px; }
+    .timeline.dashboard-top { min-height: 430px; }
+
+    .sep {
+      align-self: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .bubble {
+      max-width: 80%;
+      padding: 12px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.45;
+      box-shadow: 0 10px 22px rgba(76, 104, 146, 0.08);
+    }
+
+    .bubble.in {
+      align-self: flex-start;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .bubble.out {
+      align-self: flex-end;
+      background: linear-gradient(180deg, #8db3d8, #759ec8);
+      color: white;
+    }
+
+    .time {
+      margin-top: 6px;
+      font-size: 11px;
+      opacity: 0.72;
+    }
+
+    .dashboard-strip {
+      margin: 10px 12px 0;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .metric {
+      border-radius: 16px;
+      border: 1px solid rgba(216, 227, 239, 0.96);
+      background: rgba(255, 255, 255, 0.95);
+      padding: 10px;
+      box-shadow: 0 10px 24px rgba(73, 100, 141, 0.08);
+    }
+
+    .metric-title {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-value {
+      font-size: 21px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .metric-sub {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--surface-muted);
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(180deg, #90b4d8, #789fc8);
+    }
+
+    .flow-card {
+      border-radius: 18px;
+      border: 1px solid rgba(216, 227, 239, 0.96);
+      background: rgba(255, 255, 255, 0.96);
+      padding: 12px;
+      box-shadow: 0 10px 24px rgba(73, 100, 141, 0.08);
+    }
+
+    .flow-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .meta {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .tag-row, .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .action-row {
+      margin-top: 12px;
+    }
+
+    .action {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .action.primary {
+      background: linear-gradient(180deg, #8ab0d7, #78a0ca);
+      color: white;
+      border-color: transparent;
+    }
+
+    .badge {
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.warn {
+      background: var(--warning-soft);
+      color: var(--warning-text);
+    }
+
+    .badge.ok {
+      background: var(--success-soft);
+      color: var(--success-text);
+    }
+
+    .badge.danger {
+      background: var(--danger-soft);
+      color: var(--danger-text);
+    }
+
+    .badge.info {
+      background: var(--brand-soft);
+      color: var(--brand-strong);
+    }
+
+    .sheet-preview {
+      margin: 10px 12px 0;
+      border-radius: 18px;
+      border: 1px dashed rgba(126, 166, 207, 0.46);
+      background: rgba(126, 166, 207, 0.08);
+      padding: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .composer {
+      margin: 8px 10px 10px;
+      padding: 8px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.96);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .icon {
+      user-select: none;
+    }
+
+    .send {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #97badb, #7fa4cb);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 1500px) {
+      .panel {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .panel {
+        grid-template-columns: 1fr;
+      }
+
+      .page {
+        padding: 20px 14px 40px;
+      }
+
+      .hero h1 {
+        font-size: 29px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="hero">
+      <h1>Conversation-Centered Dashboard Prototype</h1>
+      <p>
+        This prototype explores a hybrid future for your app: not only conversation-centered like WhatsApp, but also educationally meaningful.
+        In this direction, each teacher-student relationship contains both a conversation layer and a dashboard layer. The dashboard is not a
+        separate unrelated product. It is the progress lens for that specific relationship: task completion, reports percentage, results,
+        streaks, uploads, pending review, and quick action items.
+      </p>
+      <div class="hero-chips">
+        <div class="chip">Conversation first</div>
+        <div class="chip">Dashboard inside relationship</div>
+        <div class="chip">Teacher and student comparisons</div>
+        <div class="chip">Detailed notes for decision-making</div>
+      </div>
+    </div>
+
+    <section class="shell">
+      <input class="mode-input" type="radio" id="design-a" name="dashboard-design" checked>
+      <input class="mode-input" type="radio" id="design-b" name="dashboard-design">
+      <input class="mode-input" type="radio" id="design-c" name="dashboard-design">
+      <input class="mode-input" type="radio" id="design-d" name="dashboard-design">
+      <input class="mode-input" type="radio" id="design-e" name="dashboard-design">
+
+      <div class="mode-tabs">
+        <label for="design-a">Design A: Chat + Dashboard Tabs</label>
+        <label for="design-b">Design B: Dashboard Sheet From Chat</label>
+        <label for="design-c">Design C: Pinned Progress Cards</label>
+        <label for="design-d">Design D: Teacher Analytics / Student Progress</label>
+        <label for="design-e">Design E: Relationship Hub</label>
+      </div>
+
+      <div class="panel panel-a">
+        <div class="info-card">
+          <h2>Design A: Chat + Dashboard Tabs</h2>
+          <p>
+            This is the clearest hybrid. Inside one conversation, there are visible tabs such as <strong>Chat</strong>,
+            <strong>Dashboard</strong>, <strong>Action Needed</strong>, and maybe <strong>Docs</strong>. The dashboard is a real tab,
+            not a separate page somewhere else in the app.
+          </p>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Core idea</strong>
+              Let the user move between talking and understanding progress without leaving the relationship context.
+            </div>
+            <div class="detail">
+              <strong>What teacher sees in dashboard</strong>
+              task completion percentages, overdue items, recent uploads, last result, current trend, and quick actions.
+            </div>
+            <div class="detail">
+              <strong>What student sees in dashboard</strong>
+              daily completion, one-time completion, report percentage, latest teacher feedback, latest result, and next step.
+            </div>
+            <div class="detail">
+              <strong>Main strength</strong>
+              Very understandable. It clearly tells the user that conversation and progress belong together.
+            </div>
+            <div class="detail">
+              <strong>Main risk</strong>
+              If too many tabs are added, it can feel like a mini-dashboard app inside chat.
+            </div>
+          </div>
+          <div class="decision">
+            <strong>Decision tip:</strong> choose this if you want the safest bridge between your current app structure and your future
+            message-centered vision.
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Teacher Conversation</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">T</div>
+              <div class="id">
+                <strong>Abdul Mukit</strong>
+                <span>teacher relationship view</span>
+              </div>
+              <div class="icon">≡</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab">Chat</div>
+              <div class="subtab active">Dashboard</div>
+              <div class="subtab warn">Action Needed</div>
+              <div class="subtab">Docs</div>
+            </div>
+            <div class="dashboard-strip">
+              <div class="metric">
+                <div class="metric-title">Daily Completion</div>
+                <div class="metric-value">84%</div>
+                <div class="metric-sub">6 of 7 days active</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:84%"></div></div>
+              </div>
+              <div class="metric">
+                <div class="metric-title">Reports</div>
+                <div class="metric-value">72%</div>
+                <div class="metric-sub">Latest submitted yesterday</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:72%"></div></div>
+              </div>
+            </div>
+            <div class="timeline dashboard-top">
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Quick Summary</span>
+                  <span class="badge warn">2 issues</span>
+                </div>
+                <div class="meta">Completion good, upload quality weak</div>
+                <div class="tag-row">
+                  <div class="tag">daily tasks strong</div>
+                  <div class="tag">review pending</div>
+                  <div class="tag">result improving</div>
+                </div>
+                <div class="action-row">
+                  <div class="action primary">Send reminder</div>
+                  <div class="action">Open uploads</div>
+                </div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Latest Result</span>
+                  <span class="badge ok">18 / 20</span>
+                </div>
+                <div class="meta">Teacher note: pronunciation improved, fluency still needs work</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Send message or teacher action...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Student Conversation</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">S</div>
+              <div class="id">
+                <strong>Teacher</strong>
+                <span>student relationship view</span>
+              </div>
+              <div class="icon">☰</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab">Chat</div>
+              <div class="subtab active">Dashboard</div>
+              <div class="subtab">Tasks</div>
+              <div class="subtab">Docs</div>
+            </div>
+            <div class="dashboard-strip">
+              <div class="metric">
+                <div class="metric-title">Today</div>
+                <div class="metric-value">3 / 4</div>
+                <div class="metric-sub">one task left</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
+              </div>
+              <div class="metric">
+                <div class="metric-title">Report Score</div>
+                <div class="metric-value">72%</div>
+                <div class="metric-sub">teacher asked for clearer page 2</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:72%"></div></div>
+              </div>
+            </div>
+            <div class="timeline dashboard-top">
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Your Next Step</span>
+                  <span class="badge warn">Action</span>
+                </div>
+                <div class="meta">Re-upload corrected fortnight report before 10 PM</div>
+                <div class="action-row">
+                  <div class="action primary">Upload now</div>
+                  <div class="action">Ask question</div>
+                </div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Latest Teacher Note</span>
+                  <span class="badge info">Progress</span>
+                </div>
+                <div class="meta">Memorization is improving. Focus on fluency in final ayat.</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Reply or upload document...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Detailed Pro Tips</h3>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Why this is powerful</strong>
+              It preserves the educational value of your app. Students do not lose visibility of completion percentages and reports.
+            </div>
+            <div class="detail">
+              <strong>Why it fits your current system</strong>
+              Your app already has dashboard-like progress information. This design relocates it into the relationship context rather than throwing it away.
+            </div>
+            <div class="detail">
+              <strong>Implementation direction</strong>
+              Use the same data you already compute for student dashboard summaries, but scope it inside the teacher-student conversation shell.
+            </div>
+            <div class="detail">
+              <strong>Most important warning</strong>
+              Keep the dashboard tab summary-focused. Do not dump every record table there. Use small cards, meaningful metrics, and quick actions only.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-b">
+        <div class="info-card">
+          <h2>Design B: Dashboard Sheet From Chat</h2>
+          <p>
+            In this direction, the conversation remains visually simpler. The user mostly stays on chat, and a compact dashboard opens as a
+            slide-up sheet or side sheet when needed. So the dashboard exists, but it is not always visible as a full tab.
+          </p>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Core idea</strong>
+              Make chat primary and progress secondary, but still always reachable.
+            </div>
+            <div class="detail">
+              <strong>Best use</strong>
+              Good if you want stronger WhatsApp feeling while still preserving your educational progress layer.
+            </div>
+            <div class="detail">
+              <strong>Main strength</strong>
+              Cleaner top navigation, less visual weight.
+            </div>
+            <div class="detail">
+              <strong>Main risk</strong>
+              Some users may not open the dashboard sheet often enough unless the entry point is very obvious.
+            </div>
+          </div>
+          <div class="decision">
+            <strong>Decision tip:</strong> choose this if you want chat to feel emotionally dominant, but do not want to lose reports, percentages, and progress visibility.
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Teacher Conversation</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">T</div>
+              <div class="id">
+                <strong>Abdul Karim</strong>
+                <span>chat-first teacher mode</span>
+              </div>
+              <div class="icon">☰</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab active">Chat</div>
+              <div class="subtab warn">Action Needed</div>
+              <div class="subtab">Docs</div>
+            </div>
+            <div class="sheet-preview">
+              Dashboard sheet entry from top-right or from a summary chip:
+              completion %, reports %, latest result, pending review, and teacher actions.
+            </div>
+            <div class="timeline">
+              <div class="sep">Today</div>
+              <div class="bubble out">
+                I checked your latest upload and score.
+                <div class="time">7:45 PM</div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Progress Snapshot</span>
+                  <span class="badge info">Tap for sheet</span>
+                </div>
+                <div class="meta">Daily 84% • Report 72% • Result 18/20</div>
+              </div>
+              <div class="bubble in">
+                Should I upload the corrected page now?
+                <div class="time">7:48 PM</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Type a message...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Student Conversation</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">S</div>
+              <div class="id">
+                <strong>Teacher</strong>
+                <span>chat-first student mode</span>
+              </div>
+              <div class="icon">☰</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab active">Chat</div>
+              <div class="subtab">Tasks</div>
+              <div class="subtab">Docs</div>
+            </div>
+            <div class="sheet-preview">
+              Student dashboard sheet entry:
+              today progress, report percentage, latest result, next task, latest teacher note.
+            </div>
+            <div class="timeline">
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Teacher Request</span>
+                  <span class="badge warn">Action</span>
+                </div>
+                <div class="meta">Upload corrected report with proper file name</div>
+              </div>
+              <div class="bubble out">
+                I have completed 3 of 4 tasks today.
+                <div class="time">7:50 PM</div>
+              </div>
+              <div class="bubble in">
+                Good. Finish the last one and upload the corrected report.
+                <div class="time">7:51 PM</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Reply or upload...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Detailed Pro Tips</h3>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Product advantage</strong>
+              The chat remains emotionally familiar. Users do not feel like they have entered a dashboard-heavy product.
+            </div>
+            <div class="detail">
+              <strong>Education advantage</strong>
+              Dashboard still exists, so students can see their percentages and teachers can view progress without leaving the relationship.
+            </div>
+            <div class="detail">
+              <strong>Important requirement</strong>
+              You need a very visible dashboard entry point, such as a persistent summary chip or a small stats strip near the top.
+            </div>
+            <div class="detail">
+              <strong>Best if</strong>
+              Your long-term priority is “chat as home,” but you still want a stronger education layer than WhatsApp can provide.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-c">
+        <div class="info-card">
+          <h2>Design C: Pinned Progress Cards Above Chat</h2>
+          <p>
+            This design keeps conversation and dashboard tightly merged. Instead of a separate dashboard tab or sheet, a compact group of
+            pinned progress cards lives above the chat timeline. It acts like a mini-dashboard banner for the relationship.
+          </p>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Core idea</strong>
+              Show important progress all the time without leaving chat.
+            </div>
+            <div class="detail">
+              <strong>Best use</strong>
+              Good when quick visibility matters more than deep exploration.
+            </div>
+            <div class="detail">
+              <strong>Main strength</strong>
+              Users immediately understand the student’s current state.
+            </div>
+            <div class="detail">
+              <strong>Main risk</strong>
+              The top of the conversation can become crowded if too many cards are pinned.
+            </div>
+          </div>
+          <div class="decision">
+            <strong>Decision tip:</strong> choose this if you want progress always visible, but still want the app to feel mostly like a conversation tool.
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Teacher Conversation</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">T</div>
+              <div class="id">
+                <strong>Teacher Progress Banner</strong>
+                <span>always-visible insight</span>
+              </div>
+              <div class="icon">≡</div>
+            </div>
+            <div class="dashboard-strip">
+              <div class="metric">
+                <div class="metric-title">Daily</div>
+                <div class="metric-value">84%</div>
+                <div class="metric-sub">strong</div>
+              </div>
+              <div class="metric">
+                <div class="metric-title">Report</div>
+                <div class="metric-value">72%</div>
+                <div class="metric-sub">needs review</div>
+              </div>
+              <div class="metric">
+                <div class="metric-title">Result</div>
+                <div class="metric-value">18/20</div>
+                <div class="metric-sub">improving</div>
+              </div>
+              <div class="metric">
+                <div class="metric-title">Pending</div>
+                <div class="metric-value">2</div>
+                <div class="metric-sub">teacher actions</div>
+              </div>
+            </div>
+            <div class="timeline tight">
+              <div class="bubble out">
+                I can already see your progress is better this week.
+                <div class="time">8:12 PM</div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Review Task</span>
+                  <span class="badge warn">Pending</span>
+                </div>
+                <div class="meta">Correct page 2 upload still needed</div>
+              </div>
+              <div class="bubble.in">
+                I will upload the corrected file after Esha.
+                <div class="time">8:14 PM</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Type a message...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Student Conversation</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">S</div>
+              <div class="id">
+                <strong>Student Progress Banner</strong>
+                <span>always-visible motivation</span>
+              </div>
+              <div class="icon">☰</div>
+            </div>
+            <div class="dashboard-strip">
+              <div class="metric">
+                <div class="metric-title">Today</div>
+                <div class="metric-value">3/4</div>
+                <div class="metric-sub">one left</div>
+              </div>
+              <div class="metric">
+                <div class="metric-title">Weekly</div>
+                <div class="metric-value">84%</div>
+                <div class="metric-sub">good streak</div>
+              </div>
+              <div class="metric">
+                <div class="metric-title">Report</div>
+                <div class="metric-value">72%</div>
+                <div class="metric-sub">fix page 2</div>
+              </div>
+              <div class="metric">
+                <div class="metric-title">Latest</div>
+                <div class="metric-value">18/20</div>
+                <div class="metric-sub">quiz result</div>
+              </div>
+            </div>
+            <div class="timeline tight">
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Next Action</span>
+                  <span class="badge warn">Do now</span>
+                </div>
+                <div class="meta">Upload corrected report</div>
+                <div class="action-row">
+                  <div class="action primary">Upload</div>
+                </div>
+              </div>
+              <div class="bubble out">
+                Alhamdulillah my result is improving.
+                <div class="time">8:15 PM</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Reply or upload...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Detailed Pro Tips</h3>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Strongest point</strong>
+              Very quick reading. Teachers and students instantly see progress without tapping away from chat.
+            </div>
+            <div class="detail">
+              <strong>What to keep small</strong>
+              Show only 3 to 4 key metrics, not full analytics. Think “snapshot,” not “report page.”
+            </div>
+            <div class="detail">
+              <strong>Best extra idea</strong>
+              Let one tap on a metric open full detail. So the banner remains compact but still deepens when needed.
+            </div>
+            <div class="detail">
+              <strong>Best if</strong>
+              You want motivation and progress awareness to remain constantly visible in the relationship.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-d">
+        <div class="info-card">
+          <h2>Design D: Teacher Analytics / Student Progress</h2>
+          <p>
+            This version accepts that teacher and student dashboards should not be identical. The conversation remains shared,
+            but the dashboard layer is role-specialized. Teachers see deeper analytics. Students see guided progress and encouragement.
+          </p>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Teacher emphasis</strong>
+              trend, weak areas, pending review, quick teacher actions, comparison across recent periods.
+            </div>
+            <div class="detail">
+              <strong>Student emphasis</strong>
+              what I completed, what is left, what improved, what to do next.
+            </div>
+            <div class="detail">
+              <strong>Main strength</strong>
+              Very aligned with real role differences.
+            </div>
+            <div class="detail">
+              <strong>Main risk</strong>
+              More design complexity and more product decisions to maintain.
+            </div>
+          </div>
+          <div class="decision">
+            <strong>Decision tip:</strong> choose this if you want the richest educational product and you are comfortable with stronger role-based differentiation.
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Teacher Relationship Dashboard</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">T</div>
+              <div class="id">
+                <strong>Teacher Dashboard Mode</strong>
+                <span>analytics-led</span>
+              </div>
+              <div class="icon">≡</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab">Chat</div>
+              <div class="subtab active">Dashboard</div>
+              <div class="subtab warn">Review Queue</div>
+            </div>
+            <div class="dashboard-strip">
+              <div class="metric">
+                <div class="metric-title">Trend</div>
+                <div class="metric-value">+12%</div>
+                <div class="metric-sub">vs last week</div>
+              </div>
+              <div class="metric">
+                <div class="metric-title">Weak Spot</div>
+                <div class="metric-value">Uploads</div>
+                <div class="metric-sub">clarity issue</div>
+              </div>
+            </div>
+            <div class="timeline dashboard-top">
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Teacher Insight</span>
+                  <span class="badge info">Summary</span>
+                </div>
+                <div class="meta">Daily task discipline is good, but document quality still causes review delays.</div>
+                <div class="action-row">
+                  <div class="action primary">Send coaching note</div>
+                  <div class="action">Open full reports</div>
+                </div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Latest Result Trend</span>
+                  <span class="badge ok">Improving</span>
+                </div>
+                <div class="meta">15/20 -> 16/20 -> 18/20</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Send teacher feedback...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Student Relationship Dashboard</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">S</div>
+              <div class="id">
+                <strong>Student Dashboard Mode</strong>
+                <span>progress-led</span>
+              </div>
+              <div class="icon">☰</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab">Chat</div>
+              <div class="subtab active">Dashboard</div>
+              <div class="subtab ok">Completed</div>
+            </div>
+            <div class="dashboard-strip">
+              <div class="metric">
+                <div class="metric-title">This Week</div>
+                <div class="metric-value">84%</div>
+                <div class="metric-sub">better than last week</div>
+              </div>
+              <div class="metric">
+                <div class="metric-title">Next Goal</div>
+                <div class="metric-value">90%</div>
+                <div class="metric-sub">reach 4/4 daily</div>
+              </div>
+            </div>
+            <div class="timeline dashboard-top">
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Your Encouragement</span>
+                  <span class="badge ok">Improved</span>
+                </div>
+                <div class="meta">You improved by 12% from last week. Keep going.</div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Do This Next</span>
+                  <span class="badge warn">Priority</span>
+                </div>
+                <div class="meta">Finish last daily task and re-upload corrected report page.</div>
+                <div class="action-row">
+                  <div class="action primary">Start now</div>
+                </div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Reply or ask teacher...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Detailed Pro Tips</h3>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Why this can be excellent</strong>
+              It uses the same relationship space, but respects that the teacher needs interpretation while the student needs motivation and next steps.
+            </div>
+            <div class="detail">
+              <strong>Best product lesson</strong>
+              Teacher dashboard should answer: “What do I need to do with this student?” Student dashboard should answer: “How am I doing and what do I do next?”
+            </div>
+            <div class="detail">
+              <strong>Implementation caution</strong>
+              Do not create completely different architecture. Keep the same shell, but change the emphasis inside the cards.
+            </div>
+            <div class="detail">
+              <strong>Best if</strong>
+              You want a premium, thoughtful product rather than a simple clone of chat apps.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-e">
+        <div class="info-card">
+          <h2>Design E: Relationship Hub</h2>
+          <p>
+            This is the biggest idea. The conversation does not only have chat and dashboard. The whole teacher-student relationship becomes
+            a hub containing <strong>Chat</strong>, <strong>Dashboard</strong>, <strong>Tasks</strong>, <strong>Docs</strong>, and
+            <strong>Results</strong>. The key is that they all remain inside the same relationship shell.
+          </p>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Core idea</strong>
+              Not “separate modules of the app,” but one relationship center with multiple lenses.
+            </div>
+            <div class="detail">
+              <strong>Main strength</strong>
+              Very complete. Almost everything important lives in one relationship workspace.
+            </div>
+            <div class="detail">
+              <strong>Main risk</strong>
+              This is the heaviest model. If not designed carefully, it can feel like too much.
+            </div>
+            <div class="detail">
+              <strong>When it makes sense</strong>
+              If your final product truly becomes relationship-centered rather than page-centered.
+            </div>
+          </div>
+          <div class="decision">
+            <strong>Decision tip:</strong> choose this if your ambition is very large and you want the relationship itself to be the main unit of the app.
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Teacher Relationship Hub</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">T</div>
+              <div class="id">
+                <strong>Teacher Hub</strong>
+                <span>everything in one relationship</span>
+              </div>
+              <div class="icon">≡</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab">Chat</div>
+              <div class="subtab active">Dashboard</div>
+              <div class="subtab">Tasks</div>
+              <div class="subtab">Docs</div>
+              <div class="subtab">Results</div>
+            </div>
+            <div class="dashboard-strip">
+              <div class="metric">
+                <div class="metric-title">Overall</div>
+                <div class="metric-value">81%</div>
+                <div class="metric-sub">relationship health</div>
+              </div>
+              <div class="metric">
+                <div class="metric-title">Review Queue</div>
+                <div class="metric-value">2</div>
+                <div class="metric-sub">teacher actions</div>
+              </div>
+            </div>
+            <div class="timeline dashboard-top">
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Hub Summary</span>
+                  <span class="badge info">At a glance</span>
+                </div>
+                <div class="meta">Good momentum, one upload fix needed, result trend positive.</div>
+                <div class="tag-row">
+                  <div class="tag">chat active</div>
+                  <div class="tag">task progress good</div>
+                  <div class="tag">doc issue minor</div>
+                </div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Next Best Teacher Action</span>
+                  <span class="badge warn">Recommended</span>
+                </div>
+                <div class="meta">Review corrected report and send final confirmation.</div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Message, assign, review, or respond...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Student Relationship Hub</h3>
+          <div class="phone">
+            <div class="status"></div>
+            <div class="head">
+              <div class="icon">←</div>
+              <div class="avatar">S</div>
+              <div class="id">
+                <strong>Student Hub</strong>
+                <span>one place to understand progress</span>
+              </div>
+              <div class="icon">☰</div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab">Chat</div>
+              <div class="subtab active">Dashboard</div>
+              <div class="subtab">Tasks</div>
+              <div class="subtab">Docs</div>
+              <div class="subtab">Results</div>
+            </div>
+            <div class="dashboard-strip">
+              <div class="metric">
+                <div class="metric-title">Today</div>
+                <div class="metric-value">75%</div>
+                <div class="metric-sub">3 of 4 tasks</div>
+              </div>
+              <div class="metric">
+                <div class="metric-title">Report</div>
+                <div class="metric-value">72%</div>
+                <div class="metric-sub">one correction left</div>
+              </div>
+            </div>
+            <div class="timeline dashboard-top">
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Your Relationship Summary</span>
+                  <span class="badge ok">Going well</span>
+                </div>
+                <div class="meta">You are improving. One task and one corrected upload remain.</div>
+              </div>
+              <div class="flow-card">
+                <div class="flow-top">
+                  <span>Best Next Step</span>
+                  <span class="badge warn">Now</span>
+                </div>
+                <div class="meta">Complete final daily task, then upload corrected PDF.</div>
+                <div class="action-row">
+                  <div class="action primary">Start</div>
+                </div>
+              </div>
+            </div>
+            <div class="composer">
+              <div class="icon">＋</div>
+              <div class="input">Reply, ask, or upload...</div>
+              <div class="send">➤</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Detailed Pro Tips</h3>
+          <div class="detail-list">
+            <div class="detail">
+              <strong>Why this is ambitious</strong>
+              It turns the relationship into the product center. Users no longer think “which page should I go to?” They think “which student or teacher relationship am I working in?”
+            </div>
+            <div class="detail">
+              <strong>Why it may be right for you</strong>
+              Your features already revolve around teacher-student interaction: tasks, messages, documents, reports, results, review. This model brings them together intentionally.
+            </div>
+            <div class="detail">
+              <strong>Big warning</strong>
+              Keep summary information compact. Full records, full tables, and long histories should still open deeper secondary views when needed.
+            </div>
+            <div class="detail">
+              <strong>Best if</strong>
+              You want the app to feel like a complete relationship workspace, not just a dashboard plus chat.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
