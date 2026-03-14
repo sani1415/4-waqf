@@ -883,6 +883,15 @@ body:has(.chat-container) {
 
 /* Mobile responsiveness for split-panel */
 @media (max-width: 768px) {
+    .teacher-page .teacher-messages-focus-layout {
+        padding: 0;
+    }
+
+    .teacher-page .messaging-container {
+        border-radius: 0;
+        box-shadow: none;
+    }
+
     .messaging-container {
         position: relative;
         /* Ensure container has height so absolute child (student list) is visible */
@@ -926,6 +935,11 @@ body:has(.chat-container) {
 
     .mobile-only {
         display: block !important;
+    }
+
+    .message-filter-menu-btn {
+        width: 38px;
+        height: 38px;
     }
 }
 
@@ -1061,6 +1075,11 @@ body:has(.chat-container) {
     padding: 0.85rem 1rem;
 }
 
+.teacher-page .teacher-messages-focus-layout {
+    padding: 1rem;
+    height: 100%;
+}
+
 .teacher-page .chat-list-inner-header h2 {
     font-size: 1.15rem;
 }
@@ -1155,6 +1174,72 @@ body:has(.chat-container) {
     background: radial-gradient(ellipse at top, rgba(123, 158, 189, 0.04) 0%, transparent 60%),
                 linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
     padding: 1.25rem 1.5rem;
+}
+
+.message-filter-menu-wrap {
+    position: relative;
+    margin-left: auto;
+}
+
+.message-filter-menu-btn {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.message-filter-menu-btn:hover,
+.message-filter-menu-btn.active {
+    border-color: var(--primary-soft);
+    color: var(--primary-soft);
+    background: rgba(123, 158, 189, 0.08);
+}
+
+.message-filter-menu-popover {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 190px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.55rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+    z-index: 20;
+}
+
+.message-filter-menu-item {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    text-align: left;
+    border-radius: 10px;
+    padding: 0.65rem 0.8rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.message-filter-menu-item:hover,
+.message-filter-menu-item.active {
+    background: rgba(123, 158, 189, 0.12);
+    color: var(--primary-soft);
+}
+
+.teacher-page .message-input-single-box-inner {
+    padding-left: 1rem;
 }
 
 .teacher-page .message-bubble {
@@ -1568,17 +1653,39 @@ body:has(.chat-container) {
 
 /* Single box: one message input area – category + text + send inside one field (teacher & student) */
 .message-input-single-box {
-    padding: 0.5rem 1rem;
-    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    padding: 0.35rem 0.85rem;
+    padding-bottom: max(0.35rem, env(safe-area-inset-bottom, 0px));
     background: white;
     border-top: 1px solid var(--border-color);
 }
+
+.timeline-filter-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    align-self: center;
+    max-width: min(100%, 260px);
+    margin: 0 auto 0.75rem;
+    padding: 0.32rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(123, 158, 189, 0.12);
+    color: var(--primary-soft);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.timeline-filter-indicator span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .message-input-single-box-inner {
     display: flex;
-    align-items: stretch;
-    gap: 0;
-    min-height: 44px;
-    padding: 0 0.5rem 0 0.75rem;
+    align-items: flex-end;
+    gap: 0.2rem;
+    min-height: 42px;
+    padding: 0 0.35rem 0 0.6rem;
     border: 2px solid var(--border-color);
     border-radius: 24px;
     background: var(--bg-primary);
@@ -1621,37 +1728,45 @@ body:has(.chat-container) {
     min-width: 0;
     border: none !important;
     background: transparent !important;
-    padding: 0.5rem 0.5rem 0.5rem 0.25rem !important;
+    padding: 0.4rem 0.35rem 0.4rem 0.2rem !important;
     box-shadow: none !important;
     margin: 0 !important;
+    line-height: 1.4;
+    resize: none;
 }
 .message-input-text-in-box::placeholder {
     color: var(--text-secondary);
 }
 .message-send-btn-in-box {
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     padding: 0;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0.2rem 0 0.2rem 0.25rem;
+    margin: 0.18rem 0 0.18rem 0.1rem;
 }
 .message-send-btn-in-box:not(:disabled):hover {
     transform: scale(1.05);
 }
 .message-action-btn-in-box {
     flex-shrink: 0;
-    min-width: 36px;
-    height: 40px;
-    padding: 0 0.5rem;
-    border-radius: 20px;
+    min-width: 34px;
+    height: 36px;
+    padding: 0 0.45rem;
+    border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0.2rem 0.1rem 0.2rem 0;
+    margin: 0.18rem 0.08rem 0.18rem 0;
+}
+
+.message-action-btn-in-box.active {
+    background: var(--primary-soft);
+    border-color: var(--primary-soft);
+    color: #fff;
 }
 
 /* Main app: document as message bubble (same as prototype) */

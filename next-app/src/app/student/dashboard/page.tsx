@@ -127,6 +127,8 @@ function StudentDashboardContent() {
   const [uploadDraft, setUploadDraft] = useState<UploadDraft | null>(null);
   const [singleImageChoice, setSingleImageChoice] = useState<SingleImageChoice | null>(null);
   const [uploadDialogError, setUploadDialogError] = useState('');
+  const [showMessageActions, setShowMessageActions] = useState(false);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
   const messageTabTextareaRef = useRef<HTMLTextAreaElement>(null);
   const studentDocumentFileInputRef = useRef<HTMLInputElement>(null);
   const studentAdditionalImagesInputRef = useRef<HTMLInputElement>(null);
@@ -175,6 +177,8 @@ function StudentDashboardContent() {
       messageType: 'text'
     });
     setMessageTabInput('');
+    setMessageTabCategory('general');
+    setShowMessageActions(false);
     if (messageTabTextareaRef.current) messageTabTextareaRef.current.rows = MIN_INPUT_ROWS;
   };
 
@@ -300,6 +304,16 @@ function StudentDashboardContent() {
   const chooseMultiImageUpload = () => {
     if (!singleImageChoice) return;
     studentAdditionalImagesInputRef.current?.click();
+  };
+
+  const handleMessageCategoryPick = (category: MessageCategory) => {
+    setMessageTabCategory(category);
+    setShowMessageActions(false);
+  };
+
+  const applyMessageFilter = (value: MessageCategory | 'all' | 'documents_only') => {
+    setFilterByCategory(value);
+    setShowFilterMenu(false);
   };
 
   const student = currentStudent || students.find((s: any) => s.id === studentId);
@@ -1019,21 +1033,52 @@ function StudentDashboardContent() {
 
           {activeSection === 'messages' && (
             <section className="panel-student panel-messages panel-messages-documents">
-              <div className="message-category-filter" data-testid="student-message-category-filter">
-                <label htmlFor="student-msg-filter" className="message-category-filter-label">{t('filter_by_category')}</label>
-                <select
-                  id="student-msg-filter"
-                  value={filterByCategory}
-                  onChange={(e) => setFilterByCategory(e.target.value as MessageCategory | 'all' | 'documents_only')}
-                  className="message-category-select"
-                  data-testid="student-filter-by-category"
-                >
-                  <option value="all">{t('all_categories')}</option>
-                  {MESSAGE_CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
-                  ))}
-                  <option value="documents_only">{t('documents_only') || 'Documents only'}</option>
-                </select>
+              <div className="student-messages-toolbar" data-testid="student-message-category-filter">
+                <span className="student-messages-toolbar-label">
+                  {filterByCategory === 'all'
+                    ? t('all_categories')
+                    : filterByCategory === 'documents_only'
+                      ? (t('documents_only') || 'Documents')
+                      : getCategoryLabel(filterByCategory)}
+                </span>
+                <div className="message-filter-menu-wrap">
+                  <button
+                    type="button"
+                    className={`message-filter-menu-btn ${filterByCategory !== 'all' ? 'active' : ''}`}
+                    onClick={() => setShowFilterMenu((prev) => !prev)}
+                    aria-label={t('filter_by_category')}
+                  >
+                    <i className="fas fa-bars"></i>
+                  </button>
+                  {showFilterMenu && (
+                    <div className="message-filter-menu-popover">
+                      <button
+                        type="button"
+                        className={`message-filter-menu-item ${filterByCategory === 'all' ? 'active' : ''}`}
+                        onClick={() => applyMessageFilter('all')}
+                      >
+                        {t('all_categories')}
+                      </button>
+                      {MESSAGE_CATEGORIES.map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          className={`message-filter-menu-item ${filterByCategory === cat ? 'active' : ''}`}
+                          onClick={() => applyMessageFilter(cat)}
+                        >
+                          {getCategoryLabel(cat)}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        className={`message-filter-menu-item ${filterByCategory === 'documents_only' ? 'active' : ''}`}
+                        onClick={() => applyMessageFilter('documents_only')}
+                      >
+                        {t('documents_only') || 'Documents'}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="messages-tab-area" id="messagesTabArea">
                 {messagesLoading || documentsLoading ? (
@@ -1055,6 +1100,12 @@ function StudentDashboardContent() {
                   </div>
                 ) : (
                   <>
+                    {filterByCategory !== 'all' ? (
+                      <div className="timeline-filter-indicator" title={filterByCategory === 'documents_only' ? (t('documents_only') || 'Documents') : getCategoryLabel(filterByCategory)}>
+                        <i className="fas fa-filter"></i>
+                        <span>{filterByCategory === 'documents_only' ? (t('documents_only') || 'Documents') : getCategoryLabel(filterByCategory)}</span>
+                      </div>
+                    ) : null}
                     {displayedTimeline.map((item: any, idx: number) => {
                       if (item.type === 'document') {
                         const fileUrl = item.fileUrl || item.downloadURL;
@@ -1108,23 +1159,36 @@ function StudentDashboardContent() {
               </div>
 
               <div className="messages-tab-input message-input-single-box">
-                <div className="message-input-single-box-inner">
-                  <div className="message-category-in-box" data-testid="student-dashboard-send-category-wrap">
-                    <select
-                      id="messageCategoryTab"
-                      value={messageTabCategory}
-                      onChange={(e) => setMessageTabCategory(e.target.value as MessageCategory)}
-                      className="message-category-select-in-box"
-                      title={t('message_category')}
-                      data-testid="student-dashboard-send-category"
-                      aria-label={t('message_category')}
-                    >
+                {showMessageActions && (
+                  <div className="student-message-actions-tray">
+                    <div className="student-message-actions-title">{t('message_category')}</div>
+                    <div className="student-message-actions-categories">
                       {MESSAGE_CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
+                        <button
+                          key={cat}
+                          type="button"
+                          className={`student-message-category-chip ${messageTabCategory === cat ? 'active' : ''}`}
+                          onClick={() => handleMessageCategoryPick(cat)}
+                        >
+                          {getCategoryLabel(cat)}
+                        </button>
                       ))}
-                    </select>
-                    <i className="fas fa-chevron-down message-category-arrow" aria-hidden />
+                    </div>
+                    <button
+                      type="button"
+                      className="student-message-upload-trigger"
+                      onClick={() => {
+                        setShowMessageActions(false);
+                        studentDocumentFileInputRef.current?.click();
+                      }}
+                      disabled={uploadingDocument}
+                    >
+                      <i className="fas fa-file-upload"></i>
+                      <span>{t('upload_document') || 'Upload document'}</span>
+                    </button>
                   </div>
+                )}
+                <div className="message-input-single-box-inner">
                   <textarea
                     ref={messageTabTextareaRef}
                     className="prototype-textarea message-input-text-in-box"
@@ -1146,12 +1210,12 @@ function StudentDashboardContent() {
                   />
                   <button
                     type="button"
-                    className="btn-primary message-action-btn-in-box"
-                    onClick={() => studentDocumentFileInputRef.current?.click()}
+                    className={`btn-primary message-action-btn-in-box ${showMessageActions || messageTabCategory !== 'general' ? 'active' : ''}`}
+                    onClick={() => setShowMessageActions((prev) => !prev)}
                     disabled={uploadingDocument}
-                    title={t('upload_document') || 'Upload document'}
+                    title={t('message_category')}
                   >
-                    <i className="fas fa-file-upload"></i>
+                    <i className="fas fa-plus"></i>
                   </button>
                   <button
                     id="messageSendBtnTab"
@@ -1159,8 +1223,10 @@ function StudentDashboardContent() {
                     className="btn-primary message-action-btn-in-box"
                     onClick={() => sendMessageFromTab()}
                     disabled={!messageTabInput.trim()}
+                    title={t('send')}
+                    aria-label={t('send')}
                   >
-                    <i className="fas fa-paper-plane"></i> <span>{t('send')}</span>
+                    <i className="fas fa-paper-plane"></i>
                   </button>
                 </div>
                 <div className="student-file-input-wrapper" aria-hidden>

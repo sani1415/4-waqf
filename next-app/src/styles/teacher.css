@@ -981,6 +981,57 @@ body:has(.teacher-dashboard) {
     color: var(--text-primary);
 }
 
+.teacher-security-card {
+    margin-bottom: 1.25rem;
+    text-align: left;
+}
+
+.teacher-security-card p {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.teacher-security-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(59, 130, 246, 0.08);
+    color: #1D4ED8;
+    font-size: 0.9rem;
+}
+
+.teacher-security-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.teacher-security-field label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.teacher-security-field input {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+.teacher-security-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .progress-circle {
     width: 150px;
     height: 150px;

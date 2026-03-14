@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messaging UI Prototype</title>
+  <style>
+    :root {
+      --bg: #eef3fb;
+      --surface: #ffffff;
+      --surface-soft: #f7f9fd;
+      --line: #dbe5f2;
+      --text: #21324d;
+      --muted: #6b7a90;
+      --brand: #7ea6cf;
+      --brand-strong: #6a95c2;
+      --accent: #98b9dc;
+      --bubble-in: #ffffff;
+      --bubble-out: linear-gradient(180deg, #8ab0d6, #78a0c8);
+      --shadow: 0 20px 50px rgba(44, 68, 110, 0.12);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(126, 166, 207, 0.22), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(152, 185, 220, 0.18), transparent 24%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 32px 24px 56px;
+    }
+
+    .hero {
+      margin-bottom: 28px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 820px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .concept {
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(219, 229, 242, 0.9);
+      border-radius: 28px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .concept h2 {
+      margin: 0 0 6px;
+      font-size: 20px;
+    }
+
+    .concept p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .phone {
+      width: 100%;
+      max-width: 390px;
+      min-height: 780px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #fdfefe, #f4f7fb);
+      border: 10px solid #f8fbff;
+      border-radius: 34px;
+      overflow: hidden;
+      box-shadow: 0 18px 48px rgba(39, 54, 88, 0.18);
+      position: relative;
+    }
+
+    .status {
+      height: 16px;
+      background: linear-gradient(180deg, #fbfdff, #f2f6fb);
+    }
+
+    .design-variants {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 22px;
+      align-items: start;
+    }
+
+    .variant-block h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+
+    .variant-block p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 13px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 16px 10px;
+      background: rgba(255, 255, 255, 0.88);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .topbar.compact { padding-bottom: 12px; }
+
+    .left, .right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn, .pill, .mini-btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 999px;
+      min-width: 38px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .title {
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.78);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .chat-header.tight {
+      padding: 10px 14px;
+      gap: 10px;
+    }
+
+    .chat-header.ultra-tight {
+      padding: 8px 12px;
+      gap: 9px;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #9ec0e1, #7ea6cf);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .identity {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .identity strong {
+      display: block;
+      font-size: 17px;
+      line-height: 1.2;
+    }
+
+    .identity span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .filter-row {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .filter-row.hidden-style {
+      display: flex;
+      justify-content: flex-end;
+      padding: 10px 14px 0;
+      background: transparent;
+      border-bottom: 0;
+    }
+
+    .filter-row.compact-inline {
+      padding: 8px 12px 0;
+      border-bottom: 0;
+      background: transparent;
+    }
+
+    .filter-row.minimal-right {
+      display: flex;
+      justify-content: flex-end;
+      padding: 6px 12px 0;
+      border-bottom: 0;
+      background: transparent;
+    }
+
+    .filter-pill {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      color: var(--muted);
+      padding: 8px 12px;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      box-shadow: 0 8px 18px rgba(76, 104, 146, 0.08);
+    }
+
+    .filter-chip-soft {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(219, 229, 242, 0.9);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .messages {
+      min-height: 490px;
+      padding: 16px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.55), rgba(244,247,251,0.78)),
+        radial-gradient(circle at top, rgba(152,185,220,0.12), transparent 34%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .messages.fuller { min-height: 570px; }
+
+    .date-sep {
+      align-self: center;
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+    }
+
+    .bubble {
+      max-width: 76%;
+      border-radius: 18px;
+      padding: 12px 14px;
+      font-size: 15px;
+      line-height: 1.45;
+      box-shadow: 0 10px 22px rgba(76, 104, 146, 0.08);
+    }
+
+    .bubble.in {
+      align-self: flex-start;
+      background: var(--bubble-in);
+      border: 1px solid var(--line);
+    }
+
+    .bubble.out {
+      align-self: flex-end;
+      color: white;
+      background: var(--bubble-out);
+    }
+
+    .bubble.file {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .file-ico {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(126, 166, 207, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--brand-strong);
+      font-weight: 700;
+    }
+
+    .time {
+      margin-top: 6px;
+      font-size: 11px;
+      opacity: 0.72;
+    }
+
+    .composer {
+      margin: 8px 12px 12px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.95);
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .composer.slim {
+      margin-top: 0;
+      border-radius: 18px;
+      padding: 8px;
+    }
+
+    .composer.tighter {
+      margin: 6px 10px 10px;
+      padding: 7px;
+      border-radius: 18px;
+    }
+
+    .dropdown {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+      background: var(--surface-soft);
+    }
+
+    .input {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: #f7f9fd;
+      color: #6d7990;
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .send {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #9abadd, #7da3c9);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .bottom-nav {
+      height: 62px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,0.96);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      align-items: center;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .nav-item.active {
+      color: var(--brand-strong);
+      font-weight: 700;
+    }
+
+    .note {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 900px) {
+      .page { padding: 20px 14px 40px; }
+      .hero h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="hero">
+      <h1>Messaging UI Prototype Directions</h1>
+      <p>
+        This prototype now focuses only on Design A. The goal is to make the conversation feel bigger by removing the extra top bar
+        and treating message category in a lighter, more contextual way.
+      </p>
+    </div>
+
+    <section class="concept">
+        <h2>Design A: Focused Chat Mode</h2>
+        <p>
+          Updated with your direction: no separate top bar, and no permanent category dropdown blocking space. Below are cleaner variants.
+        </p>
+        <div class="design-variants">
+          <div class="variant-block">
+            <h3>A1: Teacher Chat Without Visible Category</h3>
+            <p>Best teacher mode. No permanent category control at all. Category can live inside a hidden menu or sheet when needed.</p>
+            <div class="phone">
+              <div class="status"></div>
+              <div class="chat-header ultra-tight">
+                <div class="icon-btn">←</div>
+                <div class="avatar">A</div>
+                <div class="identity">
+                  <strong>আব্দুল মুকীত</strong>
+                  <span>waqf-006</span>
+                </div>
+                <div class="icon-btn">⋯</div>
+              </div>
+              <div class="messages fuller">
+                <div class="date-sep">Today</div>
+                <div class="bubble out">
+                  Salam
+                  <div class="time">01:07 AM</div>
+                </div>
+                <div class="bubble in file">
+                  <div class="file-ico">PDF</div>
+                  <div>
+                    a.pdf
+                    <div class="time">01:09 AM</div>
+                  </div>
+                </div>
+                <div class="bubble in">
+                  Please review page 3 again and send the corrected version.
+                  <div class="time">01:11 AM</div>
+                </div>
+              </div>
+              <div class="composer tighter">
+                <div class="input">Type a message...</div>
+                <div class="icon-btn">＋</div>
+                <div class="send">➤</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="variant-block">
+            <h3>A2: Teacher Chat With Category In Header Menu</h3>
+            <p>For teacher only. Category is not always shown. It is accessed from the top-right menu, so the conversation stays dominant.</p>
+            <div class="phone">
+              <div class="status"></div>
+              <div class="chat-header ultra-tight">
+                <div class="icon-btn">←</div>
+                <div class="avatar">A</div>
+                <div class="identity">
+                  <strong>আব্দুল মুকীত</strong>
+                  <span>waqf-006</span>
+                </div>
+                <div class="icon-btn">⋯</div>
+              </div>
+              <div class="filter-row minimal-right">
+                <div class="filter-chip-soft">Category: hidden in menu</div>
+              </div>
+              <div class="messages fuller">
+                <div class="date-sep">Today</div>
+                <div class="bubble out">
+                  Salam
+                  <div class="time">01:07 AM</div>
+                </div>
+                <div class="bubble in file">
+                  <div class="file-ico">PDF</div>
+                  <div>
+                    a.pdf
+                    <div class="time">01:09 AM</div>
+                  </div>
+                </div>
+                <div class="bubble in">
+                  Please review page 3 again and send the corrected version.
+                  <div class="time">01:11 AM</div>
+                </div>
+              </div>
+              <div class="composer tighter">
+                <div class="dropdown">Normal ▾</div>
+                <div class="input">Type a message...</div>
+                <div class="icon-btn">＋</div>
+                <div class="send">➤</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="variant-block">
+            <h3>A3: Student Chat With Temporary Category Picker</h3>
+            <p>Better for students than a permanent dropdown. Category appears only after tapping the plus/attach action, then disappears again.</p>
+            <div class="phone">
+              <div class="status"></div>
+              <div class="chat-header ultra-tight">
+                <div class="icon-btn">←</div>
+                <div class="avatar">A</div>
+                <div class="identity">
+                  <strong>আব্দুল মুকীত</strong>
+                  <span>waqf-006</span>
+                </div>
+                <div class="icon-btn">⌕</div>
+              </div>
+              <div class="messages fuller">
+                <div class="date-sep">Today</div>
+                <div class="bubble out">
+                  Salam
+                  <div class="time">01:07 AM</div>
+                </div>
+                <div class="bubble in file">
+                  <div class="file-ico">PDF</div>
+                  <div>
+                    a.pdf
+                    <div class="time">01:09 AM</div>
+                  </div>
+                </div>
+                <div class="bubble in">
+                  Please review page 3 again and send the corrected version.
+                  <div class="time">01:11 AM</div>
+                </div>
+              </div>
+              <div class="filter-row compact-inline">
+                <div class="filter-chip-soft">Normal selected after tapping +</div>
+              </div>
+              <div class="composer tighter">
+                <div class="input">Type a message...</div>
+                <div class="icon-btn">＋</div>
+                <div class="send">➤</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="note">
+          My strongest recommendation now is:
+          <strong>A1 or A2 for teacher</strong>, because teacher chat should stay clean and category should not occupy permanent space.
+          <strong>A3 for student</strong>, if you still want category support but only as a temporary action after tapping attach/plus.
+        </div>
+      </section>
+  </div>
+</body>
+</html>

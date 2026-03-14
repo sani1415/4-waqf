@@ -330,7 +330,7 @@ export default function LandingPage() {
 
     try {
       if (loginRole === 'teacher') {
-        const success = loginAsTeacher(loginId, loginPin);
+        const success = await loginAsTeacher(loginId, loginPin);
         if (success) {
           router.push('/teacher/messages');
         } else {

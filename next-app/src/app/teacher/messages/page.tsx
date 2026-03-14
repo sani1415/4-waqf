@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useStudents, useMessages, useSubmittedDocuments } from '@/hooks/useFirestore';
 import { useTranslation } from '@/hooks/useTranslation';
 import TeacherSidebar from '@/components/teacher/TeacherSidebar';
-import TeacherTopBar from '@/components/teacher/TeacherTopBar';
 import { formatDateDisplay, getUseHijri } from '@/lib/date-format';
 import type { MessageCategory } from '@/lib/types';
 import '@/styles/teacher.css';
@@ -25,6 +24,9 @@ type SubmittedDocumentLike = {
   category?: MessageCategory;
 };
 
+const MESSAGE_CATEGORIES: MessageCategory[] = ['general', 'question', 'fortnight_report'];
+const FILTER_OPTIONS: Array<MessageCategory | 'all' | 'documents_only'> = ['all', ...MESSAGE_CATEGORIES, 'documents_only'];
+
 function formatFileSize(bytes?: number) {
   if (!bytes) return '';
   if (bytes < 1024) return `${bytes} B`;
@@ -36,8 +38,6 @@ function formatShortDate(iso?: string) {
   if (!iso) return '';
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
-
-const MESSAGE_CATEGORIES: MessageCategory[] = ['general', 'question', 'fortnight_report'];
 
 export default function TeacherMessages() {
   const router = useRouter();
@@ -52,8 +52,8 @@ export default function TeacherMessages() {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [messageCategory, setMessageCategory] = useState<MessageCategory>('general');
   const [filterByCategory, setFilterByCategory] = useState<MessageCategory | 'all' | 'documents_only'>('all');
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageTextareaRef = useRef<HTMLTextAreaElement>(null);
   const hasOpenedConversationRef = useRef(false);
@@ -62,10 +62,15 @@ export default function TeacherMessages() {
   const EXPANDED_ROWS = 4; /* WhatsApp-style: expand when focused so typing is comfortable */
   const MAX_INPUT_ROWS = 6;
 
-  const submittedDocuments = (submittedDocumentsData as SubmittedDocumentLike[]) || [];
-  const studentDocuments = selectedStudentId
-    ? submittedDocuments.filter((d) => String(d.studentId) === String(selectedStudentId))
-    : [];
+  const submittedDocuments = useMemo(
+    () => (submittedDocumentsData as SubmittedDocumentLike[]) || [],
+    [submittedDocumentsData]
+  );
+  const studentDocuments = useMemo(() => (
+    selectedStudentId
+      ? submittedDocuments.filter((d) => String(d.studentId) === String(selectedStudentId))
+      : []
+  ), [selectedStudentId, submittedDocuments]);
 
   useEffect(() => {
     if (!authLoading && (!isLoggedIn || role !== 'teacher')) {
@@ -75,27 +80,40 @@ export default function TeacherMessages() {
 
   const selectedStudent = students.find((s: any) => s.id === selectedStudentId);
 
-  const studentMessages = messages
-    .filter((m: any) => m.studentId === selectedStudentId)
-    .sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  const studentMessages = useMemo(() => (
+    messages
+      .filter((m: any) => m.studentId === selectedStudentId)
+      .sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+  ), [messages, selectedStudentId]);
 
   /** Combined timeline: messages + documents, sorted by time */
-  const combinedTimeline = selectedStudentId
-    ? [
-        ...studentMessages.map((m: any) => ({ type: 'message' as const, ...m, _sort: m.timestamp })),
-        ...studentDocuments.map((d) => ({ type: 'document' as const, ...d, _sort: d.uploadedAt || '' })),
-      ].sort((a, b) => new Date(a._sort).getTime() - new Date(b._sort).getTime())
-    : [];
+  const combinedTimeline = useMemo(() => (
+    selectedStudentId
+      ? [
+          ...studentMessages.map((m: any) => ({ type: 'message' as const, ...m, _sort: m.timestamp })),
+          ...studentDocuments.map((d) => ({ type: 'document' as const, ...d, _sort: d.uploadedAt || '' })),
+        ].sort((a, b) => new Date(a._sort).getTime() - new Date(b._sort).getTime())
+      : []
+  ), [selectedStudentId, studentDocuments, studentMessages]);
 
-  const displayedTimeline =
+  const displayedTimeline = useMemo(() => (
     filterByCategory === 'all'
       ? combinedTimeline
       : filterByCategory === 'documents_only'
-        ? combinedTimeline.filter((i) => i.type === 'document')
-        : combinedTimeline.filter((i) => (i.category ?? 'general') === filterByCategory);
+        ? combinedTimeline.filter((item) => item.type === 'document')
+        : combinedTimeline.filter((item) => (item.category ?? 'general') === filterByCategory)
+  ), [combinedTimeline, filterByCategory]);
 
   const getCategoryLabel = (cat: MessageCategory | undefined) =>
     cat ? t('msg_category_' + cat) : t('msg_category_general');
+
+  const getFilterLabel = (value: MessageCategory | 'all' | 'documents_only') => {
+    if (value === 'all') return t('all_categories');
+    if (value === 'documents_only') return t('documents_only') || 'Documents';
+    return getCategoryLabel(value);
+  };
+
+  const activeFilterLabel = filterByCategory === 'all' ? '' : getFilterLabel(filterByCategory);
 
   const getUnreadCount = (studentId: string) => {
     return messages.filter(
@@ -142,6 +160,7 @@ export default function TeacherMessages() {
 
   useEffect(() => {
     hasOpenedConversationRef.current = false;
+    setShowFilterMenu(false);
   }, [selectedStudentId]);
 
   useEffect(() => {
@@ -173,7 +192,7 @@ export default function TeacherMessages() {
       text: newMessage.trim(),
       timestamp: new Date().toISOString(),
       read: false,
-      category: messageCategory,
+      category: 'general',
       messageType: 'text'
     });
 
@@ -205,6 +224,11 @@ export default function TeacherMessages() {
   const handleMessageInputBlur = () => {
     const ta = messageTextareaRef.current;
     if (ta && !newMessage.trim()) ta.rows = MIN_INPUT_ROWS;
+  };
+
+  const applyFilter = (value: MessageCategory | 'all' | 'documents_only') => {
+    setFilterByCategory(value);
+    setShowFilterMenu(false);
   };
 
   const getDocumentUrl = (doc: SubmittedDocumentLike) => doc.fileUrl || doc.downloadURL || '';
@@ -291,20 +315,14 @@ export default function TeacherMessages() {
       />
 
       <main className="main-content">
-        <TeacherTopBar
-          title={t('messages_title')}
-          onMenuToggle={toggleSidebar}
-          t={t}
-          lang={lang}
-          onLangChange={changeLang}
-        />
-
-        <div className="messages-container content-with-bottom-nav">
+        <div className="messages-container teacher-messages-focus-layout">
           <div className="messaging-container">
             <div className={`chat-list ${selectedStudentId ? 'hidden-mobile' : ''}`}>
               <div className="chat-list-inner-header">
-                <h2>{t('student_conversations')}</h2>
-                <p>{t('click_student_to_chat')}</p>
+                <div>
+                  <h2>{t('student_conversations')}</h2>
+                  <p>{t('click_student_to_chat')}</p>
+                </div>
               </div>
               <div className="search-box">
                 <i className="fas fa-search"></i>
@@ -385,24 +403,30 @@ export default function TeacherMessages() {
                       <h3>{selectedStudent.name}</h3>
                       <span className="student-id">{selectedStudent.studentId}</span>
                     </div>
-                  </div>
-
-                  {/* Single flow: filter + timeline (messages + documents) + input */}
-                  <div className="message-category-filter" data-testid="teacher-message-category-filter">
-                    <label htmlFor="teacher-msg-filter" className="message-category-filter-label">{t('filter_by_category')}</label>
-                    <select
-                      id="teacher-msg-filter"
-                      value={filterByCategory}
-                      onChange={(e) => setFilterByCategory(e.target.value as MessageCategory | 'all' | 'documents_only')}
-                      className="message-category-select"
-                      data-testid="teacher-filter-by-category"
-                    >
-                      <option value="all">{t('all_categories')}</option>
-                      {MESSAGE_CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
-                      ))}
-                      <option value="documents_only">{t('documents_only') || 'Documents only'}</option>
-                    </select>
+                    <div className="message-filter-menu-wrap">
+                      <button
+                        type="button"
+                        className={`message-filter-menu-btn ${filterByCategory !== 'all' ? 'active' : ''}`}
+                        onClick={() => setShowFilterMenu((prev) => !prev)}
+                        aria-label={t('filter_by_category')}
+                      >
+                        <i className="fas fa-bars"></i>
+                      </button>
+                      {showFilterMenu && (
+                        <div className="message-filter-menu-popover">
+                          {FILTER_OPTIONS.map((option) => (
+                            <button
+                              key={option}
+                              type="button"
+                              className={`message-filter-menu-item ${filterByCategory === option ? 'active' : ''}`}
+                              onClick={() => applyFilter(option)}
+                            >
+                              {getFilterLabel(option)}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="messages-area">
@@ -418,7 +442,14 @@ export default function TeacherMessages() {
                         <span>{t('filter_by_category')}</span>
                       </div>
                     ) : (
-                      displayedTimeline.map((item: any) => {
+                      <>
+                        {activeFilterLabel ? (
+                          <div className="timeline-filter-indicator" title={activeFilterLabel}>
+                            <i className="fas fa-filter"></i>
+                            <span>{activeFilterLabel}</span>
+                          </div>
+                        ) : null}
+                        {displayedTimeline.map((item: any) => {
                         if (item.type === 'document') {
                           const url = getDocumentUrl(item);
                           const cat = (item.category ?? 'general') as MessageCategory;
@@ -466,29 +497,14 @@ export default function TeacherMessages() {
                             <span className="message-time">{formatTime(item.timestamp)}</span>
                           </div>
                         );
-                      })
+                      })}
+                      </>
                     )}
                     <div ref={messagesEndRef} />
                   </div>
 
                   <form className="message-input teacher-message-form message-input-single-box" onSubmit={handleSendMessage}>
                     <div className="message-input-single-box-inner">
-                      <div className="message-category-in-box" data-testid="teacher-send-category-wrap">
-                        <select
-                          id="teacher-msg-category"
-                          value={messageCategory}
-                          onChange={(e) => setMessageCategory(e.target.value as MessageCategory)}
-                          className="message-category-select-in-box"
-                          title={t('message_category')}
-                          data-testid="teacher-send-category"
-                          aria-label={t('message_category')}
-                        >
-                          {MESSAGE_CATEGORIES.map((cat) => (
-                            <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
-                          ))}
-                        </select>
-                        <i className="fas fa-chevron-down message-category-arrow" aria-hidden />
-                      </div>
                       <textarea
                         ref={messageTextareaRef}
                         className="prototype-textarea message-input-text-in-box"
@@ -518,41 +534,6 @@ export default function TeacherMessages() {
         </div>
       </main>
 
-      <div className="bottom-nav-wrapper">
-        <div className="bottom-nav-fade bottom-nav-fade-left" id="bottomNavFadeLeft" aria-hidden="true"><i className="fas fa-chevron-left"></i></div>
-        <nav className="bottom-nav" id="bottomNav" aria-label="Main navigation">
-          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/teacher/dashboard'); }} title="Dashboard">
-            <i className="fas fa-home"></i>
-            <span>{t('nav_dashboard')}</span>
-          </a>
-          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/teacher/dashboard?section=manage-tasks'); }} title="Tasks">
-            <i className="fas fa-tasks"></i>
-            <span>{t('stat_tasks')}</span>
-          </a>
-          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/teacher/dashboard?section=students'); }} title="Students">
-            <i className="fas fa-users"></i>
-            <span>{t('nav_students')}</span>
-          </a>
-          <a href="#" className="bottom-nav-item bottom-nav-item-msg active" title="Messages">
-            <i className="fas fa-comments"></i>
-            <span>{t('nav_messages')}</span>
-            {unreadMessages > 0 && <span id="messagesUnreadBadgeNav" className="bottom-nav-badge">{unreadMessages}</span>}
-          </a>
-          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/teacher/dashboard?section=daily-overview'); }} title="Overview">
-            <i className="fas fa-table"></i>
-            <span>{t('nav_overview')}</span>
-          </a>
-          <a href="#" className="bottom-nav-item" onClick={(e) => { e.preventDefault(); router.push('/teacher/exams'); }} title="Exams">
-            <i className="fas fa-graduation-cap"></i>
-            <span>{t('nav_exams')}</span>
-          </a>
-          <a href="#" className="bottom-nav-item bottom-nav-menu" id="bottomNavMenu" onClick={(e) => { e.preventDefault(); setSidebarOpen(true); }} title="Menu">
-            <i className="fas fa-ellipsis-v"></i>
-            <span>{t('nav_menu')}</span>
-          </a>
-        </nav>
-        <div className="bottom-nav-fade bottom-nav-fade-right" id="bottomNavFadeRight" aria-hidden="true"><i className="fas fa-chevron-right"></i></div>
-      </div>
     </div>
   );
 }

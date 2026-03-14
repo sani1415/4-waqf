@@ -280,8 +280,14 @@ export interface AuthState {
   isLoggedIn: boolean;
 }
 
-// Teacher credentials (stored locally, not in Firebase)
-export const TEACHER_CREDENTIALS = {
+// Default teacher credentials used only to bootstrap the Firestore-backed record.
+export const DEFAULT_TEACHER_CREDENTIALS = {
   id: 'teacher',
   pin: '5678'
 };
+
+export interface TeacherCredentialConfig {
+  id: string;
+  pinHash: string;
+  updatedAt?: string;
+}

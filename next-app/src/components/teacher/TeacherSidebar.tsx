@@ -30,6 +30,7 @@ const navItems: NavItem[] = [
   { id: 'messages', icon: 'fa-comments', label: 'nav_messages', href: '/teacher/messages' },
   { id: 'documents', icon: 'fa-file-upload', label: 'documents_for_review', section: 'documents-for-review' },
   { id: 'analytics', icon: 'fa-chart-bar', label: 'nav_analytics', section: 'analytics' },
+  { id: 'profile', icon: 'fa-user-cog', label: 'profile', section: 'profile' },
 ];
 
 export default function TeacherSidebar({

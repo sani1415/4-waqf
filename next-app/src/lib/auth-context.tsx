@@ -1,11 +1,12 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { TEACHER_CREDENTIALS, AuthState, Student } from './types';
+import { AuthState, Student } from './types';
 import { setDeviceMode } from './device-mode';
+import { ensureTeacherCredentialsInitialized, verifyTeacherCredentials } from './teacher-credentials';
 
 interface AuthContextType extends AuthState {
-  loginAsTeacher: (id: string, pin: string) => boolean;
+  loginAsTeacher: (id: string, pin: string) => Promise<boolean>;
   loginAsStudent: (student: Student, pin: string) => boolean;
   logout: () => void;
   currentStudent: Student | null;
@@ -40,6 +41,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    void ensureTeacherCredentialsInitialized();
+  }, []);
+
   // Save auth state to sessionStorage
   useEffect(() => {
     if (authState.isLoggedIn) {
@@ -49,13 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [authState]);
 
-  const loginAsTeacher = (id: string, pin: string): boolean => {
-    const idMatch = id.trim().toLowerCase() === TEACHER_CREDENTIALS.id.toLowerCase();
-    const pinMatch = pin.trim() === TEACHER_CREDENTIALS.pin;
-
-    if (!idMatch || !pinMatch) {
-      return false;
-    }
+  const loginAsTeacher = async (id: string, pin: string): Promise<boolean> => {
+    const valid = await verifyTeacherCredentials(id, pin);
+    if (!valid) return false;
 
     setAuthState({
       role: 'teacher',

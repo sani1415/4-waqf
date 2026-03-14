@@ -13,6 +13,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import TeacherSidebar from '@/components/teacher/TeacherSidebar';
 import TeacherTopBar from '@/components/teacher/TeacherTopBar';
 import { Student, Task, type MessageCategory } from '@/lib/types';
+import { getTeacherCredentialConfig, updateTeacherCredentials } from '@/lib/teacher-credentials';
 import '@/styles/teacher.css';
 import '@/styles/daily-overview.css';
 type DashboardView = 'daily' | 'onetime' | 'spreadsheet';
@@ -188,6 +189,11 @@ function TeacherDashboardContent() {
   const [documentCategoryFilter, setDocumentCategoryFilter] = useState<MessageCategory | 'all'>('all');
   const [expandedDocGroups, setExpandedDocGroups] = useState<Record<string, boolean>>({});
   const [overviewDate, setOverviewDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [teacherLoginId, setTeacherLoginId] = useState('teacher');
+  const [teacherCurrentPin, setTeacherCurrentPin] = useState('');
+  const [teacherNewPin, setTeacherNewPin] = useState('');
+  const [teacherConfirmPin, setTeacherConfirmPin] = useState('');
+  const [teacherPinSubmitting, setTeacherPinSubmitting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && (!isLoggedIn || role !== 'teacher')) {
@@ -199,7 +205,7 @@ function TeacherDashboardContent() {
   useEffect(() => {
     const section = searchParams.get('section');
     const createFor = searchParams.get('createFor');
-    const valid = ['dashboard', 'manage-tasks', 'students', 'daily-overview', 'documents-for-review', 'analytics'];
+    const valid = ['dashboard', 'manage-tasks', 'students', 'daily-overview', 'documents-for-review', 'analytics', 'profile'];
     if (section && valid.includes(section)) {
       setActiveSection(section);
     }
@@ -225,6 +231,12 @@ function TeacherDashboardContent() {
   useEffect(() => {
     localStorage.setItem('documentsReviewView', documentsView);
   }, [documentsView]);
+
+  useEffect(() => {
+    void getTeacherCredentialConfig().then((config) => {
+      setTeacherLoginId(config.id || 'teacher');
+    });
+  }, []);
 
   const today = new Date().toISOString().split('T')[0];
   const yesterdayStr = (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; })();
@@ -292,7 +304,8 @@ function TeacherDashboardContent() {
     students: t('nav_students'),
     'daily-overview': t('nav_daily_overview'),
     'documents-for-review': t('documents_for_review'),
-    analytics: t('nav_analytics')
+    analytics: t('nav_analytics'),
+    profile: t('profile')
   };
 
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
@@ -483,6 +496,39 @@ function TeacherDashboardContent() {
   };
 
   const getDocumentUrl = (doc: SubmittedDocumentLike) => doc.fileUrl || doc.downloadURL || '';
+
+  const handleTeacherPinChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const currentPin = teacherCurrentPin.trim();
+    const newPin = teacherNewPin.trim();
+    const confirmPin = teacherConfirmPin.trim();
+
+    if (!currentPin || newPin.length < 4 || newPin.length > 8) {
+      alert(t('alert_pin_required'));
+      return;
+    }
+    if (newPin !== confirmPin) {
+      alert(t('alert_pin_mismatch'));
+      return;
+    }
+
+    setTeacherPinSubmitting(true);
+    try {
+      const result = await updateTeacherCredentials(currentPin, newPin);
+      if (!result.ok) {
+        alert(t('alert_wrong_current_pin'));
+        return;
+      }
+      setTeacherCurrentPin('');
+      setTeacherNewPin('');
+      setTeacherConfirmPin('');
+      alert(t('alert_pin_updated'));
+    } catch {
+      alert(t('login_error'));
+    } finally {
+      setTeacherPinSubmitting(false);
+    }
+  };
 
   const loading = studentsLoading || tasksLoading || messagesLoading;
 
@@ -719,6 +765,61 @@ function TeacherDashboardContent() {
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {activeSection === 'profile' && (
+            <section id="profile-section" className="content-section active">
+              <div className="dashboard-content">
+                <div className="analytics-card teacher-security-card">
+                  <h3>{t('teacher_security_title')}</h3>
+                  <p>{t('teacher_security_hint')}</p>
+                  <div className="teacher-security-meta">
+                    <span>{t('teacher_login_id_label')}</span>
+                    <strong>{teacherLoginId}</strong>
+                  </div>
+                  <form className="teacher-security-form" onSubmit={handleTeacherPinChange}>
+                    <div className="teacher-security-grid">
+                      <div className="teacher-security-field">
+                        <label htmlFor="teacherCurrentPin">{t('old_pin')}</label>
+                        <input
+                          id="teacherCurrentPin"
+                          type="password"
+                          value={teacherCurrentPin}
+                          onChange={(e) => setTeacherCurrentPin(e.target.value)}
+                          autoComplete="current-password"
+                          maxLength={8}
+                        />
+                      </div>
+                      <div className="teacher-security-field">
+                        <label htmlFor="teacherNewPin">{t('new_pin')}</label>
+                        <input
+                          id="teacherNewPin"
+                          type="password"
+                          value={teacherNewPin}
+                          onChange={(e) => setTeacherNewPin(e.target.value)}
+                          autoComplete="new-password"
+                          maxLength={8}
+                        />
+                      </div>
+                      <div className="teacher-security-field">
+                        <label htmlFor="teacherConfirmPin">{t('confirm_pin')}</label>
+                        <input
+                          id="teacherConfirmPin"
+                          type="password"
+                          value={teacherConfirmPin}
+                          onChange={(e) => setTeacherConfirmPin(e.target.value)}
+                          autoComplete="new-password"
+                          maxLength={8}
+                        />
+                      </div>
+                    </div>
+                    <button type="submit" className="btn-primary teacher-security-submit" disabled={teacherPinSubmitting}>
+                      <i className="fas fa-shield-alt"></i> {teacherPinSubmitting ? t('login_loading') : t('change_pin')}
+                    </button>
+                  </form>
                 </div>
               </div>
             </section>
